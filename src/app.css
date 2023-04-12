@@ -1,14 +1,27 @@
 :root {
   --gray-color: #d1d6de;
+  --header-h: 55px;
+  --darkGray-color: #2e3239;
+}
+.App {
+  position: fixed;
+  top: var(--header-h);
+  left: 0;
+  right: 0;
+  bottom: 0;
 }
 
 /* css phần header */
 .app_header {
   background-color: var(--gray-color);
-  height: 55px;
-  display: flex;
+  height: var(--header-h);
   padding: 0 15px;
+  display: flex;
   align-items: center;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
 }
 .header_logo {
   align-items: center;
@@ -29,4 +42,36 @@
   flex: 1;
   display: flex;
   justify-content: flex-end;
+  align-items: center;
+  gap: 30px;
+  padding-right: 30px;
+}
+.header_auth .bell {
+  border-radius: 50%;
+  cursor: pointer;
+}
+.header_auth .bell:hover {
+  color: red;
+}
+
+/* css phần container chứa sidebar và content*/
+.container {
+  display: flex;
+  position: relative;
+}
+
+/* css phần sidebar */
+.container_sidebar {
+  width: 342px;
+  flex-shrink: 0;
+  background: darkgray;
+  height: 100%;
+  overflow-y: auto;
+}
+
+/* css phần content */
+.container_content {
+  flex: 1;
+
+  overflow-y: auto;
 }
