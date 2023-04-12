@@ -1,0 +1,90 @@
+:root {
+  --gray-color: #d1d6de;
+  --header-h: 55px;
+  --darkGray-color: #2e3239;
+}
+.App {
+  position: fixed;
+  top: var(--header-h);
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+
+/* css phần header */
+.app_header {
+  background-color: var(--gray-color);
+  height: var(--header-h);
+  padding: 0 15px;
+  display: flex;
+  align-items: center;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+}
+.header_logo {
+  align-items: center;
+  display: flex;
+  gap: 12px;
+  width: 300px;
+  flex-shrink: 0;
+}
+.header_logo img {
+  height: 40px;
+  width: 40px;
+}
+.header_logo span {
+  font-size: 25px;
+  font-weight: 600;
+}
+.header_auth {
+  flex: 1;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 30px;
+  padding-right: 30px;
+}
+.header_auth .bell {
+  border-radius: 50%;
+  cursor: pointer;
+}
+.header_auth .bell:hover {
+  color: red;
+}
+
+/* css phần container chứa sidebar và content*/
+.container {
+  display: flex;
+  position: relative;
+}
+
+/* css phần sidebar */
+.container_sidebar {
+  width: 342px;
+  flex-shrink: 0;
+  background-color: darkgray;
+  height: 100%;
+  overflow-y: auto;
+}
+
+.container_sidebar::-webkit-scrollbar {
+  width: 4px;
+  background-color: #777;
+}
+
+.container_sidebar::-webkit-scrollbar-thumb {
+  background-color: #333;
+}
+.container_sidebar::-webkit-scrollbar-track {
+  -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+  background-color: #777;
+}
+
+/* css phần content */
+.container_content {
+  flex: 1;
+
+  overflow-y: auto;
+}
