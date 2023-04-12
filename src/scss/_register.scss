@@ -1,0 +1,76 @@
+.register {
+    position: relative;
+
+    img {
+        display: block;
+        height: 100vh;
+        width: 100%;
+        object-fit: cover;
+        object-position: bottom;
+        opacity: 0.5;
+    }
+}
+
+.register-form-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    margin-left: auto;
+    margin-right:auto;
+    width: 500px;
+}
+
+.register-title {
+    text-align: center;
+   padding: 2rem 0;
+}
+
+.register-form {
+    margin: auto;
+    padding: 0 4rem;
+    max-width: 100%;
+
+    .ant-col.ant-form-item-label {
+        padding: 0 
+    }
+}
+
+.register-divider {
+    max-width: 100%;
+    padding: 0 4rem;
+}
+
+.google-register-button {
+    width: 100%;  
+    padding: 0 4rem;
+
+    button {
+        width: 100%;
+    }
+}
+
+// Style cho page phụ Verfiy Register
+.register-verify {
+    position: relative;
+        img {
+            display: block;
+            height: 100vh;
+            width: 100%;
+            object-fit: cover;
+            object-position: bottom;
+            opacity: 0.5;
+        }
+
+        .content {
+            text-align: center;
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            margin-left: auto;
+            margin-right:auto;
+            
+        }
+
+}
