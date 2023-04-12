@@ -1,0 +1,32 @@
+:root {
+  --gray-color: #d1d6de;
+}
+
+/* css phần header */
+.app_header {
+  background-color: var(--gray-color);
+  height: 55px;
+  display: flex;
+  padding: 0 15px;
+  align-items: center;
+}
+.header_logo {
+  align-items: center;
+  display: flex;
+  gap: 12px;
+  width: 300px;
+  flex-shrink: 0;
+}
+.header_logo img {
+  height: 40px;
+  width: 40px;
+}
+.header_logo span {
+  font-size: 25px;
+  font-weight: 600;
+}
+.header_auth {
+  flex: 1;
+  display: flex;
+  justify-content: flex-end;
+}
