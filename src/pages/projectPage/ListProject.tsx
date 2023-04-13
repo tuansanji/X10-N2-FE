@@ -1,5 +1,5 @@
 import { IProject } from "../../components/sidebar/Sidebar";
-import { DownloadOutlined, SearchOutlined } from "@ant-design/icons";
+import { DeleteFilled, EditFilled, SearchOutlined } from "@ant-design/icons";
 import { Button, Select, Space, Table, Tag } from "antd";
 import moment from "moment";
 import React, { useState } from "react";
@@ -40,15 +40,23 @@ const ListProject: React.FC = () => {
       render: (_, { status }) => {
         let bgColor: string = "";
         switch (status) {
-          case "open":
-            bgColor = "#44CB39";
-            break;
+          //   case "open":
+          //     bgColor = "#44CB39";
+          //     break;
           case "ongoing":
             bgColor = "#F0E155";
             break;
+          case "complete":
+            bgColor = "#44CB39";
+            break;
+          case "suspension":
+            bgColor = "#EC2B2B";
+            break;
+          case "preparing":
+            bgColor = "#2E55DE";
+            break;
           default:
             bgColor = "transparent";
-
             break;
         }
         return (
@@ -82,8 +90,12 @@ const ListProject: React.FC = () => {
       key: "action",
       render: (_, record) => (
         <Space size="middle">
-          <a>Edit</a>
-          <a>Delete</a>
+          <span>
+            <EditFilled />
+          </span>
+          <span>
+            <DeleteFilled />
+          </span>
         </Space>
       ),
     },
