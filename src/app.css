@@ -15,7 +15,7 @@
 .app_header {
   background-color: var(--gray-color);
   height: var(--header-h);
-  padding: 0 15px;
+  padding: 0 30px;
   display: flex;
   align-items: center;
   position: fixed;
@@ -53,18 +53,33 @@
 .header_auth .bell:hover {
   color: red;
 }
-
+.header_auth-user {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+.header_auth-user a {
+  text-decoration: none;
+  font-weight: 600;
+  color: red;
+}
+.header_auth-user img {
+  height: 40px;
+  width: 40px;
+  border-radius: 50%;
+}
 /* css phần container chứa sidebar và content*/
 .container {
   display: flex;
   position: relative;
+  height: 100%;
 }
 
 /* css phần sidebar */
 .container_sidebar {
   width: 342px;
   flex-shrink: 0;
-  background-color: darkgray;
+  /* background-color: darkgray; */
   height: 100%;
   overflow-y: auto;
 }
@@ -87,4 +102,57 @@
   flex: 1;
 
   overflow-y: auto;
+}
+
+/* css trang danh sách project */
+.content_project-page {
+}
+.project_page-header {
+  padding: 30px;
+  display: flex;
+}
+.header_left {
+  flex-shrink: 0;
+}
+.header_right {
+  flex: 1;
+  display: flex;
+  justify-content: flex-end;
+  gap: 16px;
+  align-items: center;
+}
+.project_page-table {
+  padding: 24px 30px;
+}
+.project_status .btn_status {
+  color: #000;
+  font-weight: 600;
+  /* min-width: 110px !important;
+  text-align: left; */
+}
+
+.btn_status span {
+  font-size: 12px;
+}
+
+@media screen and (max-width: 470px) {
+  .app_header {
+    padding: 0 10px;
+  }
+  .header_logo {
+    align-items: center;
+    display: flex;
+    gap: 12px;
+    width: 100px;
+    flex-shrink: 0;
+  }
+
+  .header_logo span {
+    font-size: 20px;
+  }
+  .header_auth {
+    padding-right: 0;
+  }
+  /* .ant-menu.ant-menu-root.ant-menu-inline {
+  } */
 }
