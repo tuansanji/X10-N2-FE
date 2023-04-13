@@ -1,49 +1,29 @@
 import React from "react";
-import axios from "axios";
-import { Button, Form, Input, Divider, notification, Typography } from "antd";
-
-import { useNavigate } from "react-router-dom";
-import { GoogleOutlined } from "@ant-design/icons";
-import { images } from "../../assets/images";
+import { Form, Typography, Divider, Input, Button, Row, Col } from "antd";
+import { Link } from "react-router-dom";
+import { images } from "../../assets/images/index";
 
 const { Title } = Typography;
 
-const Register: React.FC = () => {
+const ForgotPassword: React.FC = () => {
   const [form] = Form.useForm();
-  const navigate = useNavigate();
-  const [api, contextHolder] = notification.useNotification();
 
-  // Submit Form Đăng ký
   const onFinish = async (requestBody: any) => {
-    try {
-      const response = await axios.post(
-        "https://x10-server.onrender.com/auth/signup",
-        requestBody
-      );
-      if (response.status === 200) {
-        navigate("/register-verify");
-      }
-    } catch (error: any) {
-      api["error"]({
-        message: "Error",
-        description: error.response.data.message,
-      });
-    }
+    console.log("Data:", requestBody);
+  };
+
+  const getCode = () => {
+    console.log("Get Code from Email");
   };
 
   return (
-    <div className="register">
-      {contextHolder}
+    <div className="forgot-password">
       <img src={images.registerBackground} alt="register-background" />
       <div className="form-container">
         <div className="form-title">
-          {" "}
-          <Title level={3} className="register-title">
-            Register Your Account
-          </Title>
+          <Title level={3}>Reset Password</Title>
           <Divider />
         </div>
-
         <Form
           size="large"
           className="form-layout"
@@ -53,23 +33,9 @@ const Register: React.FC = () => {
           onFinish={onFinish}
           scrollToFirstError
         >
-          {/* Full name Field */}
-          <Form.Item
-            name="fullName"
-            label="Full Name"
-            rules={[
-              {
-                required: true,
-                message: "Please input your name!",
-              },
-            ]}
-          >
-            <Input />
-          </Form.Item>
-
           {/* Email Field */}
           <Form.Item
-            name="email"
+            name="credential"
             label="E-mail"
             rules={[
               {
@@ -85,19 +51,27 @@ const Register: React.FC = () => {
             <Input />
           </Form.Item>
 
-          {/* Username Field */}
-          <Form.Item
-            name="username"
-            label="Username"
-            rules={[
-              {
-                required: true,
-                message: "Please input your nickname!",
-                whitespace: true,
-              },
-            ]}
-          >
-            <Input />
+          {/* Verification Code Field */}
+          <Form.Item label="Verification Code">
+            <Row gutter={8} align="middle">
+              <Col span={16}>
+                <Form.Item
+                  noStyle
+                  name="verficationCode"
+                  rules={[
+                    {
+                      required: true,
+                      message: "Please input your code",
+                    },
+                  ]}
+                >
+                  <Input />
+                </Form.Item>
+              </Col>
+              <Col span={8}>
+                <Button onClick={getCode}>Get Code</Button>
+              </Col>
+            </Row>
           </Form.Item>
 
           {/* Password Field */}
@@ -146,23 +120,13 @@ const Register: React.FC = () => {
           {/* Submit Button */}
           <Form.Item>
             <Button type="primary" htmlType="submit">
-              Register
+              Reset
             </Button>
           </Form.Item>
         </Form>
-        <Divider className="register-divider" orientation="center" plain>
-          Or
-        </Divider>
-        <div className="google-register-button">
-          <Button type="primary" size="large">
-            {" "}
-            <GoogleOutlined />
-            Register with Google
-          </Button>
-        </div>
       </div>
     </div>
   );
 };
 
-export default Register;
+export default ForgotPassword;
