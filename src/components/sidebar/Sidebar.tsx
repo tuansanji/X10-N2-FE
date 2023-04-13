@@ -33,10 +33,15 @@ interface IStage {
   _id: string;
 }
 
-interface IProject {
+export interface IProject {
   name: string;
   _id: string;
   stages: IStage[];
+  code: string;
+  createdDate: Date;
+  startDate: Date;
+  estimatedEndDate: Date;
+  status: string;
 }
 const Sidebar = () => {
   const dispatch = useDispatch();
