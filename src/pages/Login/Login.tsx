@@ -10,7 +10,7 @@ import {
   notification,
 } from "antd";
 import { Link, useNavigate } from "react-router-dom";
-import { setToken } from "../../redux/authSlice";
+import { requestLogin } from "../../redux/api";
 import { useDispatch } from "react-redux";
 import { GoogleOutlined } from "@ant-design/icons";
 import { images } from "../../assets/images/index";
@@ -24,25 +24,7 @@ const Login: React.FC = () => {
   const dispatch = useDispatch();
 
   const onFinish = async (requestBody: any) => {
-    try {
-      const response = await axios.post(
-        "https://x10-server.onrender.com/auth/login",
-        requestBody
-      );
-      if (response.status === 200) {
-        api["success"]({
-          message: "Error",
-          description: response.data.message,
-        });
-        dispatch(setToken(response.data));
-        navigate("/");
-      }
-    } catch (error: any) {
-      api["error"]({
-        message: "Error",
-        description: error.response.data.message,
-      });
-    }
+    requestLogin(requestBody, dispatch, api, navigate);
   };
   return (
     <div className="login">

@@ -14,7 +14,7 @@ function LandingPage() {
         <Route path="/register-verify" element={<RegisterVerify />} />
         <Route path="/login" element={<Login />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
-        {/* <Route path="/login-success" element={<LoginSuccess />} /> */}
+        <Route path="/login-success" element={<LoginSuccess />} />
       </Routes>
     </div>
   );

@@ -1,10 +1,10 @@
 import React from "react";
-import axios from "axios";
 import { Button, Form, Input, Divider, notification, Typography } from "antd";
 
 import { useNavigate } from "react-router-dom";
 import { GoogleOutlined } from "@ant-design/icons";
 import { images } from "../../assets/images";
+import { requestRegister } from "../../redux/api";
 
 const { Title } = Typography;
 
@@ -15,20 +15,7 @@ const Register: React.FC = () => {
 
   // Submit Form Đăng ký
   const onFinish = async (requestBody: any) => {
-    try {
-      const response = await axios.post(
-        "https://x10-server.onrender.com/auth/signup",
-        requestBody
-      );
-      if (response.status === 200) {
-        navigate("/register-verify");
-      }
-    } catch (error: any) {
-      api["error"]({
-        message: "Error",
-        description: error.response.data.message,
-      });
-    }
+    requestRegister(requestBody, api, navigate);
   };
 
   return (
