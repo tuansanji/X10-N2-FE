@@ -10,7 +10,7 @@ import {
   notification,
 } from "antd";
 import { Link, useNavigate } from "react-router-dom";
-import { requestLogin } from "../../redux/api";
+import { requestLogin } from "../../redux/apiRequest";
 import { useDispatch } from "react-redux";
 import { GoogleOutlined } from "@ant-design/icons";
 import { images } from "../../assets/images/index";

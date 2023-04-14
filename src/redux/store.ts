@@ -1,22 +1,27 @@
-import { configureStore, combineReducers } from '@reduxjs/toolkit'
-import storage from 'redux-persist/lib/storage';
-import { persistReducer, persistStore } from 'redux-persist';
-import authReducer from './authSlice';
+import { configureStore, combineReducers } from "@reduxjs/toolkit";
+import storage from "redux-persist/lib/storage";
+import { persistReducer, persistStore } from "redux-persist";
+import authReducer from "./slice/authSlice";
+import { projectSlice } from "./slice/projectSlice";
+// import autoMergeLevel2 from 'redux-persist/lib/stateReconciler/autoMergeLevel2';
 
 const persistConfig = {
-    key: 'root',
-    storage,
-    whitelist: ['auth']
-}
+  key: "root",
+  version: 1,
+  storage,
+  whitelist: ["auth"],
+  //   stateReconciler: autoMergeLevel2,
+};
 
 const rootReducer = combineReducers({
-    auth: authReducer
-})
+  auth: authReducer,
+  project: projectSlice.reducer,
+});
 
-const persistedReducer = persistReducer(persistConfig, rootReducer)
+const persistedReducer = persistReducer(persistConfig, rootReducer);
 
 export const store = configureStore({
-    middleware: (getDefaultMiddleware) =>
+  middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
       immutableCheck: false,
       serializableCheck: false,
@@ -24,7 +29,7 @@ export const store = configureStore({
       //   ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
       // },
     }),
-    reducer: persistedReducer
-})
+  reducer: persistedReducer,
+});
 
-export const persistor = persistStore(store)
+export const persistor = persistStore(store);

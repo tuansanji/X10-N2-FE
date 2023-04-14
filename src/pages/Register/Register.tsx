@@ -4,7 +4,7 @@ import { Button, Form, Input, Divider, notification, Typography } from "antd";
 import { useNavigate } from "react-router-dom";
 import { GoogleOutlined } from "@ant-design/icons";
 import { images } from "../../assets/images";
-import { requestRegister } from "../../redux/api";
+import { requestRegister } from "../../redux/apiRequest";
 
 const { Title } = Typography;
 

@@ -1,8 +1,26 @@
 import axios from "axios";
-import { setToken } from "./authSlice";
 import { AnyAction, Dispatch } from "@reduxjs/toolkit";
 import { NotificationInstance } from "antd/es/notification/interface";
 import { NavigateFunction } from "react-router-dom";
+import { setToken } from "./slice/authSlice";
+import {
+  getAllProjectError,
+  getAllProjectStart,
+  getAllProjectSuccess,
+} from "./slice/projectSlice";
+
+export const getAllProject = async (accessToken: string, dispatch: any) => {
+  dispatch(getAllProjectStart());
+  console.log(process.env.REACT_APP_BACKEND_URL);
+  try {
+    const res = await axios.get(`https://X10-server.onrender.com/project/all`, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+    dispatch(getAllProjectSuccess(res.data));
+  } catch (error) {
+    dispatch(getAllProjectError());
+  }
+};
 
 export const requestLogin = async (
   reqBody: any,
@@ -16,7 +34,7 @@ export const requestLogin = async (
       reqBody
     );
     dispatch(setToken(response.data.token));
-    navigate("/login-success");
+    navigate("/");
   } catch (error: any) {
     apiNoti["error"]({
       message: "Error",
