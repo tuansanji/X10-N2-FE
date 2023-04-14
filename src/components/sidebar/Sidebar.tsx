@@ -26,6 +26,10 @@ function getItem(
     type,
   } as MenuItem;
 }
+<<<<<<< HEAD
+=======
+let token = `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY0MmQ0YjkxNTVhZWZhN2MzY2IyYWU4ZiIsImZ1bGxOYW1lIjoiQm9iIFNtaXRoIiwiaWF0IjoxNjgxNDQ0MzY4LCJleHAiOjE2ODE1MzA3Njh9.-td2IE9hCdVabjOYqhfN7qJn9Sa6HKRpImfq_hEVtvs`;
+>>>>>>> 6dd64f830d23e5f358223ebfc9ac275fd6411391
 
 interface IStage {
   name: string;
@@ -59,6 +63,7 @@ const Sidebar = () => {
   console.log(listProject);
 
   const items: MenuProps["items"] = [
+<<<<<<< HEAD
     // ...listProject?.projects?.map((project: IProject, index: number) => {
     //   return getItem(project?.name, `sub${index + 1}`, <AppstoreOutlined />, [
     //     ...project.stages.map((stage: IStage, index2: number) =>
@@ -95,6 +100,18 @@ const Sidebar = () => {
         getItem("Option 8", "8"),
       ]),
     ]),
+=======
+    ...listProject?.projects?.map((project: IProject, index: number) => {
+      return getItem(project?.name, `sub${index + 1}`, <AppstoreOutlined />, [
+        ...project.stages.map((stage: IStage, index2: number) =>
+          getItem("Submenu", `sub${index2 + 1}`, null, [
+            getItem("Option 7", index2 + 1),
+            getItem("Option 8", index2 + 1),
+          ])
+        ),
+      ]);
+    }),
+>>>>>>> 6dd64f830d23e5f358223ebfc9ac275fd6411391
 
     { type: "divider" },
     getItem("Contact", "grp", null, [getItem("mindx", "14")], "group"),
