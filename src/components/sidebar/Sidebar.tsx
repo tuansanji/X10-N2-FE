@@ -26,7 +26,6 @@ function getItem(
     type,
   } as MenuItem;
 }
-let token = `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY0MmQ0YjkxNTVhZWZhN2MzY2IyYWU4ZiIsImZ1bGxOYW1lIjoiQm9iIFNtaXRoIiwiaWF0IjoxNjgxMzA4NzkyLCJleHAiOjE2ODEzOTUxOTJ9.nxf2fT4x4RW8EuhSU0KZ_JfC7tjx2OK8iV7q2xOcHQ8`;
 
 interface IStage {
   name: string;
@@ -46,6 +45,7 @@ export interface IProject {
 const Sidebar = () => {
   const dispatch = useDispatch();
   const listProject = useSelector((state: any) => state.project?.listProject);
+  const token = useSelector((state: any) => state.auth.token);
 
   useEffect(() => {
     getAllProject(token, dispatch);

@@ -3,13 +3,6 @@
   --header-h: 55px;
   --darkGray-color: #2e3239;
 }
-.App {
-  position: fixed;
-  top: var(--header-h);
-  left: 0;
-  right: 0;
-  bottom: 0;
-}
 
 /* css phần header */
 .app_header {

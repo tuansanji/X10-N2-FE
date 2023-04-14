@@ -1,19 +1,13 @@
 import "./app.css";
-import Content from "./components/content/Content";
-import Header from "./components/header/Header";
-import Sidebar from "./components/sidebar/Sidebar";
 import React from "react";
+import { useSelector } from "react-redux";
+
+import LandingPage from "./routes/LandingPage";
+import MainLayout from "./routes/MainLayout";
 
 const App: React.FC = () => {
-  return (
-    <div className="App">
-      <Header />
-      <div className="container">
-        <Sidebar />
-        <Content />
-      </div>
-    </div>
-  );
+  const token = useSelector((state: any) => state.auth.token);
+  return <div className="App">{token ? <MainLayout /> : <LandingPage />}</div>;
 };
 
 export default App;

@@ -1,0 +1,11 @@
+* {
+    box-sizing: border-box;
+}
+
+.main-layout {
+    position: fixed;
+    top: var(--header-h);
+    left: 0;
+    right: 0;
+    bottom: 0;
+}
