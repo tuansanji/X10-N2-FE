@@ -22,6 +22,10 @@ const ListProject: React.FC = () => {
   const loading = useSelector((state: any) => state.project?.isFetching);
   const [size, setSize] = useState<SizeType>("large");
 
+  const handleDeleteProject = (project: DataType) => {
+    console.log(project);
+  };
+  const handleEditProject = (project: DataType) => {};
   const columns: ColumnsType<DataType> = useMemo(
     () => [
       {
@@ -90,13 +94,21 @@ const ListProject: React.FC = () => {
       {
         title: "Action",
         key: "action",
-        render: (_, record) => (
+        render: (text: any, record: DataType) => (
           <Space size="middle">
-            <span>
-              <EditFilled />
+            <span
+              onClick={() => {
+                handleDeleteProject(record);
+              }}
+            >
+              <EditFilled style={{ fontSize: "16px", cursor: "pointer" }} />
             </span>
-            <span>
-              <DeleteFilled />
+            <span
+              onClick={() => {
+                handleEditProject(record);
+              }}
+            >
+              <DeleteFilled style={{ fontSize: "16px", cursor: "pointer" }} />
             </span>
           </Space>
         ),
