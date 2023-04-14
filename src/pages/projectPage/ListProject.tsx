@@ -1,4 +1,5 @@
 import { IProject } from "../../components/sidebar/Sidebar";
+import Loading from "../../components/support/Loading";
 import { DeleteFilled, EditFilled, SearchOutlined } from "@ant-design/icons";
 import { Button, Select, Space, Table, Tag } from "antd";
 import moment from "moment";
@@ -18,6 +19,7 @@ interface DataType {
 
 const ListProject: React.FC = () => {
   const listProject = useSelector((state: any) => state.project?.listProject);
+  const loading = useSelector((state: any) => state.project?.isFetching);
   const [size, setSize] = useState<SizeType>("large");
 
   const columns: ColumnsType<DataType> = useMemo(
@@ -129,6 +131,7 @@ const ListProject: React.FC = () => {
   };
   return (
     <div className="content_project-page">
+      {loading && <Loading />}
       <div className="project_page-header">
         <div className="header_left">
           <Button type="primary" size={size}>
