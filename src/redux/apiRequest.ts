@@ -1,17 +1,20 @@
-import axios from "axios";
+import { setToken } from "./slice/authSlice";
 import { AnyAction, Dispatch } from "@reduxjs/toolkit";
 import { NotificationInstance } from "antd/es/notification/interface";
+import axios from "axios";
 import { NavigateFunction } from "react-router-dom";
-import { setToken } from "./slice/authSlice";
 import {
   getAllProjectError,
   getAllProjectStart,
   getAllProjectSuccess,
 } from "./slice/projectSlice";
 
-export const getAllProject = async (accessToken: string, dispatch: any) => {
+export const getAllProject = async (
+  accessToken: string,
+  dispatch: Dispatch<AnyAction>
+) => {
   dispatch(getAllProjectStart());
-  console.log(process.env.REACT_APP_BACKEND_URL);
+  console.log(process.env.BACKEND_URL);
   try {
     const res = await axios.get(`https://X10-server.onrender.com/project/all`, {
       headers: { Authorization: `Bearer ${accessToken}` },
