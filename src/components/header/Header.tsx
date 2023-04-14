@@ -1,7 +1,7 @@
-import { BellOutlined, DownOutlined } from "@ant-design/icons";
-import { Button, Dropdown, Space } from "antd";
-import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { BellOutlined, DownOutlined } from '@ant-design/icons';
+import { Button, Dropdown, Space } from 'antd';
+import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 
 const Header = () => {
   const items = [
@@ -31,12 +31,12 @@ const Header = () => {
         <span className="bell">
           <BellOutlined />
         </span>
-        {/* <Link to="/auth/login">
+        <Link to="/auth/login">
           <Button type="primary" size="large">
             Login
           </Button>
-        </Link> */}
-        <div className="header_auth-user">
+        </Link>
+        {/* <div className="header_auth-user">
           <Dropdown
             menu={{
               items,
@@ -53,7 +53,7 @@ const Header = () => {
             srcSet="https://adoreyou.vn/wp-content/uploads/cute-hot-girl-700x961.jpg 2x"
             alt=""
           />
-        </div>
+        </div> */}
       </div>
     </div>
   );
