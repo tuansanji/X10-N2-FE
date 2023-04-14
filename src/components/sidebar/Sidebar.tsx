@@ -1,7 +1,7 @@
 import { getAllProject } from "../../redux/apiRequest";
 import { Menu } from "antd";
 import axios from "axios";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
 import {
@@ -48,58 +48,46 @@ const Sidebar = () => {
   const token = useSelector((state: any) => state.auth.token);
 
   useEffect(() => {
-    console.log(345);
     getAllProject(token, dispatch);
-  }, []);
-  useEffect(() => {
-    console.log(123);
-  }, []);
+  }, [token]);
 
-  console.log("🚀 ~ useEffect ~ token:", token);
-  console.log(listProject);
+  const items: MenuProps["items"] = useMemo(() => {
+    let newItems =
+      listProject.projects && listProject?.projects.length > 0
+        ? [
+            ...listProject?.projects?.map(
+              (project: IProject, index: number) => {
+                return getItem(
+                  project?.name,
+                  `sub${index + 1}`,
+                  <AppstoreOutlined />,
+                  [
+                    ...project.stages.map((stage: IStage, index2: number) =>
+                      getItem("Submenu", `sub${index2 + 1}`, null, [
+                        getItem("Option 7", index2 + 1),
+                        getItem("Option 8", index2 + 1),
+                      ])
+                    ),
+                  ]
+                );
+              }
+            ),
 
-  const items: MenuProps["items"] = [
-    // ...listProject?.projects?.map((project: IProject, index: number) => {
-    //   return getItem(project?.name, `sub${index + 1}`, <AppstoreOutlined />, [
-    //     ...project.stages.map((stage: IStage, index2: number) =>
-    //       getItem("Submenu", `sub${index2 + 1}`, null, [
-    //         getItem("Option 7", index2 + 1),
-    //         getItem("Option 8", index2 + 1),
-    //       ])
-    //     ),
-    //   ]);
-    // }),
-
-    getItem("Navigation One", "sub1", <MailOutlined />, [
-      getItem(
-        "Item 1",
-        "g1",
-        null,
-        [getItem("Option 1", "1"), getItem("Option 2", "2")],
-        "group"
-      ),
-      getItem(
-        "Item 2",
-        "g2",
-        null,
-        [getItem("Option 3", "3"), getItem("Option 4", "4")],
-        "group"
-      ),
-    ]),
-
-    getItem("Navigation Two", "sub2", <AppstoreOutlined />, [
-      getItem("Option 5", "5"),
-      getItem("Option 6", "6"),
-      getItem("Submenu", "sub3", null, [
-        getItem("Option 7", "7"),
-        getItem("Option 8", "8"),
-      ]),
-    ]),
-
-    { type: "divider" },
-    getItem("Contact", "grp", null, [getItem("mindx", "14")], "group"),
-  ];
-
+            { type: "divider" },
+            getItem("Contact", "grp", null, [getItem("mindx", "14")], "group"),
+          ]
+        : [
+            { type: "divider" },
+            getItem(
+              "Contact",
+              "grp",
+              null,
+              [getItem("no project", "14")],
+              "group"
+            ),
+          ];
+    return newItems;
+  }, [listProject]);
   const onClick: MenuProps["onClick"] = (e) => {
     console.log("click ", e);
   };
