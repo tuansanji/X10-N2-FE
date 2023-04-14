@@ -52,7 +52,7 @@ const Sidebar = () => {
   }, []);
 
   const items: MenuProps["items"] = [
-    ...listProject.projects.map((project: IProject, index: number) => {
+    ...listProject?.projects?.map((project: IProject, index: number) => {
       return getItem(project?.name, `sub${index + 1}`, <AppstoreOutlined />, [
         ...project.stages.map((stage: IStage, index2: number) =>
           getItem("Submenu", `sub${index2 + 1}`, null, [
