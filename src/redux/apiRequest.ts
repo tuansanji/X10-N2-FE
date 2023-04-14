@@ -1,6 +1,6 @@
-import axios from "axios";
 import { AnyAction, Dispatch } from "@reduxjs/toolkit";
 import { NotificationInstance } from "antd/es/notification/interface";
+import axios from "axios";
 import { NavigateFunction } from "react-router-dom";
 import { setUserInfo } from "./slice/authSlice";
 import {
@@ -9,7 +9,10 @@ import {
   getAllProjectSuccess,
 } from "./slice/projectSlice";
 
-export const getAllProject = async (accessToken: string, dispatch: any) => {
+export const getAllProject = async (
+  accessToken: string,
+  dispatch: Dispatch<AnyAction>
+) => {
   dispatch(getAllProjectStart());
   console.log(process.env.REACT_APP_BACKEND_URL);
   try {

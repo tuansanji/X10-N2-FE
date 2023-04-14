@@ -1,7 +1,7 @@
 import { getAllProject } from "../../redux/apiRequest";
 import { Menu } from "antd";
 import axios from "axios";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
 import {
@@ -49,28 +49,48 @@ const Sidebar = () => {
 
   useEffect(() => {
     getAllProject(token, dispatch);
-  }, []);
+  }, [token]);
 
-  // const items: MenuProps["items"] = [
-  //   ...listProject.projects.map((project: IProject, index: number) => {
-  //     return getItem(project?.name, `sub${index + 1}`, <AppstoreOutlined />, [
-  //       ...project.stages.map((stage: IStage, index2: number) =>
-  //         getItem("Submenu", `sub${index2 + 1}`, null, [
-  //           getItem("Option 7", index2 + 1),
-  //           getItem("Option 8", index2 + 1),
-  //         ])
-  //       ),
-  //     ]);
-  //   }),
+  const items: MenuProps["items"] = useMemo(() => {
+    let newItems =
+      listProject.projects && listProject?.projects.length > 0
+        ? [
+            ...listProject?.projects?.map(
+              (project: IProject, index: number) => {
+                return getItem(
+                  project?.name,
+                  `sub${index + 1}`,
+                  <AppstoreOutlined />,
+                  [
+                    ...project.stages.map((stage: IStage, index2: number) =>
+                      getItem("Submenu", `sub${index2 + 1}`, null, [
+                        getItem("Option 7", index2 + 1),
+                        getItem("Option 8", index2 + 1),
+                      ])
+                    ),
+                  ]
+                );
+              }
+            ),
 
-  //   { type: "divider" },
-  //   getItem("Contact", "grp", null, [getItem("mindx", "14")], "group"),
-  // ];
-
-  // console.log(listProject);
-  // const onClick: MenuProps["onClick"] = (e) => {
-  //   console.log("click ", e);
-  // };
+            { type: "divider" },
+            getItem("Contact", "grp", null, [getItem("mindx", "14")], "group"),
+          ]
+        : [
+            { type: "divider" },
+            getItem(
+              "Contact",
+              "grp",
+              null,
+              [getItem("no project", "14")],
+              "group"
+            ),
+          ];
+    return newItems;
+  }, [listProject]);
+  const onClick: MenuProps["onClick"] = (e) => {
+    console.log("click ", e);
+  };
 
   return (
     <div className="container_sidebar">
