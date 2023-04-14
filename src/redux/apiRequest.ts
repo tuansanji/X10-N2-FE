@@ -1,8 +1,8 @@
-import { setToken } from "./slice/authSlice";
 import { AnyAction, Dispatch } from "@reduxjs/toolkit";
 import { NotificationInstance } from "antd/es/notification/interface";
 import axios from "axios";
 import { NavigateFunction } from "react-router-dom";
+import { setUserInfo } from "./slice/authSlice";
 import {
   getAllProjectError,
   getAllProjectStart,
@@ -36,7 +36,7 @@ export const requestLogin = async (
       "https://x10-server.onrender.com/auth/login",
       reqBody
     );
-    dispatch(setToken(response.data.token));
+    dispatch(setUserInfo(response.data));
     navigate("/");
   } catch (error: any) {
     apiNoti["error"]({
