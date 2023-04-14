@@ -26,7 +26,7 @@ function getItem(
     type,
   } as MenuItem;
 }
-let token = `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY0MmQ0YjkxNTVhZWZhN2MzY2IyYWU4ZiIsImZ1bGxOYW1lIjoiQm9iIFNtaXRoIiwiaWF0IjoxNjgxMzA4NzkyLCJleHAiOjE2ODEzOTUxOTJ9.nxf2fT4x4RW8EuhSU0KZ_JfC7tjx2OK8iV7q2xOcHQ8`;
+let token = `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY0MmQ0YjkxNTVhZWZhN2MzY2IyYWU4ZiIsImZ1bGxOYW1lIjoiQm9iIFNtaXRoIiwiaWF0IjoxNjgxNDQ0MzY4LCJleHAiOjE2ODE1MzA3Njh9.-td2IE9hCdVabjOYqhfN7qJn9Sa6HKRpImfq_hEVtvs`;
 
 interface IStage {
   name: string;
@@ -52,7 +52,7 @@ const Sidebar = () => {
   }, []);
 
   const items: MenuProps["items"] = [
-    ...listProject.projects.map((project: IProject, index: number) => {
+    ...listProject?.projects?.map((project: IProject, index: number) => {
       return getItem(project?.name, `sub${index + 1}`, <AppstoreOutlined />, [
         ...project.stages.map((stage: IStage, index2: number) =>
           getItem("Submenu", `sub${index2 + 1}`, null, [
