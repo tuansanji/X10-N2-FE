@@ -1,3 +1,4 @@
+import _ from "lodash";
 import { AnyAction, Dispatch } from "@reduxjs/toolkit";
 import { NotificationInstance } from "antd/es/notification/interface";
 import axios from "axios";
@@ -19,6 +20,7 @@ export const getAllProject = async (
     const res = await axios.get(`https://X10-server.onrender.com/project/all`, {
       headers: { Authorization: `Bearer ${accessToken}` },
     });
+
     dispatch(getAllProjectSuccess(res.data));
   } catch (error) {
     dispatch(getAllProjectError());
@@ -36,7 +38,12 @@ export const requestLogin = async (
       "https://x10-server.onrender.com/auth/login",
       reqBody
     );
-    dispatch(setUserInfo(response.data));
+
+    // Lọc data từ backend để nhét vào state
+    let payload = _.omit(response.data.data, ["_id", "userType", "__v"]);
+    payload.token = response.data.token;
+
+    dispatch(setUserInfo(payload));
     navigate("/");
   } catch (error: any) {
     apiNoti["error"]({
