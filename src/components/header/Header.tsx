@@ -1,9 +1,12 @@
-import { BellOutlined, DownOutlined } from '@ant-design/icons';
-import { Button, Dropdown, Space } from 'antd';
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { BellOutlined, DownOutlined } from "@ant-design/icons";
+import { Button, Dropdown, Space } from "antd";
+import React, { useState } from "react";
+import { useSelector } from "react-redux";
+import { Link } from "react-router-dom";
 
 const Header = () => {
+  const user = useSelector((state: any) => state.auth);
+
   const items = [
     {
       key: "1",
@@ -31,29 +34,29 @@ const Header = () => {
         <span className="bell">
           <BellOutlined />
         </span>
-        <Link to="/auth/login">
-          <Button type="primary" size="large">
-            Login
-          </Button>
-        </Link>
-        {/* <div className="header_auth-user">
-          <Dropdown
-            menu={{
-              items,
-            }}
-          >
-            <Link className="" to="/user/infor">
-              <Space>
-                Vinsmoke
-                <DownOutlined />
-              </Space>
-            </Link>
-          </Dropdown>
-          <img
-            srcSet="https://adoreyou.vn/wp-content/uploads/cute-hot-girl-700x961.jpg 2x"
-            alt=""
-          />
-        </div> */}
+        {user ? (
+          <div className="header_auth-user">
+            <Dropdown
+              menu={{
+                items,
+              }}
+            >
+              <Link className="" to="/user/infor">
+                <Space>
+                  {user.fullName}
+                  <DownOutlined />
+                </Space>
+              </Link>
+            </Dropdown>
+            <img srcSet={`${user.avatar} 2x`} alt="" />
+          </div>
+        ) : (
+          <Link to="/auth/login">
+            <Button type="primary" size="large">
+              Login
+            </Button>
+          </Link>
+        )}
       </div>
     </div>
   );

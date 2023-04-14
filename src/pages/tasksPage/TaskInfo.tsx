@@ -1,14 +1,8 @@
-import Comment from '../../components/comment/Comment';
-import '../../css/comment.css';
-import { CameraFilled, CloseOutlined } from '@ant-design/icons';
-import {
-  Badge,
-  Button,
-  Descriptions,
-  message,
-  Upload
-  } from 'antd';
-import React from 'react';
+import Comment from "../../components/comment/Comment";
+import { CameraFilled, CloseOutlined } from "@ant-design/icons";
+import { Badge, Button, Descriptions, message, Upload } from "antd";
+import React from "react";
+
 import type { UploadProps } from "antd";
 const TaskInfo = () => {
   const props: UploadProps = {

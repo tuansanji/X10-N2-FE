@@ -95,7 +95,7 @@ const Sidebar = () => {
 
   return (
     <div className="container_sidebar">
-      {/* <Menu
+      <Menu
         onClick={onClick}
         style={{
           width: "100%",
@@ -105,7 +105,7 @@ const Sidebar = () => {
         defaultOpenKeys={["sub1"]}
         mode="inline"
         items={items}
-      /> */}
+      />
     </div>
   );
 };

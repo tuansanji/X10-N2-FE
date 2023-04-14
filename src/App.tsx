@@ -1,4 +1,3 @@
-import "./app.css";
 import LandingPage from "./routes/LandingPage";
 import MainLayout from "./routes/MainLayout";
 import React from "react";
