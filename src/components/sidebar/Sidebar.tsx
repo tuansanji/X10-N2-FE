@@ -51,30 +51,30 @@ const Sidebar = () => {
     getAllProject(token, dispatch);
   }, []);
 
-  const items: MenuProps["items"] = [
-    ...listProject.projects.map((project: IProject, index: number) => {
-      return getItem(project?.name, `sub${index + 1}`, <AppstoreOutlined />, [
-        ...project.stages.map((stage: IStage, index2: number) =>
-          getItem("Submenu", `sub${index2 + 1}`, null, [
-            getItem("Option 7", index2 + 1),
-            getItem("Option 8", index2 + 1),
-          ])
-        ),
-      ]);
-    }),
+  // const items: MenuProps["items"] = [
+  //   ...listProject.projects.map((project: IProject, index: number) => {
+  //     return getItem(project?.name, `sub${index + 1}`, <AppstoreOutlined />, [
+  //       ...project.stages.map((stage: IStage, index2: number) =>
+  //         getItem("Submenu", `sub${index2 + 1}`, null, [
+  //           getItem("Option 7", index2 + 1),
+  //           getItem("Option 8", index2 + 1),
+  //         ])
+  //       ),
+  //     ]);
+  //   }),
 
-    { type: "divider" },
-    getItem("Contact", "grp", null, [getItem("mindx", "14")], "group"),
-  ];
+  //   { type: "divider" },
+  //   getItem("Contact", "grp", null, [getItem("mindx", "14")], "group"),
+  // ];
 
-  console.log(listProject);
-  const onClick: MenuProps["onClick"] = (e) => {
-    console.log("click ", e);
-  };
+  // console.log(listProject);
+  // const onClick: MenuProps["onClick"] = (e) => {
+  //   console.log("click ", e);
+  // };
 
   return (
     <div className="container_sidebar">
-      <Menu
+      {/* <Menu
         onClick={onClick}
         style={{
           width: "100%",
@@ -84,7 +84,7 @@ const Sidebar = () => {
         defaultOpenKeys={["sub1"]}
         mode="inline"
         items={items}
-      />
+      /> */}
     </div>
   );
 };
