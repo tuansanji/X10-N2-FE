@@ -46,7 +46,7 @@ export interface IProject {
 const Sidebar = () => {
   const dispatch = useDispatch();
   const listProject = useSelector((state: any) => state.project?.listProject);
-  const token = useSelector((state: any) => state.auth.token);
+  const token = useSelector((state: any) => state.auth.userInfo.token);
 
   useEffect(() => {
     getAllProject(token, dispatch);

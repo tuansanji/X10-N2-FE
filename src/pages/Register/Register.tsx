@@ -1,21 +1,37 @@
-import React from "react";
+import React, { useState } from "react";
 import { Button, Form, Input, Divider, notification, Typography } from "antd";
-
+import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import { GoogleOutlined } from "@ant-design/icons";
+import { GoogleOutlined, LoadingOutlined } from "@ant-design/icons";
 import { images } from "../../assets/images";
-import { requestRegister } from "../../redux/apiRequest";
 
 const { Title } = Typography;
 
 const Register: React.FC = () => {
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [form] = Form.useForm();
   const navigate = useNavigate();
   const [api, contextHolder] = notification.useNotification();
 
   // Submit Form Đăng ký
   const onFinish = async (requestBody: any) => {
-    requestRegister(requestBody, api, navigate);
+    try {
+      setIsLoading(true);
+      const response = await axios.post(
+        "https://x10-server.onrender.com/auth/signup",
+        requestBody
+      );
+      if (response.status === 200) {
+        navigate("/register-verify");
+        setIsLoading(false);
+      }
+    } catch (error: any) {
+      api["error"]({
+        message: "Error",
+        description: error.response.data.message,
+      });
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -133,7 +149,7 @@ const Register: React.FC = () => {
           {/* Submit Button */}
           <Form.Item>
             <Button type="primary" htmlType="submit">
-              Register
+              {isLoading && <LoadingOutlined />}Register
             </Button>
           </Form.Item>
         </Form>
