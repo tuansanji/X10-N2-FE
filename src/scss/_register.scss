@@ -1,23 +1,14 @@
+@import './mixin';
+
 .register {
     position: relative;
 
     img {
-        display: block;
-        height: 100vh;
-        width: 100%;
-        object-fit: cover;
-        object-position: bottom;
-        opacity: 0.5;
+        @include backgroundImg
     }
 
     .form-container {
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        margin-left: auto;
-        margin-right:auto;
-        width: 500px;
+        @include formContainer
     }
 
     .form-layout {
@@ -68,12 +59,7 @@
 .register-verify {
     position: relative;
         img {
-            display: block;
-            height: 100vh;
-            width: 100%;
-            object-fit: cover;
-            object-position: bottom;
-            opacity: 0.5;
+           @include backgroundImg
         }
 
         .content {

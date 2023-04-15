@@ -18,7 +18,7 @@ const Register: React.FC = () => {
     try {
       setIsLoading(true);
       const response = await axios.post(
-        "https://x10-server.onrender.com/auth/signup",
+        `${process.env.REACT_APP_BACKEND_URL}/auth/signup`,
         requestBody
       );
       if (response.status === 200) {
@@ -40,7 +40,6 @@ const Register: React.FC = () => {
       <img src={images.registerBackground} alt="register-background" />
       <div className="form-container">
         <div className="form-title">
-          {" "}
           <Title level={3} className="register-title">
             Register Your Account
           </Title>

@@ -29,10 +29,9 @@
 }
 .register img {
   display: block;
-  height: 100vh;
+  height: auto;
   width: 100%;
   object-fit: cover;
-  object-position: bottom;
   opacity: 0.5;
 }
 .register .form-container {
@@ -84,10 +83,9 @@
 }
 .register-verify img {
   display: block;
-  height: 100vh;
+  height: auto;
   width: 100%;
   object-fit: cover;
-  object-position: bottom;
   opacity: 0.5;
 }
 .register-verify .content {
@@ -105,10 +103,9 @@
 }
 .login img, .forgot-password img {
   display: block;
-  height: 100vh;
+  height: auto;
   width: 100%;
   object-fit: cover;
-  object-position: bottom;
   opacity: 0.5;
 }
 .login h3, .forgot-password h3 {
@@ -138,7 +135,7 @@
   width: 100%;
 }
 .login .form-title, .forgot-password .form-title {
-  margin: 0 4rem;
+  margin: 2rem 4rem;
 }
 .login .ant-form-item:last-child button, .forgot-password .ant-form-item:last-child button {
   margin-top: 1rem;
