@@ -1,9 +1,7 @@
 import _ from "lodash";
 import { AnyAction, Dispatch } from "@reduxjs/toolkit";
-import { NotificationInstance } from "antd/es/notification/interface";
 import axios from "axios";
-import { NavigateFunction } from "react-router-dom";
-import { setUserInfo } from "./slice/authSlice";
+
 import {
   getAllProjectError,
   getAllProjectStart,
@@ -24,52 +22,5 @@ export const getAllProject = async (
     dispatch(getAllProjectSuccess(res.data));
   } catch (error) {
     dispatch(getAllProjectError());
-  }
-};
-
-export const requestLogin = async (
-  reqBody: any,
-  dispatch: Dispatch<AnyAction>,
-  apiNoti: NotificationInstance,
-  navigate: NavigateFunction
-) => {
-  try {
-    const response = await axios.post(
-      "https://x10-server.onrender.com/auth/login",
-      reqBody
-    );
-
-    // Lọc data từ backend để nhét vào state
-    let payload = _.omit(response.data.data, ["_id", "userType", "__v"]);
-    payload.token = response.data.token;
-
-    dispatch(setUserInfo(payload));
-    navigate("/");
-  } catch (error: any) {
-    apiNoti["error"]({
-      message: "Error",
-      description: error.response.data.message,
-    });
-  }
-};
-
-export const requestRegister = async (
-  reqBody: any,
-  apiNoti: NotificationInstance,
-  navigate: NavigateFunction
-) => {
-  try {
-    const response = await axios.post(
-      "https://x10-server.onrender.com/auth/signup",
-      reqBody
-    );
-    if (response.status === 200) {
-      navigate("/register-verify");
-    }
-  } catch (error: any) {
-    apiNoti["error"]({
-      message: "Error",
-      description: error.response.data.message,
-    });
   }
 };

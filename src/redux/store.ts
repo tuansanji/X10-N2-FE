@@ -9,12 +9,18 @@ const persistConfig = {
   key: "root",
   version: 1,
   storage,
-  whitelist: ["auth"],
+  blacklist: ["auth"],
   //   stateReconciler: autoMergeLevel2,
 };
 
+const authPersistConfig = {
+  key: "auth",
+  storage,
+  blacklist: ["error"],
+};
+
 const rootReducer = combineReducers({
-  auth: authReducer,
+  auth: persistReducer(authPersistConfig, authReducer),
   project: projectSlice.reducer,
 });
 
@@ -33,3 +39,8 @@ export const store = configureStore({
 });
 
 export const persistor = persistStore(store);
+
+export type AppDispatch = typeof store.dispatch;
+export type RootState = ReturnType<typeof store.getState>;
+
+export * from "./thunk/userThunk";
