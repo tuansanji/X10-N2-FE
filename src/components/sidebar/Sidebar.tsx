@@ -1,4 +1,5 @@
 import { getAllProject } from "../../redux/apiRequest";
+import Loading from "../support/Loading";
 import { Menu } from "antd";
 import axios from "axios";
 import React, { useEffect, useMemo, useState } from "react";
@@ -45,7 +46,7 @@ export interface IProject {
 const Sidebar = () => {
   const dispatch = useDispatch();
   const listProject = useSelector((state: any) => state.project?.listProject);
-  const token = useSelector((state: any) => state.auth.token);
+  const token = useSelector((state: any) => state.auth.userInfo.token);
 
   useEffect(() => {
     getAllProject(token, dispatch);
@@ -94,7 +95,7 @@ const Sidebar = () => {
 
   return (
     <div className="container_sidebar">
-      {/* <Menu
+      <Menu
         onClick={onClick}
         style={{
           width: "100%",
@@ -104,7 +105,7 @@ const Sidebar = () => {
         defaultOpenKeys={["sub1"]}
         mode="inline"
         items={items}
-      /> */}
+      />
     </div>
   );
 };

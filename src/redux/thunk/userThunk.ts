@@ -6,7 +6,7 @@ export const requestLogin = createAsyncThunk(
   "user/login",
   async (requestBody: any) => {
     const response = await axios.post(
-      "https://x10-server.onrender.com/auth/login",
+      `${process.env.REACT_APP_BACKEND_URL}/auth/login`,
       requestBody
     );
     let info = _.omit(response.data.data, ["_id", "userType", "__v"]);

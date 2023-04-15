@@ -1,5 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
-interface ProjectState {
+export interface ProjectState {
   listProject: object[];
   isFetching: boolean;
   error: boolean;
