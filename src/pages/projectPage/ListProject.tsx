@@ -1,5 +1,4 @@
 import { IProject } from "../../components/sidebar/Sidebar";
-import { Link } from "react-router-dom";
 import Loading from "../../components/support/Loading";
 import { DeleteFilled, EditFilled, SearchOutlined } from "@ant-design/icons";
 import { Button, Input, Select, Space, Table, Tag } from "antd";
@@ -7,6 +6,7 @@ import moment from "moment";
 import React, { useMemo, useRef, useState } from "react";
 import Highlighter from "react-highlight-words";
 import { useSelector } from "react-redux";
+import { Link } from "react-router-dom";
 import type { InputRef } from "antd";
 import type { ColumnsType, TableProps, ColumnType } from "antd/es/table";
 import type { SizeType } from "antd/es/config-provider/SizeContext";
@@ -316,6 +316,7 @@ const ListProject: React.FC = () => {
             </Button>
             <Select
               defaultValue="all"
+              size={size}
               style={{ width: 120 }}
               onChange={handleChange}
               options={[

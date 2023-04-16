@@ -15,9 +15,15 @@
   display: flex;
   position: relative;
   height: 100%;
+  width: 100%;
 }
 .container_content {
   flex: 1;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0;
 
+  transition: all 0.3s linear;
   overflow-y: auto;
 }
