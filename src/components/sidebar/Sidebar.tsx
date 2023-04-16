@@ -1,15 +1,17 @@
 import { getAllProject } from "../../redux/apiRequest";
+import { changeMenu } from "../../redux/slice/menuSlice";
 import Loading from "../support/Loading";
-import { Menu } from "antd";
+import { Button, Menu } from "antd";
 import axios from "axios";
 import React, { useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-
 import {
   AppstoreOutlined,
   MailOutlined,
+  MenuOutlined,
   SettingOutlined,
 } from "@ant-design/icons";
+
 import type { MenuProps } from "antd";
 type MenuItem = Required<MenuProps>["items"][number];
 function getItem(
@@ -46,11 +48,12 @@ export interface IProject {
 const Sidebar = () => {
   const dispatch = useDispatch();
   const listProject = useSelector((state: any) => state.project?.listProject);
+  const statusMenu = useSelector((state: any) => state.menu?.status);
   const token = useSelector((state: any) => state.auth.token);
 
-  useEffect(() => {
-    getAllProject(token, dispatch);
-  }, [token]);
+  const toggleCollapsed = () => {
+    dispatch(changeMenu());
+  };
 
   const items: MenuProps["items"] = useMemo(() => {
     let newItems =
@@ -89,24 +92,81 @@ const Sidebar = () => {
           ];
     return newItems;
   }, [listProject]);
+
   const onClick: MenuProps["onClick"] = (e) => {
     console.log("click ", e);
   };
-
+  useEffect(() => {
+    getAllProject(token, dispatch);
+  }, [token]);
   return (
-    <div className="container_sidebar">
-      <Menu
-        onClick={onClick}
+    <aside
+      className={`container_sidebar`}
+      style={{
+        left: statusMenu ? "-324px" : "0px",
+      }}
+    >
+      <div className="sidebar__title ">
+        <h4>Danh sách dự án</h4>
+        <div
+          className={
+            !statusMenu ? "btn btn_sidebar" : " btn btn_sidebar active"
+          }
+          onClick={toggleCollapsed}
+        >
+          {!statusMenu ? (
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={2}
+              stroke="currentColor"
+              className="w-6 h-6"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M15.75 19.5L8.25 12l7.5-7.5"
+              />
+            </svg>
+          ) : (
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={1.5}
+              stroke="currentColor"
+              className="w-6 h-6 "
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M8.25 4.5l7.5 7.5-7.5 7.5"
+              />
+            </svg>
+          )}
+        </div>
+      </div>
+
+      <div
+        className="sidebar__menu"
         style={{
-          width: "100%",
-          height: "100%",
+          boxShadow: statusMenu ? "rgba(0, 0, 0, 0.4) 0px 0px 10px" : "none",
         }}
-        defaultSelectedKeys={["1"]}
-        defaultOpenKeys={["sub1"]}
-        mode="inline"
-        items={items}
-      />
-    </div>
+      >
+        <Menu
+          onClick={onClick}
+          style={{
+            width: "100%",
+            height: "100%",
+          }}
+          defaultSelectedKeys={["1"]}
+          defaultOpenKeys={["sub1"]}
+          mode="inline"
+          items={items}
+        />
+      </div>
+    </aside>
   );
 };
 

@@ -305,7 +305,7 @@ const ListProject: React.FC = () => {
       <div className="project_page-header">
         <div className="header_left">
           <Button type="primary" size={size}>
-            Add Member
+            Add
           </Button>
         </div>
         <div className="header_right">
@@ -315,6 +315,7 @@ const ListProject: React.FC = () => {
             </Button>
             <Select
               defaultValue="all"
+              size={size}
               style={{ width: 120 }}
               onChange={handleChange}
               options={[
