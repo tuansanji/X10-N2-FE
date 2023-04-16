@@ -504,12 +504,11 @@
 
 .project-detail {
   padding: 32px;
-  border: 1px solid black;
 }
 
 .member-list {
   margin-top: 1rem;
-  max-height: 100vh;
+  height: 100vh;
 }
 .member-list .header {
   display: flex;

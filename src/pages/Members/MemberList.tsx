@@ -1,11 +1,11 @@
 import React, { useState } from "react";
-import { Button, Input, Divider, Table, Modal, Typography } from "antd";
+import { Button, Input, Divider, Table, Modal, Typography, Select } from "antd";
 import { ColumnsType } from "antd/es/table";
 import moment from "moment";
 import { DeleteFilled } from "@ant-design/icons";
-const { Search } = Input;
 
-const { Text } = Typography;
+const { Search } = Input;
+const { Text, Title } = Typography;
 
 interface MemberDataType {
   name: string;
@@ -43,41 +43,90 @@ const projectUser = [
 
 const MemberList: React.FC = () => {
   const [memberData, setMemberData] = useState<any[]>(projectUser);
-  const [modalInfo, setModalInfo] = useState<any>({});
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [searchInput, setSearchInput] = useState<string>("");
+  const [memberInfoModal, setmemberInfoModal] = useState<any>({});
+  const [showMemberInfoModal, setShowMemberInfoModal] =
+    useState<boolean>(false);
+  const [showAddMemberModal, setShowAddMemberModal] = useState<boolean>(false);
+  const [newMem, setNewMem] = useState<object>({});
 
-  const handleDelete = (indexValue: any) => {
+  // Validate điều kiện 1 dự án chỉ có 1 owner và 3 manager
+  let managerOptionValidate = memberData.filter((data: any) => {
+    return data.role === "Project Manager";
+  });
+
+  let ownerOptionValidate = memberData.filter((data: any) => {
+    return data.role === "Project Owner";
+  });
+  // Kết thúc Validate
+
+  const roleSelectOptions = [
+    {
+      value: "Project Owner",
+      label: "Project Owner",
+      disabled: ownerOptionValidate.length >= 1 && true,
+    },
+    {
+      value: "Project Manager",
+      label: "Project Manager",
+      disabled: managerOptionValidate.length >= 3 && true,
+    },
+    { value: "Project Supervisor", label: "Project Supervisor" },
+    { value: "Project Member", label: "Project Member" },
+  ];
+
+  // Add Member function trong modal
+  const handleAddMember = (value: any) => {
+    setShowAddMemberModal(false);
+  };
+
+  // Search Member trong bảng chính: Cần API search theo tên thành viên trong dự án
+  const handleSearchMember = (value: string) => {
+    setSearchInput("");
+  };
+
+  // Update Role cho member trong dự án: Cần API cập nhật lại thông tin người dùng trong dự án
+  const updateRole = (selectValue: any, indexValue: number) => {
+    let updatedRole = memberData.map((element: any, index: number) => {
+      if (indexValue === index) {
+        return { ...element, role: selectValue };
+      }
+      return element;
+    });
+    setMemberData(updatedRole);
+  };
+
+  // Cũng gọi API để cập nhật lại người dùng trong dự án?
+  const handleDeleteMember = (indexValue: any) => {
     let newData = memberData.filter((element: any, index: number) => {
       return indexValue !== index;
     });
     setMemberData(newData);
   };
-  const showModal = (indexValue: any) => {
+
+  // Show thông tin chi tiết member khi click vào từng member
+  // Nếu show thông tin chi tiết thì lại cần 1 API để get chi tiết user?
+  const showMemberModal = (indexValue: any) => {
     let memberInfo = memberData.filter((element: any, index: number) => {
       return indexValue === index;
     });
-    setModalInfo(memberInfo[0]);
-    setIsModalOpen(true);
+    setmemberInfoModal(memberInfo[0]);
+    setShowMemberInfoModal(true);
   };
 
-  const handleOk = () => {
-    setIsModalOpen(false);
-  };
-  const handleCancel = () => {
-    setIsModalOpen(false);
-  };
-
+  // Setup Table
   const columns: ColumnsType<MemberDataType> = [
     {
       title: "Name",
       dataIndex: "name",
       key: "name",
+
       render: (_, record: MemberDataType, index: number) => {
         return (
           <>
             <Text
               onClick={() => {
-                showModal(index);
+                showMemberModal(index);
               }}
             >
               {record.name}
@@ -90,6 +139,18 @@ const MemberList: React.FC = () => {
       title: "Role",
       dataIndex: "role",
       key: "role",
+      render: (_, record: MemberDataType, index: number) => {
+        return (
+          <>
+            <Select
+              onSelect={(value) => updateRole(value, index)}
+              value={record.role}
+              options={roleSelectOptions}
+              dropdownMatchSelectWidth={false}
+            />
+          </>
+        );
+      },
     },
     {
       title: "Join date",
@@ -104,8 +165,9 @@ const MemberList: React.FC = () => {
         return (
           <>
             <Button
+              disabled
               icon={<DeleteFilled />}
-              onClick={() => handleDelete(index)}
+              onClick={() => handleDeleteMember(index)}
             />
           </>
         );
@@ -115,31 +177,86 @@ const MemberList: React.FC = () => {
 
   const data: MemberDataType[] = memberData.map((data) => {
     return {
+      key: data._id,
       name: data.name,
       role: data.role,
       joinDate: moment(data.joinDate).format("DD/MM/YYYY"),
     };
   });
+  //Kết thúc setup table
 
   return (
     <div className="member-list">
+      {/* Member Info Modal */}
       <Modal
         footer={null}
         centered
-        open={isModalOpen}
-        onOk={handleOk}
-        onCancel={handleCancel}
+        open={showMemberInfoModal}
+        onCancel={() => {
+          setShowMemberInfoModal(false);
+        }}
       >
-        <p>{modalInfo.id}</p>
-        <p>{modalInfo.name}</p>
-        <p>{modalInfo.role}</p>
-        <p>{moment(modalInfo.joinDate).format("DD/MM/YYYY")}</p>
+        <p>{memberInfoModal.id}</p>
+        <p>{memberInfoModal.name}</p>
+        <p>{memberInfoModal.role}</p>
+        <p>{moment(memberInfoModal.joinDate).format("DD/MM/YYYY")}</p>
       </Modal>
+
+      {/* Add Member Modal */}
+      <Modal
+        centered
+        open={showAddMemberModal}
+        onCancel={() => {
+          setShowAddMemberModal(false);
+        }}
+        footer={
+          <>
+            <Button type="primary" onClick={handleAddMember}>
+              Add Members
+            </Button>
+            <Button onClick={() => setShowAddMemberModal(false)}>Cancel</Button>
+          </>
+        }
+      >
+        <Title level={3}>Add Members</Title>
+        {/* Tìm User trong công ty để nhét vào dự án 
+        Call API search User theo input? */}
+        <Search
+          value={searchInput}
+          allowClear
+          onChange={(event: any) => setSearchInput(event?.target.value)}
+          onSearch={handleSearchMember}
+          placeholder="Full Name"
+          size="large"
+          style={{ width: "300px" }}
+        />
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            margin: "2rem 0",
+          }}
+        >
+          <div>Full Name</div>
+          <div>Select Role</div>
+          <div>X</div>
+        </div>
+      </Modal>
+
+      {/* Main Content */}
       <div className="header">
-        <Button type="primary" size="large">
+        <Button
+          type="primary"
+          size="large"
+          onClick={() => setShowAddMemberModal(true)}
+        >
           Add Members
         </Button>
         <Search
+          value={searchInput}
+          allowClear
+          onChange={(event: any) => setSearchInput(event?.target.value)}
+          onSearch={handleSearchMember}
           placeholder="Member Name"
           size="large"
           style={{ width: "300px" }}

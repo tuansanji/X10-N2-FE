@@ -306,7 +306,7 @@ const ListProject: React.FC = () => {
       <div className="project_page-header">
         <div className="header_left">
           <Button type="primary" size={size}>
-            Add Member
+            Create Project
           </Button>
         </div>
         <div className="header_right">
