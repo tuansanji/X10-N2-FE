@@ -502,4 +502,24 @@
   width: 80%;
 }
 
+.project-detail {
+  padding: 32px;
+  border: 1px solid black;
+}
+
+.member-list {
+  margin-top: 1rem;
+  max-height: 100vh;
+}
+.member-list .header {
+  display: flex;
+  justify-content: space-between;
+}
+.member-list .ant-divider {
+  margin-top: 2rem;
+}
+.member-list .ant-table-row .ant-table-cell:first-child {
+  cursor: pointer;
+}
+
 /*# sourceMappingURL=main.css.map */

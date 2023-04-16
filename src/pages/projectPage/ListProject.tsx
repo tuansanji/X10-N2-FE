@@ -1,4 +1,5 @@
 import { IProject } from "../../components/sidebar/Sidebar";
+import { Link } from "react-router-dom";
 import Loading from "../../components/support/Loading";
 import { DeleteFilled, EditFilled, SearchOutlined } from "@ant-design/icons";
 import { Button, Input, Select, Space, Table, Tag } from "antd";
@@ -280,7 +281,7 @@ const ListProject: React.FC = () => {
               .map((project: IProject, index: number) => {
                 return {
                   key: project._id,
-                  name: project.name,
+                  name: <Link to={`/${project._id}`}>{project.name}</Link>,
                   code: project.code,
                   status: project.status,
                   startDate: moment(project.startDate).format("DD/MM/YYYY "),
