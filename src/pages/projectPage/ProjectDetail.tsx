@@ -4,12 +4,14 @@ import StagesPage from "../stagePages/StagesPage";
 import { Breadcrumb, Space, Tabs } from "antd";
 import React from "react";
 import { useParams, useSearchParams } from "react-router-dom";
+import ProjectInfo from "../../components/projectForm/ProjectInfo";
+import { Link } from "react-router-dom";
 
 const ProjectDetail: React.FC = () => {
   const params = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
   const breadcrumbItem = [
-    { title: "Home (Project List)" },
+    { title: <Link to="/">Home (Project List)</Link> },
     { title: deslugify(params.projectName as string) },
   ];
 
@@ -17,7 +19,7 @@ const ProjectDetail: React.FC = () => {
     {
       label: "General Information",
       key: "General Information",
-      children: "Information Content",
+      children: <ProjectInfo useCase="info" />,
     },
     { label: "Stages", key: "Stages", children: <StagesPage /> },
     { label: "Members", key: "Members", children: <MemberList /> },

@@ -1,12 +1,7 @@
 import { IProject } from "../../components/sidebar/Sidebar";
+import { Link, useSearchParams } from "react-router-dom";
 import Loading from "../../components/support/Loading";
 import { DeleteFilled, EditFilled, SearchOutlined } from "@ant-design/icons";
-import moment from "moment";
-import React, { useMemo, useRef, useState } from "react";
-import Highlighter from "react-highlight-words";
-import { useSelector } from "react-redux";
-import { Link } from "react-router-dom";
-import slugify from "slugify";
 import {
   Button,
   Input,
@@ -14,16 +9,23 @@ import {
   Space,
   Table,
   Tag,
+  Modal,
   message,
   Popconfirm,
 } from "antd";
+import moment from "moment";
+import React, { useMemo, useRef, useState } from "react";
+import Highlighter from "react-highlight-words";
+import { useSelector } from "react-redux";
+import slugify from "slugify";
 import type { InputRef } from "antd";
 import type { ColumnsType, TableProps, ColumnType } from "antd/es/table";
 import type { SizeType } from "antd/es/config-provider/SizeContext";
 import type { FilterConfirmProps } from "antd/es/table/interface";
+import ProjectInfo from "../../components/projectForm/ProjectInfo";
 
 // import { TablePaginationPosition } from 'antd/lib/table';
-interface DataType {
+export interface DataType {
   key: string;
   name: string;
   code: string;
@@ -41,16 +43,32 @@ const ListProject: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [searchText, setSearchText] = useState("");
   const [searchedColumn, setSearchedColumn] = useState("");
+  const [openCreateProject, setOpenCreateProject] = useState<boolean>(false);
+  const [projectDetail, setProjectDetail] = useState<any>();
+  const [openEditProject, setOpenEditProject] = useState<boolean>(false);
   const [searchInput, setSearchInput] = useState<string>("");
 
   const confirm = (stages: DataType) => {
     console.log(stages);
-
     message.success("Click on Yes");
     message.error("Click on No");
   };
 
-  const handleEditProject = (project: DataType) => {};
+  const handleEditProject = (indexValue: number) => {
+    let projectDetail = listProject.projects.filter(
+      (project: DataType, index: number) => {
+        return indexValue === index;
+      }
+    );
+
+    setProjectDetail(projectDetail[0]);
+    setOpenEditProject(true);
+  };
+
+  const handleDeleteProject = (project: DataType) => {
+    console.log(project);
+  };
+
   const handleSearchMember = (value: string) => {
     setSearchInput("");
     console.log(value);
@@ -64,7 +82,21 @@ const ListProject: React.FC = () => {
         key: "name",
 
         sorter: (a, b) => a.name.localeCompare(b.name),
-        // render: (text: string) => <p>{text}</p>,
+        render: (_, record: DataType) => {
+          return (
+            <>
+              <Link
+                to={`/${slugify(record.name, {
+                  replacement: "-", // Thay thế dấu cách bằng dấu gạch ngang
+                  remove: /[*+~.()'"!:@]/g, // Loại bỏ các ký tự đặc biệt
+                  lower: true, // Chuyển đổi chữ hoa thành chữ thường
+                })}`}
+              >
+                {record.name}
+              </Link>
+            </>
+          );
+        },
       },
       {
         title: "Code",
@@ -139,13 +171,9 @@ const ListProject: React.FC = () => {
       {
         title: "Action",
         key: "action",
-        render: (_, record: DataType) => (
+        render: (_, record: DataType, index: number) => (
           <Space size="middle">
-            <span
-              onClick={() => {
-                handleEditProject(record);
-              }}
-            >
+            <span onClick={() => handleEditProject(index)}>
               <EditFilled style={{ fontSize: "16px", cursor: "pointer" }} />
             </span>
             <Popconfirm
@@ -180,17 +208,7 @@ const ListProject: React.FC = () => {
               .map((project: IProject, index: number) => {
                 return {
                   key: project._id,
-                  name: (
-                    <Link
-                      to={`/${slugify(project.name, {
-                        replacement: "-", // Thay thế dấu cách bằng dấu gạch ngang
-                        // remove: /[*+~.()'"!:@]/g, // Loại bỏ các ký tự đặc biệt
-                        lower: true, // Chuyển đổi chữ hoa thành chữ thường
-                      })}`}
-                    >
-                      {project.name}
-                    </Link>
-                  ),
+                  name: project.name,
                   code: project.code,
                   status: project.status,
                   startDate: moment(project.startDate).format("DD/MM/YYYY "),
@@ -213,8 +231,41 @@ const ListProject: React.FC = () => {
     <div className="content_project-page">
       {loading && <Loading />}
       <div className="project_page-header">
+        {/* Create New Project Modal */}
+        <Modal
+          open={openCreateProject}
+          footer={null}
+          onCancel={() => setOpenCreateProject(false)}
+        >
+          <ProjectInfo
+            title="Create New Project"
+            useCase="create"
+            closeModal={setOpenCreateProject}
+          />
+        </Modal>
+
+        {/* Edit Project Info Modal */}
+        <Modal
+          open={openEditProject}
+          footer={null}
+          onCancel={() => setOpenEditProject(false)}
+        >
+          <ProjectInfo
+            title="Edit Project Info"
+            useCase="edit"
+            closeModal={setOpenEditProject}
+            projectDetail={{ ...projectDetail }}
+            key={projectDetail?._id}
+          />
+        </Modal>
+
+        {/* Project List Main Content */}
         <div className="header_left">
-          <Button type="primary" size={size}>
+          <Button
+            onClick={() => setOpenCreateProject(true)}
+            type="primary"
+            size={size}
+          >
             Create Project
           </Button>
         </div>
