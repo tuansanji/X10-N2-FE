@@ -1,47 +1,74 @@
+import FormStages from "./FormStages";
 import { IProject } from "../../components/sidebar/Sidebar";
 import Loading from "../../components/support/Loading";
-import { DeleteFilled, EditFilled, SearchOutlined } from "@ant-design/icons";
+import { listStages } from "../../data/statges";
+import Search from "antd/es/input/Search";
 import moment from "moment";
 import React, { useMemo, useRef, useState } from "react";
 import Highlighter from "react-highlight-words";
 import { useSelector } from "react-redux";
-import { Link } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import slugify from "slugify";
 import {
   Button,
   Input,
+  message,
+  Modal,
+  Popconfirm,
   Select,
   Space,
   Table,
   Tag,
-  message,
-  Popconfirm,
 } from "antd";
+import {
+  DeleteFilled,
+  EditFilled,
+  ExclamationCircleOutlined,
+  SearchOutlined,
+} from "@ant-design/icons";
 import type { InputRef } from "antd";
 import type { ColumnsType, TableProps, ColumnType } from "antd/es/table";
 import type { SizeType } from "antd/es/config-provider/SizeContext";
 import type { FilterConfirmProps } from "antd/es/table/interface";
 
 // import { TablePaginationPosition } from 'antd/lib/table';
-interface DataType {
-  key: string;
+
+export interface IStages {
+  _id?: string;
   name: string;
-  code: string;
+  startDate: string;
+  estimatedEndDate: string;
   status: string;
-  startDate: Date;
-  endDate: Date;
+  actualEndDate?: string;
+  createdDate?: string;
+  startEndDate?: Date[];
+}
+interface DataType {
+  key?: string;
+  name: string;
+  status: string;
+  startDate: string;
+  estimatedEndDate: string;
+  actualEndDate: string;
+  createdDate?: string;
 }
 type DataIndex = keyof DataType;
-const { Search } = Input;
-
-const ListProject: React.FC = () => {
+const StagesPage: React.FC = () => {
   const listProject = useSelector((state: any) => state.project?.listProject);
   const loading = useSelector((state: any) => state.project?.isFetching);
   const [size, setSize] = useState<SizeType>("large");
   const [statusFilter, setStatusFilter] = useState<string>("all");
-  const [searchText, setSearchText] = useState("");
-  const [searchedColumn, setSearchedColumn] = useState("");
+  const [createStages, setCreateStages] = useState<boolean>(false);
   const [searchInput, setSearchInput] = useState<string>("");
+
+  const [editStages, setEditStages] = useState<{
+    status: boolean;
+    stages: IStages | {};
+  }>({
+    status: false,
+    stages: {},
+  });
+  const params = useParams();
 
   const confirm = (stages: DataType) => {
     console.log(stages);
@@ -49,13 +76,10 @@ const ListProject: React.FC = () => {
     message.success("Click on Yes");
     message.error("Click on No");
   };
-
-  const handleEditProject = (project: DataType) => {};
   const handleSearchMember = (value: string) => {
     setSearchInput("");
     console.log(value);
   };
-
   const columns: ColumnsType<DataType> = useMemo(
     () => [
       {
@@ -64,14 +88,19 @@ const ListProject: React.FC = () => {
         key: "name",
 
         sorter: (a, b) => a.name.localeCompare(b.name),
-        // render: (text: string) => <p>{text}</p>,
+        render: (_, record: DataType) => (
+          <Link
+            to={`/${params.projectName}/${slugify(record.name, {
+              replacement: "-", // Thay thế dấu cách bằng dấu gạch ngang
+              // remove: /[*+~.()'"!:@]/g, // Loại bỏ các ký tự đặc biệt
+              lower: true, // Chuyển đổi chữ hoa thành chữ thường
+            })}}`}
+          >
+            {record.name}
+          </Link>
+        ),
       },
-      {
-        title: "Code",
-        dataIndex: "code",
-        key: "code",
-        sorter: (a, b) => a.code.localeCompare(b.code),
-      },
+
       {
         title: "Status",
         key: "status",
@@ -121,18 +150,28 @@ const ListProject: React.FC = () => {
         dataIndex: "startDate",
         key: "startDate",
         sorter: (a, b) => {
-          const startDateA = moment(a.startDate, "DD/MM/YYYY").toDate();
-          const startDateB = moment(b.startDate, "DD/MM/YYYY").toDate();
+          const startDateA = moment(a.startDate, "YYYY-MM-DD").toDate();
+          const startDateB = moment(b.startDate, "YYYY-MM-DD").toDate();
           return startDateA.getTime() - startDateB.getTime();
         },
       },
       {
-        title: "End date",
-        dataIndex: "endDate",
-        key: "endDate",
+        title: "Estimated end date",
+        dataIndex: "estimatedEndDate",
+        key: "estimatedEndDate",
         sorter: (a, b) => {
-          const startDateA = moment(a.endDate, "DD/MM/YYYY").toDate();
-          const startDateB = moment(b.endDate, "DD/MM/YYYY").toDate();
+          const startDateA = moment(a.estimatedEndDate, "YYYY-MM-DD").toDate();
+          const startDateB = moment(b.estimatedEndDate, "YYYY-MM-DD").toDate();
+          return startDateA.getTime() - startDateB.getTime();
+        },
+      },
+      {
+        title: "Actual end date",
+        dataIndex: "actualEndDate",
+        key: "actualEndDate",
+        sorter: (a, b) => {
+          const startDateA = moment(a.actualEndDate, "YYYY-MM-DD").toDate();
+          const startDateB = moment(b.actualEndDate, "YYYY-MM-DD").toDate();
           return startDateA.getTime() - startDateB.getTime();
         },
       },
@@ -143,15 +182,18 @@ const ListProject: React.FC = () => {
           <Space size="middle">
             <span
               onClick={() => {
-                handleEditProject(record);
+                setEditStages({
+                  status: true,
+                  stages: record,
+                });
               }}
             >
               <EditFilled style={{ fontSize: "16px", cursor: "pointer" }} />
             </span>
             <Popconfirm
               placement="topRight"
-              title="Delete the project"
-              description="Are you sure to delete this project?"
+              title="Delete the stages"
+              description="Are you sure to delete this stages?"
               onConfirm={() => confirm(record)}
               okText="Yes"
               cancelText="No"
@@ -162,47 +204,40 @@ const ListProject: React.FC = () => {
         ),
       },
     ],
-    [searchText, listProject]
+    [listStages]
   );
 
   const data: DataType[] = useMemo(() => {
-    let newProject =
-      listProject.projects && listProject.projects.length > 0
+    let newStages =
+      listStages && listStages.length > 0
         ? [
-            ...listProject.projects
-              .filter((project: IProject) => {
+            ...listStages
+              .filter((stage: IStages) => {
                 if (statusFilter === "all") {
                   return true;
                 } else {
-                  return project.status === statusFilter;
+                  return stage.status === statusFilter;
                 }
               })
-              .map((project: IProject, index: number) => {
+              .map((stage: IStages, index: number) => {
                 return {
-                  key: project._id,
-                  name: (
-                    <Link
-                      to={`/${slugify(project.name, {
-                        replacement: "-", // Thay thế dấu cách bằng dấu gạch ngang
-                        // remove: /[*+~.()'"!:@]/g, // Loại bỏ các ký tự đặc biệt
-                        lower: true, // Chuyển đổi chữ hoa thành chữ thường
-                      })}`}
-                    >
-                      {project.name}
-                    </Link>
+                  key: stage._id,
+                  name: stage.name,
+
+                  status: stage.status,
+                  startDate: moment(stage.startDate).format("YYYY-MM-DD"),
+                  actualEndDate: moment(stage.actualEndDate).format(
+                    "YYYY-MM-DD"
                   ),
-                  code: project.code,
-                  status: project.status,
-                  startDate: moment(project.startDate).format("DD/MM/YYYY "),
-                  endDate: moment(project.estimatedEndDate).format(
-                    "DD/MM/YYYY "
+                  estimatedEndDate: moment(stage.estimatedEndDate).format(
+                    "YYYY-MM-DD"
                   ),
                 };
               }),
           ]
         : [];
-    return newProject;
-  }, [listProject, statusFilter]);
+    return newStages;
+  }, [statusFilter]);
   const pagination: TableProps<any>["pagination"] = {
     position: ["bottomCenter"],
   };
@@ -210,12 +245,16 @@ const ListProject: React.FC = () => {
     setStatusFilter(value);
   };
   return (
-    <div className="content_project-page">
-      {loading && <Loading />}
-      <div className="project_page-header">
+    <div className="content_project-page stages_page">
+      {/* {loading && <Loading />} */}
+      <div className="project_page-header ">
         <div className="header_left">
-          <Button type="primary" size={size}>
-            Create Project
+          <Button
+            type="primary"
+            size={size}
+            onClick={() => setCreateStages(true)}
+          >
+            Create Stages
           </Button>
         </div>
         <div className="header_right">
@@ -225,7 +264,7 @@ const ListProject: React.FC = () => {
               allowClear
               onChange={(event: any) => setSearchInput(event?.target.value)}
               onSearch={handleSearchMember}
-              placeholder="Enter name or code..."
+              placeholder="Enter stage name..."
               size="large"
               style={{ width: "300px" }}
             />
@@ -250,8 +289,25 @@ const ListProject: React.FC = () => {
       <div className="project_page-table">
         <Table columns={columns} dataSource={data} pagination={pagination} />
       </div>
+      {createStages && (
+        <FormStages
+          title="Create Stages"
+          button="Create"
+          status={false}
+          actualEndDate={false}
+          setCreateStages={setCreateStages}
+        />
+      )}
+      {editStages.status && (
+        <FormStages
+          editStages={editStages}
+          title="Edit Stages"
+          button="Update"
+          setEditStages={setEditStages}
+        />
+      )}
     </div>
   );
 };
 
-export default ListProject;
+export default StagesPage;

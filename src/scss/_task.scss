@@ -33,16 +33,7 @@
       background-color: #555;
     }
   }
-  .btn_close {
-    z-index: 56;
-    position: absolute;
-    right: 20px;
-    top: 10px;
-    cursor: pointer;
-    &:hover {
-      opacity: 0.5;
-    }
-  }
+
   .modal_table {
     padding: 20px;
     box-shadow: rgba(0, 0, 0, 0.4) 0px 0px 10px;
@@ -88,4 +79,14 @@
   background-color: white;
   border: 1px solid #888;
   width: 80%;
+}
+.btn_close {
+  z-index: 56;
+  position: absolute;
+  right: 20px;
+  top: 10px;
+  cursor: pointer;
+  &:hover {
+    opacity: 0.5;
+  }
 }

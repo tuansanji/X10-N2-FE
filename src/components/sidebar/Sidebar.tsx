@@ -107,7 +107,7 @@ const Sidebar = () => {
       }}
     >
       <div className="sidebar__title ">
-        <h4>Danh sách dự án</h4>
+        <h4>Your Project List</h4>
         <div
           className={
             !statusMenu ? "btn btn_sidebar" : " btn btn_sidebar active"

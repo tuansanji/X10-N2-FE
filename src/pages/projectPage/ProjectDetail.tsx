@@ -1,14 +1,16 @@
+import { deslugify } from "../../ultils/decode";
+import MemberList from "../Members/MemberList";
+import StagesPage from "../stagePages/StagesPage";
+import { Breadcrumb, Space, Tabs } from "antd";
 import React from "react";
 import { useParams, useSearchParams } from "react-router-dom";
-import { Breadcrumb, Tabs, Space } from "antd";
-import MemberList from "../Members/MemberList";
 
 const ProjectDetail: React.FC = () => {
   const params = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
   const breadcrumbItem = [
     { title: "Home (Project List)" },
-    { title: "Project Name" },
+    { title: deslugify(params.projectName as string) },
   ];
 
   const tabItems = [
@@ -17,7 +19,7 @@ const ProjectDetail: React.FC = () => {
       key: "General Information",
       children: "Information Content",
     },
-    { label: "Stages", key: "Stages", children: "Stages Content" },
+    { label: "Stages", key: "Stages", children: <StagesPage /> },
     { label: "Members", key: "Members", children: <MemberList /> },
   ];
 

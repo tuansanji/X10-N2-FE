@@ -1,23 +1,21 @@
-<<<<<<< HEAD
+@import "./variables";
 @mixin backgroundImg {
-    display: block;
-    height: auto;
-    width: 100%;
-    object-fit: cover;
-    opacity: 0.5;
+  display: block;
+  height: auto;
+  width: 100%;
+  object-fit: cover;
+  opacity: 0.5;
 }
 
 @mixin formContainer {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    margin-left: auto;
-    margin-right:auto;
-    width: 500px;
-=======
-@import "./variables";
-
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  margin-left: auto;
+  margin-right: auto;
+  width: 500px;
+}
 @mixin size($width, $height: $width) {
   width: $width;
   height: $height;
@@ -70,5 +68,4 @@
   justify-content: $content;
   align-items: $items;
   flex-wrap: $wrap;
->>>>>>> 1bbcc54 (update sidebar)
 }
