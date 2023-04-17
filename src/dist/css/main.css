@@ -521,4 +521,21 @@
   cursor: pointer;
 }
 
+.project-info {
+  margin: 1rem;
+}
+.project-info h3 {
+  text-align: center;
+}
+.project-info .ant-form-item {
+  margin-bottom: 1rem;
+}
+.project-info .ant-form-item-label {
+  padding: 0;
+}
+.project-info button {
+  width: 100%;
+  margin-top: 1rem;
+}
+
 /*# sourceMappingURL=main.css.map */

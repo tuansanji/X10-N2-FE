@@ -177,7 +177,7 @@ const MemberList: React.FC = () => {
 
   const data: MemberDataType[] = memberData.map((data) => {
     return {
-      key: data._id,
+      key: data.id,
       name: data.name,
       role: data.role,
       joinDate: moment(data.joinDate).format("DD/MM/YYYY"),

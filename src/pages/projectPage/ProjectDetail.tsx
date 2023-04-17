@@ -2,12 +2,14 @@ import React from "react";
 import { useParams, useSearchParams } from "react-router-dom";
 import { Breadcrumb, Tabs, Space } from "antd";
 import MemberList from "../Members/MemberList";
+import ProjectInfo from "../../components/projectForm/ProjectInfo";
+import { Link } from "react-router-dom";
 
 const ProjectDetail: React.FC = () => {
   const params = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
   const breadcrumbItem = [
-    { title: "Home (Project List)" },
+    { title: <Link to="/">Home (Project List)</Link> },
     { title: "Project Name" },
   ];
 
@@ -15,7 +17,7 @@ const ProjectDetail: React.FC = () => {
     {
       label: "General Information",
       key: "General Information",
-      children: "Information Content",
+      children: <ProjectInfo useCase="info" />,
     },
     { label: "Stages", key: "Stages", children: "Stages Content" },
     { label: "Members", key: "Members", children: <MemberList /> },
