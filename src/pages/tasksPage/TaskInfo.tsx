@@ -1,4 +1,5 @@
 import Comment from "../../components/comment/Comment";
+import ReactQuillFC from "../../components/comment/ReactQuill";
 import { CameraFilled, CloseOutlined } from "@ant-design/icons";
 import { Badge, Button, Descriptions, message, Upload } from "antd";
 import React from "react";
@@ -30,9 +31,28 @@ const TaskInfo = () => {
         </div>
         <div className="modal modal_task">
           <div className="modal_table">
-            <Descriptions title="JOB DETAILS" bordered column={2}>
+            <Descriptions
+              title="JOB DETAILS"
+              bordered
+              column={2}
+              labelStyle={{
+                display: "grid",
+                gridTemplateColumns: "1fr 1fr",
+                gap: "16px",
+              }}
+            >
               <Descriptions.Item label="Job Code">
-                mã công việc
+                Lorem ipsum dolor sit amet consectetur adipisicing elit. Sint
+                aspernatur non quaerat quo? Quisquam harum quam est. Delectus
+                rem officiis nulla, voluptates nam dolore officia voluptas
+                debitis sint? Ipsa, illum. Lorem ipsum dolor sit amet
+                consectetur adipisicing elit. Sint aspernatur non quaerat quo?
+                Quisquam harum quam est. Delectus rem officiis nulla, voluptates
+                nam dolore officia voluptas debitis sint? Ipsa, illum. Lorem
+                ipsum dolor sit amet consectetur adipisicing elit. Sint
+                aspernatur non quaerat quo? Quisquam harum quam est. Delectus
+                rem officiis nulla, voluptates nam dolore officia voluptas
+                debitis sint? Ipsa, illum.
               </Descriptions.Item>
               <Descriptions.Item label="Title">
                 tiêu đề công việc
@@ -62,19 +82,29 @@ const TaskInfo = () => {
                 ngày kết thúc thực tế
               </Descriptions.Item>
 
-              <Descriptions.Item label="Descriptions">
-                Data disk type: MongoDB
-                <br />
-                Database version: 3.4
-                <br />
-                Package: dds.mongo.mid
-                <br />
-                Storage space: 10 GB
-                <br />
-                Replication factor: 3
-                <br />
-                Region: East China 1
-                <br />
+              <Descriptions.Item
+                style={{ textAlign: "start", verticalAlign: "top" }}
+                label="Descriptions"
+              >
+                Lorem ipsum dolor sit amet consectetur adipisicing elit. Vitae,
+                accusamus autem minima nam hic consequuntur vel architecto. Odit
+                aperiam quod eveniet! Aut deleniti aperiam ipsam blanditiis,
+                temporibus amet velit laboriosam.Lorem ipsum dolor sit amet
+                consectetur adipisicing elit. Vitae, accusamus autem minima nam
+                hic consequuntur vel architecto. Odit aperiam quod eveniet! Aut
+                deleniti aperiam ipsam blanditiis, temporibus amet velit
+                laboriosam.Lorem ipsum dolor sit amet consectetur adipisicing
+                elit. Vitae, accusamus autem minima nam hic consequuntur vel
+                architecto. Odit aperiam quod eveniet! Aut deleniti aperiam
+                ipsam blanditiis, temporibus amet velit laboriosam.Lorem ipsum
+                dolor sit amet consectetur adipisicing elit. Vitae, accusamus
+                autem minima nam hic consequuntur vel architecto. Odit aperiam
+                quod eveniet! Aut deleniti aperiam ipsam blanditiis, temporibus
+                amet velit laboriosam.Lorem ipsum dolor sit amet consectetur
+                adipisicing elit. Vitae, accusamus autem minima nam hic
+                consequuntur vel architecto. Odit aperiam quod eveniet! Aut
+                deleniti aperiam ipsam blanditiis, temporibus amet velit
+                laboriosam.
               </Descriptions.Item>
             </Descriptions>
           </div>
@@ -85,7 +115,7 @@ const TaskInfo = () => {
                 <Comment />
                 <Comment />
                 <Comment />
-                <Comment /> <Comment />
+                <Comment />
                 <Comment />
                 <Comment />
                 <Comment />
@@ -99,7 +129,9 @@ const TaskInfo = () => {
                     alt=""
                     className=""
                   />
-                  <input
+                  <ReactQuillFC />
+
+                  {/* <input
                     type="text"
                     placeholder="What's on your mind?"
                     className=""
@@ -116,7 +148,7 @@ const TaskInfo = () => {
                         }
                       ></Button>
                     </Upload>
-                  </div>
+                  </div> */}
                 </div>
                 <div className="btn_action">
                   <Button

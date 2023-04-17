@@ -17,13 +17,24 @@
   display: flex;
   position: relative;
   height: 100%;
+  width: 100%;
 }
 
 .container_content {
   flex: 1;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  transition: all 0.3s linear;
   overflow-y: auto;
 }
 
+@media screen and (max-width: 1023.98px) {
+  .container_content {
+    left: 30px !important;
+  }
+}
 .register {
   position: relative;
 }
@@ -364,23 +375,65 @@
   right: 3rem;
 }
 
+.quill {
+  overflow: auto;
+}
+
 /* css phần sidebar */
 .container_sidebar {
-  width: 342px;
   flex-shrink: 0;
   height: 100%;
-  overflow-y: auto;
+  position: relative;
+  width: 340px;
+  transition: all 0.3s linear;
+  z-index: 100;
 }
-.container_sidebar::-webkit-scrollbar {
+.container_sidebar .btn_sidebar {
+  position: absolute;
+  right: 8%;
+  display: flex;
+  align-items: center;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 24px;
+  width: 24px;
+  padding: 5px;
+  box-sizing: content-box;
+  cursor: pointer;
+  border-radius: 50%;
+}
+.container_sidebar .btn_sidebar:hover {
+  background-color: #ccc;
+}
+.container_sidebar .btn_sidebar.active {
+  right: -5%;
+  background-color: #ccc;
+}
+.container_sidebar .btn_sidebar.active:hover {
+  opacity: 0.6;
+}
+.container_sidebar .sidebar__title {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background-color: #ffffff;
+  padding: 16px;
+}
+.container_sidebar .sidebar__menu {
+  height: 100%;
+  overflow-y: auto;
+  max-height: calc(100vh - 60px);
+}
+.container_sidebar .sidebar__menu::-webkit-scrollbar {
   width: 4px;
   background-color: #777;
 }
-.container_sidebar::-webkit-scrollbar-thumb {
-  background-color: #333;
+.container_sidebar .sidebar__menu::-webkit-scrollbar-thumb {
+  background-color: #a48f8f;
 }
-.container_sidebar::-webkit-scrollbar-track {
+.container_sidebar .sidebar__menu::-webkit-scrollbar-track {
   -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
-  background-color: #777;
+  background-color: #decccc;
 }
 
 /* css trang danh sách project */
@@ -445,16 +498,6 @@
   -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
   background-color: #555;
 }
-.task_info .btn_close {
-  z-index: 56;
-  position: absolute;
-  right: 20px;
-  top: 10px;
-  cursor: pointer;
-}
-.task_info .btn_close:hover {
-  opacity: 0.5;
-}
 .task_info .modal_table {
   padding: 20px;
   box-shadow: rgba(0, 0, 0, 0.4) 0px 0px 10px;
@@ -500,6 +543,65 @@
   background-color: white;
   border: 1px solid #888;
   width: 80%;
+}
+
+.btn_close {
+  z-index: 56;
+  position: absolute;
+  right: 20px;
+  top: 10px;
+  cursor: pointer;
+}
+.btn_close:hover {
+  opacity: 0.5;
+}
+
+.stages_page .modal {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background-color: rgba(0, 0, 0, 0.4);
+  z-index: 100;
+}
+.stages_page .modal .form {
+  animation: opacity 0.3s linear;
+  transition: all 0.3s linear;
+  width: 600px;
+  padding: 30px;
+  background-color: white;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  box-shadow: rgba(0, 0, 0, 0.4) 0px 0px 10px;
+  border-radius: 12px;
+}
+.stages_page .modal .form .ant-row.ant-form-item-row.css-dev-only-do-not-override-htwhyh {
+  gap: 15px;
+}
+.stages_page .modal .form_title {
+  padding-bottom: 20px;
+}
+
+@keyframes opacity {
+  from {
+    transform: translateY(-50%);
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.breadcrumbItem {
+  position: absolute;
+  top: 10px;
+  left: 20px;
 }
 
 .project-detail {

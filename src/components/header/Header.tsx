@@ -10,7 +10,7 @@ const Header = () => {
   const items = [
     {
       key: "1",
-      label: <Link to="/user/infor">Thông tin tài khoản</Link>,
+      label: <Link to="/user/infor">Thông tin tài khoản </Link>,
     },
 
     {
@@ -20,7 +20,7 @@ const Header = () => {
     },
   ];
   return (
-    <div className="app_header">
+    <header className="app_header">
       <div className="header_logo">
         <Link to="/">
           <img
@@ -58,7 +58,7 @@ const Header = () => {
           </Link>
         )}
       </div>
-    </div>
+    </header>
   );
 };
 
