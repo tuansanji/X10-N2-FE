@@ -35,6 +35,17 @@
     left: 30px !important;
   }
 }
+.btn_close {
+  z-index: 56;
+  position: absolute;
+  right: 20px;
+  top: 10px;
+  cursor: pointer;
+}
+.btn_close:hover {
+  opacity: 0.5;
+}
+
 .register {
   position: relative;
 }
@@ -253,21 +264,16 @@
   align-items: center;
 }
 
-/* CSS for div container */
-/* CSS for image */
-/* CSS for comment container */
-/* CSS for username */
-/* CSS for comment */
-/* CSS for action buttons */
 .comment_content {
   display: flex;
   padding: 0 15px;
-  gap: 10px;
   align-items: flex-start;
   position: relative;
   width: 100%;
 }
-.comment_content img {
+.comment_content img.img_user {
+  position: relative;
+  transform: translateY(10px);
   width: 40px;
   height: 40px;
   border-radius: 50%;
@@ -276,37 +282,49 @@
 .comment-container {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  background: #ccc;
-  padding: 15px 15px;
-  border-radius: 14px;
+  gap: 4px;
+  padding: 6px 15px;
+  border-radius: 12px;
   width: 100%;
   position: relative;
 }
-.comment-container h1 {
-  color: black;
-  font-size: 16px;
+.comment-container .title {
+  color: #505f79;
   font-weight: 500;
-  line-height: 12px;
-  margin: 0;
+  font-size: 16px;
+  letter-spacing: -0.006em;
+  line-height: 1.42857143;
+  padding-left: 10px;
 }
-.comment-container p {
+.comment-container .title span {
+  padding-left: 10px;
+  font-size: 13px;
+  font-weight: medium;
+  opacity: 0.7;
+}
+.comment-container .content {
   color: black;
   opacity: 0.9;
   display: flex;
-  align-items: center;
-  gap: 4px;
+  flex-direction: column;
+  background-color: #dfe4ec;
+  padding: 10px;
+  border-radius: 12px;
   font-size: 14px;
-  font-weight: normal;
   line-height: 18px;
   font-family: sans-serif;
   margin: 0;
 }
+.comment-container .content ul,
+.comment-container .content ol {
+  list-style-position: inside;
+}
 .comment-container .action-buttons {
   display: flex;
   gap: 5px;
-  padding-left: 1px;
+  padding-left: 10px;
   line-height: 12px;
+  font-size: 12px;
 }
 .comment-container .action-buttons span:first-child {
   color: #007bff;
@@ -320,7 +338,6 @@
   display: flex;
   align-items: center;
   gap: 4px;
-  font-size: 14px;
   font-weight: medium;
   opacity: 0.7;
 }
@@ -335,6 +352,7 @@
   position: absolute;
   bottom: 0;
   background-color: #eee;
+  transition: all 0.5s ease-in-out;
 }
 .comments_container .comment_list-chat .comment_action {
   display: flex;
@@ -351,12 +369,16 @@
   justify-content: center;
 }
 
-.comment_list-chat .comment_action img {
-  height: 45px;
-  width: 45px;
-  object-fit: cover;
+.comment_list-chat .comment_action img.img_user {
+  width: 50px;
+  height: 50px;
   border-radius: 50%;
   box-shadow: rgba(0, 0, 0, 0.4) 0px 0px 10px;
+}
+.comment_list-chat .comment_action img:not(.img_user) {
+  height: 150px;
+  width: 150px;
+  object-fit: cover;
 }
 .comment_list-chat .comment_action input {
   font-weight: 400;
@@ -364,7 +386,7 @@
   outline: none;
   border-radius: 12px;
   padding: 0 15px;
-  font-size: 16px;
+  font-size: 14px;
   border: 0;
   box-shadow: rgba(0, 0, 0, 0.4) 0px 0px 10px;
 }
@@ -376,7 +398,17 @@
 }
 
 .quill {
-  overflow: auto;
+  width: 100%;
+  height: 100%;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  box-shadow: rgba(0, 0, 0, 0.4) 0px 0px 10px;
+}
+
+.ql-container.ql-snow {
+  background-color: #ffffff;
+  overflow-y: auto;
 }
 
 /* css phần sidebar */
@@ -441,6 +473,13 @@
   padding: 30px;
   display: flex;
 }
+@media only screen and (max-width: 768px) {
+  .project_page-header {
+    flex-direction: column;
+    gap: 12px;
+    padding-bottom: 0;
+  }
+}
 .project_page-header .header_left {
   flex-shrink: 0;
 }
@@ -451,9 +490,20 @@
   gap: 16px;
   align-items: center;
 }
+@media only screen and (max-width: 768px) {
+  .project_page-header .header_right {
+    justify-content: flex-start;
+  }
+}
 
 .project_page-table {
   padding: 24px 30px;
+  overflow-x: auto;
+}
+@media only screen and (max-width: 480px) {
+  .project_page-table {
+    padding: 10px;
+  }
 }
 
 .project_status .btn_status {
@@ -465,50 +515,25 @@
   font-size: 12px;
 }
 
-.tasks_page .task_info {
-  position: fixed;
-  top: 0;
-  right: 0;
-  left: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.4);
-  z-index: 50;
+.modal_task {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
 }
 
-.task_info .modal_task {
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  padding: 50px;
-  position: absolute;
-  overflow-y: auto;
-}
-.task_info .modal_task::-webkit-scrollbar-track {
-  -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
-  border-radius: 10px;
-  background-color: #f5f5f5;
-}
-.task_info .modal_task::-webkit-scrollbar {
-  width: 12px;
-  background-color: #f5f5f5;
-}
-.task_info .modal_task::-webkit-scrollbar-thumb {
-  border-radius: 10px;
-  -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
-  background-color: #555;
-}
-.task_info .modal_table {
+.modal_table {
   padding: 20px;
   box-shadow: rgba(0, 0, 0, 0.4) 0px 0px 10px;
 }
-.task_info .modal_comment {
+
+.modal_comment {
   margin-top: 30px;
   display: flex;
   gap: 20px;
   flex-direction: column;
 }
-.task_info .modal_comment .comment_title {
+.modal_comment .comment_title {
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
@@ -518,42 +543,39 @@
   font-size: 16px;
   line-height: 1.5;
 }
-.task_info .modal_comment .comments_container {
+.modal_comment .comments_container {
   box-shadow: rgba(0, 0, 0, 0.4) 0px 0px 10px;
   flex: 1;
 }
-.task_info .modal_comment .comments_container .comment_list {
-  padding: 50px 15px 15px;
+.modal_comment .comments_container .comment_list {
+  padding: 30px 15px 15px;
   margin: 0 auto;
   min-height: 300px;
-  max-height: 520px;
+  max-height: 560px;
   overflow-y: auto;
   display: flex;
-  gap: 20px;
+  gap: 4px;
   flex-direction: column;
-  padding-bottom: 150px;
+  padding-bottom: 170px;
+}
+.modal_comment .comments_container .comment_list::-webkit-scrollbar-track {
+  -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+  border-radius: 5px;
+  background-color: #f5f5f5;
+}
+.modal_comment .comments_container .comment_list::-webkit-scrollbar {
+  width: 6px;
+  background-color: #f5f5f5;
+}
+.modal_comment .comments_container .comment_list::-webkit-scrollbar-thumb {
+  border-radius: 10px;
+  -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+  background-color: #757171;
 }
 
 .task_info--container {
-  position: absolute;
-  top: 40px;
-  left: 50%;
-  bottom: 40px;
-  transform: translateX(-50%);
-  background-color: white;
-  border: 1px solid #888;
-  width: 80%;
-}
-
-.btn_close {
-  z-index: 56;
-  position: absolute;
-  right: 20px;
-  top: 10px;
-  cursor: pointer;
-}
-.btn_close:hover {
-  opacity: 0.5;
+  padding: 50px 30px;
+  margin: 0 auto;
 }
 
 .stages_page .modal {
@@ -582,11 +604,28 @@
   box-shadow: rgba(0, 0, 0, 0.4) 0px 0px 10px;
   border-radius: 12px;
 }
+@media only screen and (max-width: 768px) {
+  .stages_page .modal .form {
+    width: 90%;
+  }
+  .stages_page .modal .form .form_antd {
+    width: 100% !important;
+    gap: 0 !important;
+  }
+  .stages_page .modal .form .ant-form-item.css-dev-only-do-not-override-htwhyh {
+    margin-bottom: 10px !important;
+  }
+}
 .stages_page .modal .form .ant-row.ant-form-item-row.css-dev-only-do-not-override-htwhyh {
   gap: 15px;
 }
 .stages_page .modal .form_title {
   padding-bottom: 20px;
+}
+@media only screen and (max-width: 768px) {
+  .stages_page .modal .form_title {
+    padding: 10px 0;
+  }
 }
 
 @keyframes opacity {
@@ -606,6 +645,11 @@
 
 .project-detail {
   padding: 32px;
+}
+@media only screen and (max-width: 768px) {
+  .project-detail {
+    padding: 10px;
+  }
 }
 
 .member-list {
