@@ -12,7 +12,7 @@ const ProjectDetail: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const breadcrumbItem = [
     { title: <Link to="/">Home (Project List)</Link> },
-    { title: deslugify(params.projectName as string) },
+    { title: deslugify(params.projectId as string) },
   ];
 
   const tabItems = [
