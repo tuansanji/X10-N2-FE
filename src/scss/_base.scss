@@ -1,11 +1,43 @@
 * {
-    box-sizing: border-box;
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
 }
 
 .main-layout {
-    position: fixed;
-    top: var(--header-h);
-    left: 0;
-    right: 0;
-    bottom: 0;
+  position: fixed;
+  top: $header-h;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+.container {
+  display: flex;
+  position: relative;
+  height: 100%;
+  width: 100%;
+}
+.container_content {
+  flex: 1;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  transition: all 0.3s linear;
+  overflow-y: auto;
+}
+@media screen and (max-width: 1023.98px) {
+  .container_content {
+    left: 30px !important;
+  }
+}
+.btn_close {
+  z-index: 56;
+  position: absolute;
+  right: 20px;
+  top: 10px;
+  cursor: pointer;
+  &:hover {
+    opacity: 0.5;
+  }
 }
