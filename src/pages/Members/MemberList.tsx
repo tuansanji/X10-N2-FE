@@ -165,7 +165,6 @@ const MemberList: React.FC = () => {
         return (
           <>
             <Button
-              disabled
               icon={<DeleteFilled />}
               onClick={() => handleDeleteMember(index)}
             />

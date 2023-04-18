@@ -85,15 +85,7 @@ const ListProject: React.FC = () => {
         render: (_, record: DataType) => {
           return (
             <>
-              <Link
-                to={`/${slugify(record.name, {
-                  replacement: "-", // Thay thế dấu cách bằng dấu gạch ngang
-                  remove: /[*+~.()'"!:@]/g, // Loại bỏ các ký tự đặc biệt
-                  lower: true, // Chuyển đổi chữ hoa thành chữ thường
-                })}`}
-              >
-                {record.name}
-              </Link>
+              <Link to={`/${record.key}`}>{record.name}</Link>
             </>
           );
         },

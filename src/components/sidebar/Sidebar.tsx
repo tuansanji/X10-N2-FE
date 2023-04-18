@@ -49,7 +49,7 @@ const Sidebar = () => {
   const dispatch = useDispatch();
   const listProject = useSelector((state: any) => state.project?.listProject);
   const statusMenu = useSelector((state: any) => state.menu?.status);
-  const token = useSelector((state: any) => state.auth.token);
+  const token = useSelector((state: any) => state.auth.userInfo.token);
 
   const toggleCollapsed = () => {
     dispatch(changeMenu());
