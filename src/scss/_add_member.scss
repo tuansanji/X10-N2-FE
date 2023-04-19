@@ -1,0 +1,11 @@
+.add-member-list {
+  display: flex;
+
+  justify-content: space-between;
+  margin: 2rem 0;
+}
+
+.add-member-button {
+  @include flex(row, flex-end);
+  gap: 16px;
+}

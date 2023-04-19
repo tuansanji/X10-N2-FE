@@ -1,8 +1,22 @@
-import React, { useState } from "react";
-import { Button, Input, Divider, Table, Modal, Typography, Select } from "antd";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import { useParams } from "react-router-dom";
+import {
+  Button,
+  Input,
+  Divider,
+  Table,
+  Modal,
+  Typography,
+  Select,
+  Popconfirm,
+  message,
+} from "antd";
 import { ColumnsType } from "antd/es/table";
 import moment from "moment";
 import { DeleteFilled } from "@ant-design/icons";
+import { useSelector } from "react-redux";
+import AddMember from "./AddMember";
 
 const { Search } = Input;
 const { Text, Title } = Typography;
@@ -13,77 +27,67 @@ interface MemberDataType {
   joinDate: string;
 }
 
-const projectUser = [
-  { name: "Nguyen Van A", role: "Project Owner", joinDate: new Date(), id: 1 },
-  {
-    name: "Nguyen Van B",
-    role: "Project Manager",
-    joinDate: new Date(),
-    id: 2,
-  },
-  {
-    name: "Nguyen Van C",
-    role: "Project Supervisor",
-    joinDate: new Date(),
-    id: 3,
-  },
-  { name: "Nguyen Van D", role: "Project Member", joinDate: new Date(), id: 4 },
-  { name: "Nguyen Van E", role: "Project Member", joinDate: new Date(), id: 5 },
-  { name: "Nguyen Van F", role: "Project Member", joinDate: new Date(), id: 6 },
-  { name: "Nguyen Van G", role: "Project Member", joinDate: new Date(), id: 7 },
-  { name: "Nguyen Van E", role: "Project Member", joinDate: new Date(), id: 8 },
-  { name: "Nguyen Van F", role: "Project Member", joinDate: new Date(), id: 9 },
-  {
-    name: "Nguyen Van G",
-    role: "Project Member",
-    joinDate: new Date(),
-    id: 10,
-  },
-];
-
 const MemberList: React.FC = () => {
-  const [memberData, setMemberData] = useState<any[]>(projectUser);
-  const [searchInput, setSearchInput] = useState<string>("");
+  const params = useParams();
+  const token = useSelector((state: any) => state.auth.userInfo.token);
+  const [memberData, setMemberData] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [memberInfoModal, setmemberInfoModal] = useState<any>({});
   const [showMemberInfoModal, setShowMemberInfoModal] =
     useState<boolean>(false);
   const [showAddMemberModal, setShowAddMemberModal] = useState<boolean>(false);
-  const [newMem, setNewMem] = useState<object>({});
+  const [searchInput, setSearchInput] = useState<string>("");
+
+  // Lấy List member thuộc project
+  useEffect(() => {
+    const getMemberData = async () => {
+      try {
+        setIsLoading(true);
+        const response = await axios.get(
+          `${process.env.REACT_APP_BACKEND_URL}/project/members/${params.projectId}`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        setMemberData(response.data.members);
+        setIsLoading(false);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    getMemberData();
+  }, []);
 
   // Validate điều kiện 1 dự án chỉ có 1 owner và 3 manager
   let managerOptionValidate = memberData.filter((data: any) => {
-    return data.role === "Project Manager";
+    return data.role === "manager";
   });
 
   let ownerOptionValidate = memberData.filter((data: any) => {
-    return data.role === "Project Owner";
+    return data.role === "owner";
   });
-  // Kết thúc Validate
 
   const roleSelectOptions = [
     {
-      value: "Project Owner",
-      label: "Project Owner",
+      value: "owner",
+      label: "Owner",
       disabled: ownerOptionValidate.length >= 1 && true,
     },
     {
-      value: "Project Manager",
-      label: "Project Manager",
+      value: "manager",
+      label: "Manager",
       disabled: managerOptionValidate.length >= 3 && true,
     },
-    { value: "Project Supervisor", label: "Project Supervisor" },
-    { value: "Project Member", label: "Project Member" },
+    { value: "supervisor", label: "Supervisor" },
+    { value: "member", label: "Member" },
   ];
+  // Kết thúc Validate
 
   // Add Member function trong modal
   const handleAddMember = (value: any) => {
     setShowAddMemberModal(false);
   };
 
-  // Search Member trong bảng chính: Cần API search theo tên thành viên trong dự án
-  const handleSearchMember = (value: string) => {
-    setSearchInput("");
-  };
+  // Search Member thuộc project
+  const handleSearchMember = (event: any) => {};
 
   // Update Role cho member trong dự án: Cần API cập nhật lại thông tin người dùng trong dự án
   const updateRole = (selectValue: any, indexValue: number) => {
@@ -96,14 +100,6 @@ const MemberList: React.FC = () => {
     setMemberData(updatedRole);
   };
 
-  // Cũng gọi API để cập nhật lại người dùng trong dự án?
-  const handleDeleteMember = (indexValue: any) => {
-    let newData = memberData.filter((element: any, index: number) => {
-      return indexValue !== index;
-    });
-    setMemberData(newData);
-  };
-
   // Show thông tin chi tiết member khi click vào từng member
   // Nếu show thông tin chi tiết thì lại cần 1 API để get chi tiết user?
   const showMemberModal = (indexValue: any) => {
@@ -112,6 +108,14 @@ const MemberList: React.FC = () => {
     });
     setmemberInfoModal(memberInfo[0]);
     setShowMemberInfoModal(true);
+  };
+
+  // Popup confirm khi click vao delete user
+  const confirm = (stages: MemberDataType) => {
+    console.log(stages);
+
+    message.success("Click on Yes");
+    message.error("Click on No");
   };
 
   // Setup Table
@@ -143,6 +147,7 @@ const MemberList: React.FC = () => {
         return (
           <>
             <Select
+              disabled={record.role === "owner" && true}
               onSelect={(value) => updateRole(value, index)}
               value={record.role}
               options={roleSelectOptions}
@@ -164,10 +169,20 @@ const MemberList: React.FC = () => {
       render: (_, record: MemberDataType, index: number) => {
         return (
           <>
-            <Button
-              icon={<DeleteFilled />}
-              onClick={() => handleDeleteMember(index)}
-            />
+            <Popconfirm
+              disabled={record.role === "owner" && true}
+              placement="topRight"
+              title="Delete Member"
+              description="Are you sure to delete this member?"
+              onConfirm={() => confirm(record)}
+              okText="Yes"
+              cancelText="No"
+            >
+              <Button
+                icon={<DeleteFilled />}
+                disabled={record.role === "owner" && true}
+              />
+            </Popconfirm>
           </>
         );
       },
@@ -176,10 +191,10 @@ const MemberList: React.FC = () => {
 
   const data: MemberDataType[] = memberData.map((data) => {
     return {
-      key: data.id,
-      name: data.name,
+      key: data.data._id,
+      name: data.data.fullName,
       role: data.role,
-      joinDate: moment(data.joinDate).format("DD/MM/YYYY"),
+      joinDate: moment(data.joiningDate).format("DD/MM/YYYY"),
     };
   });
   //Kết thúc setup table
@@ -187,7 +202,7 @@ const MemberList: React.FC = () => {
   return (
     <div className="member-list">
       {/* Member Info Modal */}
-      <Modal
+      {/* <Modal
         footer={null}
         centered
         open={showMemberInfoModal}
@@ -199,7 +214,7 @@ const MemberList: React.FC = () => {
         <p>{memberInfoModal.name}</p>
         <p>{memberInfoModal.role}</p>
         <p>{moment(memberInfoModal.joinDate).format("DD/MM/YYYY")}</p>
-      </Modal>
+      </Modal> */}
 
       {/* Add Member Modal */}
       <Modal
@@ -208,38 +223,9 @@ const MemberList: React.FC = () => {
         onCancel={() => {
           setShowAddMemberModal(false);
         }}
-        footer={
-          <>
-            <Button type="primary" onClick={handleAddMember}>
-              Add Members
-            </Button>
-            <Button onClick={() => setShowAddMemberModal(false)}>Cancel</Button>
-          </>
-        }
+        footer={null}
       >
-        <Title level={3}>Add Members</Title>
-        {/* Tìm User trong công ty để nhét vào dự án 
-        Call API search User theo input? */}
-        <Search
-          value={searchInput}
-          allowClear
-          onChange={(event: any) => setSearchInput(event?.target.value)}
-          onSearch={handleSearchMember}
-          placeholder="Full Name"
-          size="large"
-          style={{ width: "300px" }}
-        />
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            margin: "2rem 0",
-          }}
-        >
-          <div>Full Name</div>
-          <div>Select Role</div>
-          <div>X</div>
-        </div>
+        <AddMember closeModal={setShowAddMemberModal} />
       </Modal>
 
       {/* Main Content */}
@@ -251,6 +237,8 @@ const MemberList: React.FC = () => {
         >
           Add Members
         </Button>
+
+        {/* Search Project Member Input */}
         <Search
           value={searchInput}
           allowClear

@@ -22,7 +22,7 @@ import type { InputRef } from "antd";
 import type { ColumnsType, TableProps, ColumnType } from "antd/es/table";
 import type { SizeType } from "antd/es/config-provider/SizeContext";
 import type { FilterConfirmProps } from "antd/es/table/interface";
-import ProjectInfo from "../../components/projectForm/ProjectInfo";
+import ProjectForm from "../../components/projectForm/ProjectForm";
 
 // import { TablePaginationPosition } from 'antd/lib/table';
 export interface DataType {
@@ -229,7 +229,7 @@ const ListProject: React.FC = () => {
           footer={null}
           onCancel={() => setOpenCreateProject(false)}
         >
-          <ProjectInfo
+          <ProjectForm
             title="Create New Project"
             useCase="create"
             closeModal={setOpenCreateProject}
@@ -242,7 +242,7 @@ const ListProject: React.FC = () => {
           footer={null}
           onCancel={() => setOpenEditProject(false)}
         >
-          <ProjectInfo
+          <ProjectForm
             title="Edit Project Info"
             useCase="edit"
             closeModal={setOpenEditProject}

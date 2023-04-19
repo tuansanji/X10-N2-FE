@@ -623,21 +623,39 @@
   cursor: pointer;
 }
 
-.project-info {
+.project-form {
   margin: 1rem;
 }
-.project-info h3 {
+.project-form h3 {
   text-align: center;
 }
-.project-info .ant-form-item {
+.project-form .ant-form-item {
   margin-bottom: 1rem;
 }
-.project-info .ant-form-item-label {
+.project-form .ant-form-item-label {
   padding: 0;
 }
-.project-info button {
+.project-form button {
   width: 100%;
   margin-top: 1rem;
+}
+
+.project-info {
+  max-width: 992px;
+  margin-top: 1rem;
+}
+
+.add-member-list {
+  display: flex;
+  justify-content: space-between;
+  margin: 2rem 0;
+}
+
+.add-member-button {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  gap: 16px;
 }
 
 /*# sourceMappingURL=main.css.map */
