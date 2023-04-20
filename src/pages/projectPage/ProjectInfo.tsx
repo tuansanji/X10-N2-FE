@@ -10,7 +10,6 @@ interface PropTypes {
 }
 
 const ProjectInfo: React.FC<PropTypes> = ({ projectDetail }) => {
-  console.log("Project Detail on Info Tab", projectDetail);
   return (
     <div className="project-info">
       <Descriptions

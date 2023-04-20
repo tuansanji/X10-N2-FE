@@ -47,6 +47,7 @@ const ListProject: React.FC = () => {
   const [projectDetail, setProjectDetail] = useState<any>();
   const [openEditProject, setOpenEditProject] = useState<boolean>(false);
   const [searchInput, setSearchInput] = useState<string>("");
+  console.log(listProject);
 
   const confirm = (stages: DataType) => {
     console.log(stages);
@@ -111,10 +112,10 @@ const ListProject: React.FC = () => {
             case "ongoing":
               bgColor = "#F0E155";
               break;
-            case "complete":
+            case "completed":
               bgColor = "#44CB39";
               break;
-            case "suspension":
+            case "suspended":
               bgColor = "#EC2B2B";
               break;
             case "preparing":
@@ -279,10 +280,10 @@ const ListProject: React.FC = () => {
               onChange={handleChange}
               options={[
                 { value: "all", label: "All" },
-                { value: "complete", label: "Complete" },
-                { value: "suspension", label: "Suspension" }, //tạm đình chỉ
-                { value: "open", label: "Open" }, //Chuẩn bị
-                { value: "ongoing", label: "Ongoing" }, //đang thực hiện
+                { value: "completed", label: "Completed" },
+                { value: "suspended", label: "Suspended" }, //tạm đình chỉ
+                { value: "preparing", label: "Preparing" }, //Chuẩn bị
+                { value: "ongoing", label: "On Going" }, //đang thực hiện
                 // { value: "processing", label: "Processing" }, //đang thực hiện
                 // { value: "preparing", label: "Preparing" }, //chuẩn bị
               ]}

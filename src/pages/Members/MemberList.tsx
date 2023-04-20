@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { useParams } from "react-router-dom";
 import {
@@ -11,6 +11,7 @@ import {
   Select,
   Popconfirm,
   message,
+  Skeleton,
 } from "antd";
 import { ColumnsType } from "antd/es/table";
 import moment from "moment";
@@ -25,14 +26,19 @@ interface MemberDataType {
   name: string;
   role: string;
   joinDate: string;
+  key?: string;
 }
+
+const DeleteConfirmPopup: React.FC = () => {
+  return <></>;
+};
 
 const MemberList: React.FC = () => {
   const params = useParams();
   const token = useSelector((state: any) => state.auth.userInfo.token);
   const [memberData, setMemberData] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [memberInfoModal, setmemberInfoModal] = useState<any>({});
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [showMemberInfoModal, setShowMemberInfoModal] =
     useState<boolean>(false);
   const [showAddMemberModal, setShowAddMemberModal] = useState<boolean>(false);
@@ -57,24 +63,24 @@ const MemberList: React.FC = () => {
   }, []);
 
   // Validate điều kiện 1 dự án chỉ có 1 owner và 3 manager
+  let leaderOptionValidate = memberData.filter((data: any) => {
+    return data.role === "leader";
+  });
+
   let managerOptionValidate = memberData.filter((data: any) => {
     return data.role === "manager";
   });
 
-  let ownerOptionValidate = memberData.filter((data: any) => {
-    return data.role === "owner";
-  });
-
   const roleSelectOptions = [
-    {
-      value: "owner",
-      label: "Owner",
-      disabled: ownerOptionValidate.length >= 1 && true,
-    },
     {
       value: "manager",
       label: "Manager",
-      disabled: managerOptionValidate.length >= 3 && true,
+      disabled: managerOptionValidate.length >= 1 && true,
+    },
+    {
+      value: "leader",
+      label: "Leader",
+      disabled: leaderOptionValidate.length >= 3 && true,
     },
     { value: "supervisor", label: "Supervisor" },
     { value: "member", label: "Member" },
@@ -111,11 +117,23 @@ const MemberList: React.FC = () => {
   };
 
   // Popup confirm khi click vao delete user
-  const confirm = (stages: MemberDataType) => {
-    console.log(stages);
+  const handleConfirm = async (stages: MemberDataType) => {
+    try {
+      setIsLoading(true);
+      const response = await axios({
+        method: "post",
+        url: `${process.env.REACT_APP_BACKEND_URL}/project/members/remove/${params.projectId}`,
+        headers: { Authorization: `Bearer ${token}` },
+        data: stages.key,
+      });
+      console.log(response);
+      setIsLoading(false);
+    } catch (err) {
+      console.error(err);
+      setIsLoading(false);
+    }
 
-    message.success("Click on Yes");
-    message.error("Click on No");
+    // message.success("Click on Yes");
   };
 
   // Setup Table
@@ -147,7 +165,7 @@ const MemberList: React.FC = () => {
         return (
           <>
             <Select
-              disabled={record.role === "owner" && true}
+              disabled={record.role === "manager" && true}
               onSelect={(value) => updateRole(value, index)}
               value={record.role}
               options={roleSelectOptions}
@@ -170,17 +188,15 @@ const MemberList: React.FC = () => {
         return (
           <>
             <Popconfirm
-              disabled={record.role === "owner" && true}
+              disabled={record.role === "manager" && true}
               placement="topRight"
               title="Delete Member"
               description="Are you sure to delete this member?"
-              onConfirm={() => confirm(record)}
-              okText="Yes"
-              cancelText="No"
+              onConfirm={() => handleConfirm(record)}
             >
               <Button
                 icon={<DeleteFilled />}
-                disabled={record.role === "owner" && true}
+                disabled={record.role === "manager" && true}
               />
             </Popconfirm>
           </>
@@ -225,7 +241,11 @@ const MemberList: React.FC = () => {
         }}
         footer={null}
       >
-        <AddMember closeModal={setShowAddMemberModal} />
+        <AddMember
+          closeModal={setShowAddMemberModal}
+          memberData={memberData}
+          leaderOptionValidate={leaderOptionValidate}
+        />
       </Modal>
 
       {/* Main Content */}
@@ -250,14 +270,18 @@ const MemberList: React.FC = () => {
         />
       </div>
       <Divider />
-      <div className="content">
-        <Table
-          columns={columns}
-          dataSource={data}
-          scroll={{ x: 1440 }}
-          pagination={{ position: ["bottomCenter"] }}
-        />
-      </div>
+      {isLoading ? (
+        <Skeleton />
+      ) : (
+        <div className="content">
+          <Table
+            columns={columns}
+            dataSource={data}
+            scroll={{ x: 1440 }}
+            pagination={{ position: ["bottomCenter"] }}
+          />
+        </div>
+      )}
     </div>
   );
 };
