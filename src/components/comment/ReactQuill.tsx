@@ -34,6 +34,7 @@ const ReactQuillFC: React.FC<IQuill> = ({
     "blockquote",
     "list",
     "bullet",
+
     "link",
     "color",
     "image",
@@ -61,7 +62,7 @@ const ReactQuillFC: React.FC<IQuill> = ({
         setIsComment?.(false);
       }
     }
-
+    console.log(content);
     // let has_attribues = delta.ops[1].attributes || "";
     // console.log(has_attribues);
     // const cursorPosition = e.quill.getSelection().index;

@@ -64,15 +64,15 @@ const Sidebar = () => {
                 return getItem(
                   project?.name,
                   `sub${index + 1}`,
-                  <AppstoreOutlined />,
-                  [
-                    ...project.stages.map((stage: IStage, index2: number) =>
-                      getItem("Submenu", `sub${index2 + 1}`, null, [
-                        getItem("Option 7", index2 + 1),
-                        getItem("Option 8", index2 + 1),
-                      ])
-                    ),
-                  ]
+                  <AppstoreOutlined />
+                  // [
+                  //   ...project.stages.map((stage: IStage, index2: number) =>
+                  //     getItem("Submenu", `sub${index2 + 1}`, null, [
+                  //       getItem("Option 7", index2 + 1),
+                  //       getItem("Option 8", index2 + 1),
+                  //     ])
+                  //   ),
+                  // ]
                 );
               }
             ),

@@ -3,8 +3,9 @@ import { IProject } from "../../components/sidebar/Sidebar";
 import Loading from "../../components/support/Loading";
 import { listStages } from "../../data/statges";
 import Search from "antd/es/input/Search";
+import axios from "axios";
 import moment from "moment";
-import React, { useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import Highlighter from "react-highlight-words";
 import { useSelector } from "react-redux";
 import { Link, useParams } from "react-router-dom";
@@ -36,31 +37,31 @@ import type { FilterConfirmProps } from "antd/es/table/interface";
 export interface IStages {
   _id?: string;
   name: string;
-  startDate: string;
-  estimatedEndDate: string;
-  status: string;
-  actualEndDate?: string;
-  createdDate?: string;
-  startEndDate?: Date[];
+  startDate: Date;
+  endDateExpected: Date;
+  reviews?: object[];
+  actualEndDate?: Date;
+}
+interface IStagesData {
+  stages: IStages[];
+  currentPage: number;
+  total?: number;
+  totalPages: number;
 }
 interface DataType {
   key?: string;
   name: string;
-  status: string;
   startDate: string;
-  estimatedEndDate: string;
+  endDateExpected: string;
   actualEndDate: string;
-  createdDate?: string;
 }
 type DataIndex = keyof DataType;
 const StagesPage: React.FC = () => {
-  const listProject = useSelector((state: any) => state.project?.listProject);
-  const loading = useSelector((state: any) => state.project?.isFetching);
-  const [size, setSize] = useState<SizeType>("large");
-  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [loading, setLoading] = useState<boolean>(true);
+
   const [createStages, setCreateStages] = useState<boolean>(false);
   const [searchInput, setSearchInput] = useState<string>("");
-
+  const [stagesData, setStagesData] = useState<IStagesData>();
   const [editStages, setEditStages] = useState<{
     status: boolean;
     stages: IStages | {};
@@ -69,6 +70,19 @@ const StagesPage: React.FC = () => {
     stages: {},
   });
   const params = useParams();
+  const token: string = useSelector((state: any) => state.auth.userInfo.token);
+
+  useEffect(() => {
+    axios
+      .get(`${process.env.REACT_APP_BACKEND_URL}/stage/all`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      .then((res) => {
+        setStagesData(res.data);
+        setLoading(false);
+      })
+      .catch((err) => console.log(err));
+  }, []);
 
   const confirm = (stages: DataType) => {
     console.log(stages);
@@ -89,62 +103,10 @@ const StagesPage: React.FC = () => {
 
         sorter: (a, b) => a.name.localeCompare(b.name),
         render: (_, record: DataType) => (
-          <Link
-            to={`/${params.projectName}/${slugify(record.name, {
-              replacement: "-", // Thay thế dấu cách bằng dấu gạch ngang
-              // remove: /[*+~.()'"!:@]/g, // Loại bỏ các ký tự đặc biệt
-              lower: true, // Chuyển đổi chữ hoa thành chữ thường
-            })}}`}
-          >
-            {record.name}
-          </Link>
+          <Link to={`/${params.projectId}/${record.key}`}>{record.name}</Link>
         ),
       },
 
-      {
-        title: "Status",
-        key: "status",
-        dataIndex: "status",
-        sorter: (a, b) => a.status.localeCompare(b.status),
-
-        render: (_, { status }) => {
-          let bgColor: string = "";
-          switch (status) {
-            //   case "open":
-            //     bgColor = "#44CB39";
-            //     break;
-            case "ongoing":
-              bgColor = "#F0E155";
-              break;
-            case "complete":
-              bgColor = "#44CB39";
-              break;
-            case "suspension":
-              bgColor = "#EC2B2B";
-              break;
-            case "preparing":
-              bgColor = "#2E55DE";
-              break;
-            default:
-              bgColor = "transparent";
-              break;
-          }
-          return (
-            <div className="project_status">
-              <Button
-                className="btn btn_status"
-                type="primary"
-                shape="round"
-                // icon={<DownloadOutlined />}
-                style={{ backgroundColor: bgColor }}
-                size={"small"}
-              >
-                <span className=""> {status.toUpperCase()}</span>
-              </Button>
-            </div>
-          );
-        },
-      },
       {
         title: "Start date",
         dataIndex: "startDate",
@@ -156,12 +118,12 @@ const StagesPage: React.FC = () => {
         },
       },
       {
-        title: "Estimated end date",
-        dataIndex: "estimatedEndDate",
-        key: "estimatedEndDate",
+        title: "end Date Expected",
+        dataIndex: "endDateExpected",
+        key: "endDateExpected",
         sorter: (a, b) => {
-          const startDateA = moment(a.estimatedEndDate, "YYYY-MM-DD").toDate();
-          const startDateB = moment(b.estimatedEndDate, "YYYY-MM-DD").toDate();
+          const startDateA = moment(a.endDateExpected, "YYYY-MM-DD").toDate();
+          const startDateB = moment(b.endDateExpected, "YYYY-MM-DD").toDate();
           return startDateA.getTime() - startDateB.getTime();
         },
       },
@@ -204,46 +166,27 @@ const StagesPage: React.FC = () => {
         ),
       },
     ],
-    [listStages]
+    [stagesData]
   );
 
   const data: DataType[] = useMemo(() => {
-    let newStages =
-      listStages && listStages.length > 0
-        ? [
-            ...listStages
-              .filter((stage: IStages) => {
-                if (statusFilter === "all") {
-                  return true;
-                } else {
-                  return stage.status === statusFilter;
-                }
-              })
-              .map((stage: IStages, index: number) => {
-                return {
-                  key: stage._id,
-                  name: stage.name,
+    if (!stagesData?.stages) return []; // Trường hợp không có dữ liệu
 
-                  status: stage.status,
-                  startDate: moment(stage.startDate).format("YYYY-MM-DD"),
-                  actualEndDate: moment(stage.actualEndDate).format(
-                    "YYYY-MM-DD"
-                  ),
-                  estimatedEndDate: moment(stage.estimatedEndDate).format(
-                    "YYYY-MM-DD"
-                  ),
-                };
-              }),
-          ]
-        : [];
-    return newStages;
-  }, [statusFilter]);
+    return stagesData.stages.map((stage: IStages) => ({
+      key: stage._id,
+      name: stage.name,
+      startDate: moment(stage.startDate).format("YYYY-MM-DD"),
+      endDateExpected: moment(stage.endDateExpected).format("YYYY-MM-DD"),
+      actualEndDate: stage.actualEndDate
+        ? moment(stage.actualEndDate).format("YYYY-MM-DD")
+        : "",
+    }));
+  }, [stagesData?.stages]);
+
   const pagination: TableProps<any>["pagination"] = {
     position: ["bottomCenter"],
   };
-  const handleChange = (value: string) => {
-    setStatusFilter(value);
-  };
+
   return (
     <div className="content_project-page stages_page">
       {/* {loading && <Loading />} */}
@@ -251,7 +194,7 @@ const StagesPage: React.FC = () => {
         <div className="header_left">
           <Button
             type="primary"
-            size={size}
+            size={"large"}
             onClick={() => setCreateStages(true)}
           >
             Create Stages
@@ -264,24 +207,9 @@ const StagesPage: React.FC = () => {
               allowClear
               onChange={(event: any) => setSearchInput(event?.target.value)}
               onSearch={handleSearchMember}
-              placeholder="Enter stage name..."
+              placeholder="Enter stages name..."
               size="large"
               style={{ width: "300px" }}
-            />
-            <Select
-              defaultValue="all"
-              size={size}
-              style={{ width: 120 }}
-              onChange={handleChange}
-              options={[
-                { value: "all", label: "All" },
-                { value: "complete", label: "Complete" },
-                { value: "suspension", label: "Suspension" }, //tạm đình chỉ
-                { value: "open", label: "Open" }, //Chuẩn bị
-                { value: "ongoing", label: "Ongoing" }, //đang thực hiện
-                // { value: "processing", label: "Processing" }, //đang thực hiện
-                // { value: "preparing", label: "Preparing" }, //chuẩn bị
-              ]}
             />
           </Space>
         </div>
