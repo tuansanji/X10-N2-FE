@@ -40,7 +40,7 @@ export interface IStages {
   startDate: Date;
   endDateExpected: Date;
   reviews?: object[];
-  actualEndDate?: Date;
+  endDateActual?: Date;
 }
 interface IStagesData {
   stages: IStages[];
@@ -53,15 +53,16 @@ interface DataType {
   name: string;
   startDate: string;
   endDateExpected: string;
-  actualEndDate: string;
+  endDateActual: string;
 }
 type DataIndex = keyof DataType;
 const StagesPage: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
-
+  const [messageApi, contextHolder] = message.useMessage();
   const [createStages, setCreateStages] = useState<boolean>(false);
   const [searchInput, setSearchInput] = useState<string>("");
   const [stagesData, setStagesData] = useState<IStagesData>();
+  const [finishCount, setFinishCount] = useState<number>(0);
   const [editStages, setEditStages] = useState<{
     status: boolean;
     stages: IStages | {};
@@ -74,25 +75,92 @@ const StagesPage: React.FC = () => {
 
   useEffect(() => {
     axios
-      .get(`${process.env.REACT_APP_BACKEND_URL}/stage/all`, {
-        headers: { Authorization: `Bearer ${token}` },
-      })
+      .get(
+        `${process.env.REACT_APP_BACKEND_URL}/project/stages/${params.projectId}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      )
       .then((res) => {
         setStagesData(res.data);
         setLoading(false);
       })
-      .catch((err) => console.log(err));
-  }, []);
+      .catch((err) => {
+        setLoading(false);
+        message.error(err.response.data.message);
+      });
+  }, [finishCount, token]);
 
   const confirm = (stages: DataType) => {
-    console.log(stages);
-
-    message.success("Click on Yes");
-    message.error("Click on No");
+    messageApi.open({
+      key: stages.key,
+      type: "loading",
+      content: "Loading...",
+    });
+    axios
+      .post(
+        `${process.env.REACT_APP_BACKEND_URL}/stage/delete/${stages.key}`,
+        stages.key,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      )
+      .then((res) => {
+        messageApi.open({
+          key: stages.key,
+          type: "success",
+          content: res.data.message,
+          duration: 2,
+        });
+        setFinishCount((prev) => prev + 1);
+      })
+      .catch((err) => {
+        messageApi.open({
+          key: stages.key,
+          type: "error",
+          content: err.response.data.message,
+          duration: 2,
+        });
+      });
   };
+
   const handleSearchMember = (value: string) => {
-    setSearchInput("");
-    console.log(value);
+    setLoading(true);
+    if (value) {
+      axios
+        .get(
+          `${process.env.REACT_APP_BACKEND_URL}/stage/search?name=${value}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        )
+        .then((res) => {
+          setStagesData(res.data);
+
+          setLoading(false);
+          setSearchInput("");
+        })
+        .catch((err) => {
+          setLoading(false);
+          message.error(err.response.data.message);
+        });
+    } else {
+      axios
+        .get(
+          `${process.env.REACT_APP_BACKEND_URL}/project/stages/${params.projectId}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        )
+        .then((res) => {
+          setStagesData(res.data);
+          setLoading(false);
+        })
+        .catch((err) => {
+          setLoading(false);
+          message.error(err.response.data.message);
+        });
+    }
   };
   const columns: ColumnsType<DataType> = useMemo(
     () => [
@@ -129,11 +197,11 @@ const StagesPage: React.FC = () => {
       },
       {
         title: "Actual end date",
-        dataIndex: "actualEndDate",
-        key: "actualEndDate",
+        dataIndex: "endDateActual",
+        key: "endDateActual",
         sorter: (a, b) => {
-          const startDateA = moment(a.actualEndDate, "YYYY-MM-DD").toDate();
-          const startDateB = moment(b.actualEndDate, "YYYY-MM-DD").toDate();
+          const startDateA = moment(a.endDateActual, "YYYY-MM-DD").toDate();
+          const startDateB = moment(b.endDateActual, "YYYY-MM-DD").toDate();
           return startDateA.getTime() - startDateB.getTime();
         },
       },
@@ -170,15 +238,15 @@ const StagesPage: React.FC = () => {
   );
 
   const data: DataType[] = useMemo(() => {
-    if (!stagesData?.stages) return []; // Trường hợp không có dữ liệu
+    if (!stagesData?.stages) return [];
 
     return stagesData.stages.map((stage: IStages) => ({
       key: stage._id,
       name: stage.name,
       startDate: moment(stage.startDate).format("YYYY-MM-DD"),
       endDateExpected: moment(stage.endDateExpected).format("YYYY-MM-DD"),
-      actualEndDate: stage.actualEndDate
-        ? moment(stage.actualEndDate).format("YYYY-MM-DD")
+      endDateActual: stage.endDateActual
+        ? moment(stage.endDateActual).format("YYYY-MM-DD")
         : "",
     }));
   }, [stagesData?.stages]);
@@ -189,7 +257,8 @@ const StagesPage: React.FC = () => {
 
   return (
     <div className="content_project-page stages_page">
-      {/* {loading && <Loading />} */}
+      {loading && <Loading />}
+      {contextHolder}
       <div className="project_page-header ">
         <div className="header_left">
           <Button
@@ -222,12 +291,14 @@ const StagesPage: React.FC = () => {
           title="Create Stages"
           button="Create"
           status={false}
-          actualEndDate={false}
+          endDateActual={false}
           setCreateStages={setCreateStages}
+          setFinishCount={setFinishCount}
         />
       )}
       {editStages.status && (
         <FormStages
+          setFinishCount={setFinishCount}
           editStages={editStages}
           title="Edit Stages"
           button="Update"

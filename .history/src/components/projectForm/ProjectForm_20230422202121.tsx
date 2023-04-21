@@ -1,4 +1,3 @@
-import { LoadingOutlined } from "@ant-design/icons";
 import axios from "axios";
 import dayjs from "dayjs";
 import _ from "lodash";
@@ -15,6 +14,11 @@ import {
   Button,
   notification,
 } from "antd";
+<<<<<<< HEAD:src/components/projectForm/ProjectForm.tsx
+import dayjs from "dayjs";
+import { LoadingOutlined } from "@ant-design/icons";
+=======
+>>>>>>> 6a063c4 (update stage form):src/components/projectForm/ProjectInfo.tsx
 
 const { Title } = Typography;
 const { TextArea } = Input;

@@ -54,7 +54,28 @@ const Sidebar = () => {
   const toggleCollapsed = () => {
     dispatch(changeMenu());
   };
-
+  const fetchStagesData = (projectId: string): any => {
+    try {
+      axios
+        .get(
+          `${process.env.REACT_APP_BACKEND_URL}/project/stages/${projectId}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        )
+        .then((res) => [
+          ...res.data?.stages.map((stage: IStage, index2: number) =>
+            getItem("Submenu", `sub${index2 + 1}`, null, [
+              getItem("Option 7", index2 + 1),
+              getItem("Option 8", index2 + 1),
+            ])
+          ),
+        ]);
+    } catch (err) {
+      console.log(err);
+      return [];
+    }
+  };
   const items: MenuProps["items"] = useMemo(() => {
     let newItems =
       listProject.projects && listProject?.projects.length > 0
@@ -64,7 +85,8 @@ const Sidebar = () => {
                 return getItem(
                   project?.name,
                   `sub${index + 1}`,
-                  <AppstoreOutlined />
+                  <AppstoreOutlined />,
+                  fetchStagesData(project._id)
                   // [
                   //   ...project.stages.map((stage: IStage, index2: number) =>
                   //     getItem("Submenu", `sub${index2 + 1}`, null, [
