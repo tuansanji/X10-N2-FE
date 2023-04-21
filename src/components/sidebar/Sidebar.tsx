@@ -62,6 +62,7 @@ const Sidebar = () => {
   const toggleCollapsed = () => {
     dispatch(changeMenu());
   };
+<<<<<<< HEAD
 
   //api chi dữ liệu cho sidebar
   useEffect(() => {
@@ -73,10 +74,35 @@ const Sidebar = () => {
         setSidebarData(response.data);
       });
   }, [listProject, reloadSidebar]);
+=======
+  const fetchStagesData = (projectId: string): any => {
+    try {
+      axios
+        .get(
+          `${process.env.REACT_APP_BACKEND_URL}/project/stages/${projectId}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        )
+        .then((res) => [
+          ...res.data?.stages.map((stage: IStage, index2: number) =>
+            getItem("Submenu", `sub${index2 + 1}`, null, [
+              getItem("Option 7", index2 + 1),
+              getItem("Option 8", index2 + 1),
+            ])
+          ),
+        ]);
+    } catch (err) {
+      console.log(err);
+      return [];
+    }
+  };
+>>>>>>> 6a063c4 (update stage form)
   const items: MenuProps["items"] = useMemo(() => {
     let newItems =
       sidebarData.projects && sidebarData.projects.length > 0
         ? [
+<<<<<<< HEAD
             ...sidebarData.projects.map((project: IProject, index: number) => {
               return getItem(
                 project.name,
@@ -101,6 +127,26 @@ const Sidebar = () => {
                 // ]
               );
             }),
+=======
+            ...listProject?.projects?.map(
+              (project: IProject, index: number) => {
+                return getItem(
+                  project?.name,
+                  `sub${index + 1}`,
+                  <AppstoreOutlined />,
+                  fetchStagesData(project._id)
+                  // [
+                  //   ...project.stages.map((stage: IStage, index2: number) =>
+                  //     getItem("Submenu", `sub${index2 + 1}`, null, [
+                  //       getItem("Option 7", index2 + 1),
+                  //       getItem("Option 8", index2 + 1),
+                  //     ])
+                  //   ),
+                  // ]
+                );
+              }
+            ),
+>>>>>>> 6a063c4 (update stage form)
 
             { type: "divider" },
             getItem("Contact", "grp", null, [getItem("Mindx", "14")], "group"),

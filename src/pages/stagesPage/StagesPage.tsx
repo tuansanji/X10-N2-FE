@@ -39,6 +39,7 @@ const StagesPage: React.FC = () => {
   const [messageApi, contextHolder] = message.useMessage();
   const [createStages, setCreateStages] = useState<boolean>(false);
   const [searchInput, setSearchInput] = useState<string>("");
+<<<<<<< HEAD
   const [finishCount, setFinishCount] = useState<number>(0);
   const [pageNumber, setPageNumber] = useState<number>(1);
   const [stagesData, setStagesData] = useState<IStagesData>({
@@ -47,6 +48,10 @@ const StagesPage: React.FC = () => {
     total: 1,
     totalPages: 1,
   });
+=======
+  const [stagesData, setStagesData] = useState<IStagesData>();
+  const [finishCount, setFinishCount] = useState<number>(0);
+>>>>>>> 6a063c4 (update stage form)
   const [editStages, setEditStages] = useState<{
     status: boolean;
     stages: IStages | {};
@@ -65,7 +70,11 @@ const StagesPage: React.FC = () => {
     setLoading(true);
     axios
       .get(
+<<<<<<< HEAD
         `${process.env.REACT_APP_BACKEND_URL}/project/stages/${params.projectId}?page=${pageNumber}`,
+=======
+        `${process.env.REACT_APP_BACKEND_URL}/project/stages/${params.projectId}`,
+>>>>>>> 6a063c4 (update stage form)
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -79,8 +88,13 @@ const StagesPage: React.FC = () => {
         setLoading(false);
         message.error(err.response.data.message);
       });
+<<<<<<< HEAD
   }, [finishCount, token, pageNumber]);
   // hám xóa
+=======
+  }, [finishCount, token]);
+
+>>>>>>> 6a063c4 (update stage form)
   const confirm = (stages: DataType) => {
     messageApi.open({
       key: stages.key,
@@ -112,6 +126,7 @@ const StagesPage: React.FC = () => {
           duration: 2,
         });
       });
+<<<<<<< HEAD
   };
 
   //hàm gọi api khi search
@@ -140,6 +155,10 @@ const StagesPage: React.FC = () => {
     }, 300);
   };
   //hám search
+=======
+  };
+
+>>>>>>> 6a063c4 (update stage form)
   const handleSearchMember = (value: string) => {
     setLoading(true);
     if (value) {
