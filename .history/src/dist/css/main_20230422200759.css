@@ -120,24 +120,20 @@
   margin-right: auto;
 }
 
-.login,
-.forgot-password {
+.login, .forgot-password {
   position: relative;
 }
-.login img,
-.forgot-password img {
+.login img, .forgot-password img {
   display: block;
   height: auto;
   width: 100%;
   object-fit: cover;
   opacity: 0.5;
 }
-.login h3,
-.forgot-password h3 {
+.login h3, .forgot-password h3 {
   text-align: center;
 }
-.login .form-container,
-.forgot-password .form-container {
+.login .form-container, .forgot-password .form-container {
   position: absolute;
   top: 0;
   left: 0;
@@ -146,38 +142,30 @@
   margin-right: auto;
   width: 500px;
 }
-.login .form-layout,
-.forgot-password .form-layout {
+.login .form-layout, .forgot-password .form-layout {
   margin: auto;
   padding: 0 4rem;
   max-width: 100%;
 }
-.login .form-layout .ant-col.ant-form-item-label,
-.forgot-password .form-layout .ant-col.ant-form-item-label {
+.login .form-layout .ant-col.ant-form-item-label, .forgot-password .form-layout .ant-col.ant-form-item-label {
   padding: 0;
 }
-.login .form-layout .ant-form-item-control-input,
-.forgot-password .form-layout .ant-form-item-control-input {
+.login .form-layout .ant-form-item-control-input, .forgot-password .form-layout .ant-form-item-control-input {
   text-align: center;
 }
-.login .form-layout .ant-form-item-control-input button,
-.forgot-password .form-layout .ant-form-item-control-input button {
+.login .form-layout .ant-form-item-control-input button, .forgot-password .form-layout .ant-form-item-control-input button {
   width: 100%;
 }
-.login .form-title,
-.forgot-password .form-title {
+.login .form-title, .forgot-password .form-title {
   margin: 2rem 4rem;
 }
-.login .ant-form-item:last-child button,
-.forgot-password .ant-form-item:last-child button {
+.login .ant-form-item:last-child button, .forgot-password .ant-form-item:last-child button {
   margin-top: 1rem;
 }
-.login .ant-typography,
-.forgot-password .ant-typography {
+.login .ant-typography, .forgot-password .ant-typography {
   text-align: center;
 }
-.login .login-divider,
-.forgot-password .login-divider {
+.login .login-divider, .forgot-password .login-divider {
   width: 100%;
   padding: 0 4rem;
 }
@@ -672,6 +660,7 @@
   margin-top: 1rem;
 }
 
+<<<<<<< HEAD
 .project-info {
   max-width: 992px;
   margin-top: 1rem;
@@ -741,7 +730,7 @@
 .search-box-container .error-message {
   margin-top: 1rem;
   color: #ec2b2b;
-}
+=======
 .ck.ck-editor {
   width: 100%;
   height: 100%;
@@ -757,6 +746,7 @@
 .ck.ck-editor .ck.ck-editor__main .ck.ck-content.ck-editor__editable ul,
 .ck.ck-editor .ck.ck-editor__main .ck.ck-content.ck-editor__editable ol {
   list-style-position: inside;
+>>>>>>> b36726e (update form stages)
 }
 
 /*# sourceMappingURL=main.css.map */

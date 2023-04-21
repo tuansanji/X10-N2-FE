@@ -1,12 +1,5 @@
-import AddMember from "./AddMember";
-import { formatDate } from "../../utils/formatDate";
-import { DeleteFilled } from "@ant-design/icons";
-import { ColumnsType } from "antd/es/table";
+import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
-import dayjs from "dayjs";
-import moment from "moment";
-import React, { useCallback, useEffect, useState } from "react";
-import { useSelector } from "react-redux";
 import { Params, useParams } from "react-router-dom";
 import {
   Button,
@@ -20,6 +13,13 @@ import {
   message,
   Skeleton,
 } from "antd";
+import { ColumnsType } from "antd/es/table";
+import moment from "moment";
+import dayjs from "dayjs";
+import { formatDate } from "../../ultils/formatDate";
+import { DeleteFilled } from "@ant-design/icons";
+import { useSelector } from "react-redux";
+import AddMember from "./AddMember";
 
 const { Search } = Input;
 const { Text, Title } = Typography;
