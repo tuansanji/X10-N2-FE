@@ -1,6 +1,6 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { Input, Typography, Button, Row, Select } from "antd";
+import { Input, Typography, Button, Select, message } from "antd";
 import axios from "axios";
 import { useSelector } from "react-redux";
 import { LoadingOutlined, CloseOutlined } from "@ant-design/icons";
@@ -11,7 +11,8 @@ const { Search } = Input;
 interface PropTypes {
   closeModal: React.Dispatch<React.SetStateAction<boolean>>;
   memberData: any[];
-  leaderOptionValidate: any[];
+  leaderCount: any[];
+  setMemberData: React.Dispatch<React.SetStateAction<any[]>>;
 }
 
 interface UserSearchResult {
@@ -27,7 +28,8 @@ interface UserSearchResult {
 const AddMember: React.FC<PropTypes> = ({
   closeModal,
   memberData,
-  leaderOptionValidate,
+  leaderCount,
+  setMemberData,
 }) => {
   const params = useParams();
   const token = useSelector((state: any) => state.auth.userInfo.token);
@@ -36,17 +38,17 @@ const AddMember: React.FC<PropTypes> = ({
   const [selectedResult, setSelectedResult] = useState<UserSearchResult[]>([]);
   const [isShow, setIsShow] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [disableSearchResult, setDisableSearchResult] =
-    useState<boolean>(false);
+  const [addMemberFetching, setAddMemberFetching] = useState<boolean>(false);
   const [error, setError] = useState<any>({});
   const [toogleSelect, setToogleSelect] = useState<any>({ isSelected: false });
+  const [count, setCount] = useState<number>(leaderCount.length);
 
   const roleSelectOptions = [
     { label: "Manager", value: "manager", disabled: true },
     {
       label: "Leader",
       value: "leader",
-      disabled: leaderOptionValidate?.length >= 3 && true,
+      disabled: count >= 3 && true,
     },
     { label: "Supervisor", value: "supervisor" },
     { label: "Member", value: "member" },
@@ -60,11 +62,23 @@ const AddMember: React.FC<PropTypes> = ({
       setIsShow(false);
     }
   }, [searchInput]);
-  console.log("Member đã join dự án:", memberData);
-  console.log("Show Search Restul:", searchResult);
+
+  // Validate khi chọn role Leader trong modal Add Member
+  useEffect(() => {
+    let leaderRole = selectedResult.filter(
+      (value: any) => value.role === "leader"
+    );
+    setCount([...leaderCount, ...leaderRole].length);
+  }, [selectedResult]);
+
   const handleSearchInput = (event: any) => {
     setError({});
     setSearchInput(event.target.value);
+  };
+
+  const cancelModal = () => {
+    closeModal(false);
+    setSearchInput("");
   };
 
   // Gửi request search user trên hệ thống
@@ -131,6 +145,8 @@ const AddMember: React.FC<PropTypes> = ({
 
   // Chọn role cho thành viên để add vào dự án
   const handleSelectRole = (value: string, indexValue: number) => {
+    if (value === "leader") {
+    }
     let selectedItem = selectedResult?.map(
       (item: UserSearchResult, index: number) => {
         if (indexValue === index) {
@@ -152,17 +168,20 @@ const AddMember: React.FC<PropTypes> = ({
   };
 
   const handleAddMembers = async () => {
+    setAddMemberFetching(true);
     try {
       if (selectedResult.length > 0) {
-        setIsLoading(true);
         const response = await axios({
           method: "post",
           url: `${process.env.REACT_APP_BACKEND_URL}/project/members/add/${params.projectId}`,
           data: selectedResult.map(({ role, id }) => ({ role, id })),
           headers: { Authorization: `Bearer ${token}` },
         });
-        console.log(response);
-        setIsLoading(false);
+        setMemberData(response.data.members);
+        message.success(response.data.message);
+        setAddMemberFetching(false);
+        setSelectedResult([]);
+        setSearchInput("");
         closeModal(false);
       } else {
         setError({ ...error, message: "Please add members" });
@@ -170,13 +189,12 @@ const AddMember: React.FC<PropTypes> = ({
       }
     } catch (err) {
       console.error(err);
-      setIsLoading(false);
+      setAddMemberFetching(false);
     }
   };
 
   return (
     <div className="add-member">
-      {" "}
       <Title level={3}>Add Members</Title>
       <div className="search-box-container" style={{ width: "300px" }}>
         <Search
@@ -245,6 +263,7 @@ const AddMember: React.FC<PropTypes> = ({
                   onSelect={(value) => {
                     handleSelectRole(value, index);
                   }}
+                  dropdownMatchSelectWidth={false}
                 />
                 <Button
                   icon={<CloseOutlined />}
@@ -259,15 +278,9 @@ const AddMember: React.FC<PropTypes> = ({
       </div>
       <div className="add-member-button">
         <Button type="primary" onClick={handleAddMembers}>
-          {isLoading && <LoadingOutlined />} Add Members
+          {addMemberFetching && <LoadingOutlined />} Add Members
         </Button>
-        <Button
-          onClick={() => {
-            closeModal(false);
-          }}
-        >
-          Cancel
-        </Button>
+        <Button onClick={cancelModal}>Cancel</Button>
       </div>
     </div>
   );
