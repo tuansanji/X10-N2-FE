@@ -1,19 +1,12 @@
 import { getAllProject } from "../../redux/apiRequest";
 import { changeMenu } from "../../redux/slice/menuSlice";
 import { RootState } from "../../redux/store";
-import Loading from "../support/Loading";
-import { Button, Menu } from "antd";
+import { Menu } from "antd";
 import axios from "axios";
 import React, { useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { v4 as uuid } from "uuid";
-import {
-  AccountBookOutlined,
-  AppstoreOutlined,
-  MailOutlined,
-  MenuOutlined,
-  SettingOutlined,
-} from "@ant-design/icons";
+import { AccountBookOutlined, AppstoreOutlined } from "@ant-design/icons";
 import type { MenuProps } from "antd";
 type MenuItem = Required<MenuProps>["items"][number];
 function getItem(
@@ -65,7 +58,7 @@ const Sidebar = () => {
   const statusMenu = useSelector((state: RootState) => state.menu?.status);
   const token = useSelector((state: RootState) => state.auth.userInfo.token);
   const reloadSidebar = useSelector((state: RootState) => state.menu.reload);
-  // đóng mở menu
+  // đóng mở sidebar
   const toggleCollapsed = () => {
     dispatch(changeMenu());
   };
@@ -124,7 +117,7 @@ const Sidebar = () => {
           ];
     return newItems;
   }, [listProject, sidebarData]);
-  // khi click vào thanh sidebar
+  // khi click vào item thanh sidebar
   const onClick: MenuProps["onClick"] = (e) => {
     console.log("click ", e);
   };
