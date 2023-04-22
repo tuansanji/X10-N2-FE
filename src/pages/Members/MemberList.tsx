@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import { Params, useParams } from "react-router-dom";
 import {
@@ -106,7 +106,6 @@ const UpdateMemberRole: React.FC<MemberRolePropTypes> = ({
 }) => {
   const [roleUpdating, setRoleUpdating] = useState<boolean>(false);
   const updateRole = async (selectValue: any, record: MemberDataType) => {
-    console.log(record);
     setRoleUpdating(true);
     try {
       const response = await axios({
@@ -151,19 +150,29 @@ const MemberList: React.FC = () => {
     useState<boolean>(false);
   const [showAddMemberModal, setShowAddMemberModal] = useState<boolean>(false);
   const [searchInput, setSearchInput] = useState<string>("");
-  const [searchResult, setSearchResult] = useState<any>(null);
+  const [searchResult, setSearchResult] = useState<any>([]);
+  const [pagination, setPagination] = useState<any>({
+    pageIndex: 1,
+    total: null,
+  });
 
   // Lấy List member thuộc project
-  // **** CẦN THÊM PAGE INDEX, PAGE SIZE ĐỂ LẤY THEO PAGE ******
   useEffect(() => {
     const getMemberData = async () => {
       try {
         setIsLoading(true);
-        const response = await axios.get(
-          `${process.env.REACT_APP_BACKEND_URL}/project/members/${params.projectId}`,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
+        const response = await axios({
+          method: "get",
+          url: `${process.env.REACT_APP_BACKEND_URL}/project/members/${params.projectId}`,
+          headers: { Authorization: `Bearer ${token}` },
+          params: { page: pagination.pageIndex, limit: 10 },
+        });
         setMemberData(response.data.members);
+        setPagination({
+          ...pagination,
+          total: response.data.total,
+          pageIndex: response.data.currentPage,
+        });
         setIsLoading(false);
       } catch (err) {
         console.error(err);
@@ -186,7 +195,7 @@ const MemberList: React.FC = () => {
     {
       value: "leader",
       label: "Leader",
-      disabled: leaderCount.length >= 3 && true,
+      disabled: leaderCount?.length >= 3 && true,
     },
     { value: "supervisor", label: "Supervisor" },
     { value: "member", label: "Member" },
@@ -204,8 +213,8 @@ const MemberList: React.FC = () => {
           params: { query: searchInput },
           headers: { Authorization: `Bearer ${token}` },
         });
-        let result = memberData.filter((data: any) =>
-          response.data.users.some((user: any) => user._id === data.data._id)
+        let result = memberData.filter((member: any) =>
+          response.data.users.some((user: any) => user._id === member.data._id)
         );
         setSearchResult(result);
         setIsLoading(false);
@@ -218,7 +227,6 @@ const MemberList: React.FC = () => {
   }, [searchInput]);
 
   // Show thông tin chi tiết member khi click vào từng member
-  // Nếu show thông tin chi tiết thì lại cần 1 API để get chi tiết user?
   const showMemberModal = (indexValue: any) => {
     let memberInfo = memberData.filter((element: any, index: number) => {
       return indexValue === index;
@@ -228,10 +236,26 @@ const MemberList: React.FC = () => {
   };
 
   // **** PAGE CHANGE SẼ GỬI TIẾP API GET USER MEMBER ĐỂ LẤY THEO PAGE TƯƠNG ỨNG ****
-  // HOẶC UPDATE LẠI PAGE INDEX, GẮN VÀO REQUEST Ở EFFECT PHÍA TRÊN
-  const handlePageChange = (page: number, pageSize: number) => {
-    console.log(page);
-    console.log(pageSize);
+  const handlePageChange = async (page: number, pageSize: number) => {
+    setIsLoading(true);
+    try {
+      const response = await axios({
+        method: "get",
+        url: `${process.env.REACT_APP_BACKEND_URL}/project/members/${params.projectId}`,
+        headers: { Authorization: `Bearer ${token}` },
+        params: { page, limit: 10 },
+      });
+      setMemberData(response.data.members);
+      setPagination({
+        ...pagination,
+        total: response.data.total,
+        pageIndex: response.data.currentPage,
+      });
+      setIsLoading(false);
+    } catch (err) {
+      console.error(err);
+      setIsLoading(false);
+    }
   };
 
   // Setup Table
@@ -317,11 +341,11 @@ const MemberList: React.FC = () => {
 
   // Show data của bảng tùy theo input ở searchBar
   function showData() {
-    if (searchResult.length > 0) {
+    if (searchResult?.length > 0) {
       return searchData;
-    } else if (searchInput && searchResult.length === 0) {
+    } else if (searchInput && searchResult?.length === 0) {
       return undefined;
-    } else if (searchInput === "" && searchResult.length === 0) {
+    } else if (searchInput === "" && searchResult?.length === 0) {
       return data;
     }
   }
@@ -396,9 +420,9 @@ const MemberList: React.FC = () => {
             scroll={{ x: 1440 }}
             pagination={{
               position: ["bottomCenter"],
-              total: memberData.length,
-              pageSize: 8,
-              defaultCurrent: 1,
+              total: pagination.total,
+              pageSize: 10,
+              current: pagination.pageIndex,
               onChange: handlePageChange,
             }}
           />
