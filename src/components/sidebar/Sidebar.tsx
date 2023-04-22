@@ -1,12 +1,12 @@
 import { getAllProject } from "../../redux/apiRequest";
+import { useAppDispatch, useAppSelector } from "../../redux/hook";
 import { changeMenu } from "../../redux/slice/menuSlice";
 import { RootState } from "../../redux/store";
+import { AccountBookOutlined, AppstoreOutlined } from "@ant-design/icons";
 import { Menu } from "antd";
 import axios from "axios";
 import React, { useEffect, useMemo, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
 import { v4 as uuid } from "uuid";
-import { AccountBookOutlined, AppstoreOutlined } from "@ant-design/icons";
 import type { MenuProps } from "antd";
 type MenuItem = Required<MenuProps>["items"][number];
 function getItem(
@@ -43,7 +43,7 @@ export interface IProject {
   status: string;
 }
 const Sidebar = () => {
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
 
   const [sidebarData, setSidebarData] = useState<{
     projects: any;
@@ -52,12 +52,12 @@ const Sidebar = () => {
     projects: [],
     total: 0,
   });
-  const listProject = useSelector(
+  const listProject = useAppSelector(
     (state: RootState) => state.project?.listProject
   );
-  const statusMenu = useSelector((state: RootState) => state.menu?.status);
-  const token = useSelector((state: RootState) => state.auth.userInfo.token);
-  const reloadSidebar = useSelector((state: RootState) => state.menu.reload);
+  const statusMenu = useAppSelector((state: RootState) => state.menu?.status);
+  const token = useAppSelector((state: RootState) => state.auth.userInfo.token);
+  const reloadSidebar = useAppSelector((state: RootState) => state.menu.reload);
   // đóng mở sidebar
   const toggleCollapsed = () => {
     dispatch(changeMenu());
