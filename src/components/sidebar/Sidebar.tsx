@@ -3,6 +3,7 @@ import { useAppDispatch, useAppSelector } from "../../redux/hook";
 import { changeMenu } from "../../redux/slice/menuSlice";
 import { RootState } from "../../redux/store";
 <<<<<<< HEAD
+<<<<<<< HEAD
 import { AccountBookOutlined, AppstoreOutlined } from "@ant-design/icons";
 import { Menu } from "antd";
 import axios from "axios";
@@ -11,10 +12,14 @@ import { v4 as uuid } from "uuid";
 =======
 import Loading from "../support/Loading";
 import { Button, Menu } from "antd";
+=======
+import { Menu } from "antd";
+>>>>>>> ba34688 (format code)
 import axios from "axios";
 import React, { useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { v4 as uuid } from "uuid";
+<<<<<<< HEAD
 import {
   AccountBookOutlined,
   AppstoreOutlined,
@@ -23,6 +28,9 @@ import {
   SettingOutlined,
 } from "@ant-design/icons";
 >>>>>>> b1ab2c1 (edit form stage)
+=======
+import { AccountBookOutlined, AppstoreOutlined } from "@ant-design/icons";
+>>>>>>> ba34688 (format code)
 import type { MenuProps } from "antd";
 type MenuItem = Required<MenuProps>["items"][number];
 function getItem(
@@ -91,7 +99,7 @@ const Sidebar = () => {
   const statusMenu = useSelector((state: RootState) => state.menu?.status);
   const token = useSelector((state: RootState) => state.auth.userInfo.token);
   const reloadSidebar = useSelector((state: RootState) => state.menu.reload);
-  // đóng mở menu
+  // đóng mở sidebar
   const toggleCollapsed = () => {
     dispatch(changeMenu());
   };
@@ -206,10 +214,14 @@ const Sidebar = () => {
     return newItems;
   }, [listProject, sidebarData]);
 <<<<<<< HEAD
+<<<<<<< HEAD
   // khi click vào item thanh sidebar
 =======
   // khi click vào thanh sidebar
 >>>>>>> b1ab2c1 (edit form stage)
+=======
+  // khi click vào item thanh sidebar
+>>>>>>> ba34688 (format code)
   const onClick: MenuProps["onClick"] = (e) => {
     console.log("click ", e);
   };
