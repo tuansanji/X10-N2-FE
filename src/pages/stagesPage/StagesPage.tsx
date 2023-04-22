@@ -2,12 +2,13 @@ import FormStages from "./FormStages";
 import { IProject } from "../../components/sidebar/Sidebar";
 import Loading from "../../components/support/Loading";
 import { listStages } from "../../data/statges";
+import { reloadSidebar } from "../../redux/slice/menuSlice";
 import Search from "antd/es/input/Search";
 import axios from "axios";
 import moment from "moment";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import Highlighter from "react-highlight-words";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { Link, useParams } from "react-router-dom";
 import slugify from "slugify";
 import {
@@ -15,6 +16,7 @@ import {
   Input,
   message,
   Modal,
+  Pagination,
   Popconfirm,
   Select,
   Space,
@@ -31,7 +33,6 @@ import type { InputRef } from "antd";
 import type { ColumnsType, TableProps, ColumnType } from "antd/es/table";
 import type { SizeType } from "antd/es/config-provider/SizeContext";
 import type { FilterConfirmProps } from "antd/es/table/interface";
-
 // import { TablePaginationPosition } from 'antd/lib/table';
 
 export interface IStages {
@@ -45,7 +46,7 @@ export interface IStages {
 interface IStagesData {
   stages: IStages[];
   currentPage: number;
-  total?: number;
+  total: number;
   totalPages: number;
 }
 interface DataType {
@@ -61,8 +62,14 @@ const StagesPage: React.FC = () => {
   const [messageApi, contextHolder] = message.useMessage();
   const [createStages, setCreateStages] = useState<boolean>(false);
   const [searchInput, setSearchInput] = useState<string>("");
-  const [stagesData, setStagesData] = useState<IStagesData>();
   const [finishCount, setFinishCount] = useState<number>(0);
+  const [pageNumber, setPageNumber] = useState<number>(1);
+  const [stagesData, setStagesData] = useState<IStagesData>({
+    stages: [],
+    currentPage: 1,
+    total: 1,
+    totalPages: 1,
+  });
   const [editStages, setEditStages] = useState<{
     status: boolean;
     stages: IStages | {};
@@ -70,13 +77,16 @@ const StagesPage: React.FC = () => {
     status: false,
     stages: {},
   });
+  const searchRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const params = useParams();
+  const dispatch = useDispatch();
   const token: string = useSelector((state: any) => state.auth.userInfo.token);
 
   useEffect(() => {
+    setLoading(true);
     axios
       .get(
-        `${process.env.REACT_APP_BACKEND_URL}/project/stages/${params.projectId}`,
+        `${process.env.REACT_APP_BACKEND_URL}/project/stages/${params.projectId}?page=${pageNumber}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -84,13 +94,14 @@ const StagesPage: React.FC = () => {
       .then((res) => {
         setStagesData(res.data);
         setLoading(false);
+        dispatch(reloadSidebar());
       })
       .catch((err) => {
         setLoading(false);
         message.error(err.response.data.message);
       });
-  }, [finishCount, token]);
-
+  }, [finishCount, token, pageNumber]);
+  // hám xóa
   const confirm = (stages: DataType) => {
     messageApi.open({
       key: stages.key,
@@ -124,6 +135,32 @@ const StagesPage: React.FC = () => {
       });
   };
 
+  //hàm gọi api khi search
+  const handleChangeSearch = (event: any) => {
+    let value = event?.target.value;
+    setSearchInput(value);
+
+    if (searchRef.current) {
+      clearTimeout(searchRef.current);
+    }
+
+    searchRef.current = setTimeout(() => {
+      if (value) {
+        axios
+          .get(
+            `${process.env.REACT_APP_BACKEND_URL}/stage/search?name=${value}`,
+            {
+              headers: { Authorization: `Bearer ${token}` },
+            }
+          )
+          .then((res) => {
+            setStagesData(res.data);
+          })
+          .catch((err) => {});
+      }
+    }, 300);
+  };
+  //hám search
   const handleSearchMember = (value: string) => {
     setLoading(true);
     if (value) {
@@ -274,7 +311,9 @@ const StagesPage: React.FC = () => {
             <Search
               value={searchInput}
               allowClear
-              onChange={(event: any) => setSearchInput(event?.target.value)}
+              onChange={(event: any) => {
+                handleChangeSearch(event);
+              }}
               onSearch={handleSearchMember}
               placeholder="Enter stages name..."
               size="large"
@@ -284,7 +323,21 @@ const StagesPage: React.FC = () => {
         </div>
       </div>
       <div className="project_page-table">
-        <Table columns={columns} dataSource={data} pagination={pagination} />
+        <Table
+          columns={columns}
+          dataSource={data}
+          pagination={{
+            hideOnSinglePage: true,
+          }}
+        />
+        <div className="pagination">
+          <Pagination
+            current={pageNumber}
+            defaultCurrent={stagesData.totalPages}
+            total={stagesData.total}
+            onChange={(page: number) => setPageNumber(page)}
+          />
+        </div>
       </div>
       {createStages && (
         <FormStages

@@ -1,4 +1,9 @@
 .stages_page {
+  .pagination {
+    display: flex;
+    justify-content: center;
+    padding-top: 20px;
+  }
   .modal {
     // transition: all 0.5s ease-in-out;
     position: fixed;
@@ -25,31 +30,6 @@
       justify-content: center;
       align-items: center;
       box-shadow: rgba(0, 0, 0, 0.4) 0px 0px 10px;
-      // .form__description {
-      //   label {
-      //     padding-left: 10px;
-      //   }
-      // }
-      // @include maxWidth($tablet-width) {
-      //   width: 90%;
-      //   .form_antd {
-      //     width: 100% !important;
-      //     gap: 0 !important;
-      //   }
-      //   .ant-form-item.css-dev-only-do-not-override-htwhyh {
-      //     margin-bottom: 10px !important;
-      //   }
-      // }
-      // .ant-row.ant-form-item-row.css-dev-only-do-not-override-htwhyh {
-      //   gap: 15px;
-      // }
-      // border-radius: 12px;
-      // &_title {
-      //   padding-bottom: 20px;
-      //   @include maxWidth($tablet-width) {
-      //     padding: 10px 0;
-      //   }
-      // }
     }
   }
 }

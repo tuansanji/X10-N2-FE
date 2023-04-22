@@ -1,17 +1,19 @@
 import { getAllProject } from "../../redux/apiRequest";
 import { changeMenu } from "../../redux/slice/menuSlice";
+import { RootState } from "../../redux/store";
 import Loading from "../support/Loading";
 import { Button, Menu } from "antd";
 import axios from "axios";
 import React, { useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { v4 as uuid } from "uuid";
 import {
+  AccountBookOutlined,
   AppstoreOutlined,
   MailOutlined,
   MenuOutlined,
   SettingOutlined,
 } from "@ant-design/icons";
-
 import type { MenuProps } from "antd";
 type MenuItem = Required<MenuProps>["items"][number];
 function getItem(
@@ -19,7 +21,8 @@ function getItem(
   key: React.Key,
   icon?: React.ReactNode,
   children?: MenuItem[],
-  type?: "group"
+  type?: "group",
+  className?: string
 ): MenuItem {
   return {
     key,
@@ -27,6 +30,7 @@ function getItem(
     children,
     label,
     type,
+    className,
   } as MenuItem;
 }
 
@@ -38,7 +42,7 @@ interface IStage {
 export interface IProject {
   name: string;
   _id: string;
-  stages: IStage[];
+  stages?: IStage[];
   code: string;
   createdDate: Date;
   startDate: Date;
@@ -47,60 +51,66 @@ export interface IProject {
 }
 const Sidebar = () => {
   const dispatch = useDispatch();
-  const listProject = useSelector((state: any) => state.project?.listProject);
-  const statusMenu = useSelector((state: any) => state.menu?.status);
-  const token = useSelector((state: any) => state.auth.userInfo.token);
 
+  const [sidebarData, setSidebarData] = useState<{
+    projects: any;
+    total: number;
+  }>({
+    projects: [],
+    total: 0,
+  });
+  const listProject = useSelector(
+    (state: RootState) => state.project?.listProject
+  );
+  const statusMenu = useSelector((state: RootState) => state.menu?.status);
+  const token = useSelector((state: RootState) => state.auth.userInfo.token);
+  const reloadSidebar = useSelector((state: RootState) => state.menu.reload);
+  // đóng mở menu
   const toggleCollapsed = () => {
     dispatch(changeMenu());
   };
-  const fetchStagesData = (projectId: string): any => {
-    try {
-      axios
-        .get(
-          `${process.env.REACT_APP_BACKEND_URL}/project/stages/${projectId}`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        )
-        .then((res) => [
-          ...res.data?.stages.map((stage: IStage, index2: number) =>
-            getItem("Submenu", `sub${index2 + 1}`, null, [
-              getItem("Option 7", index2 + 1),
-              getItem("Option 8", index2 + 1),
-            ])
-          ),
-        ]);
-    } catch (err) {
-      console.log(err);
-      return [];
-    }
-  };
+
+  //api chi dữ liệu cho sidebar
+  useEffect(() => {
+    axios
+      .get(`${process.env.REACT_APP_BACKEND_URL}/project/all/details`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      .then((response) => {
+        setSidebarData(response.data);
+      });
+  }, [listProject, reloadSidebar]);
   const items: MenuProps["items"] = useMemo(() => {
     let newItems =
-      listProject.projects && listProject?.projects.length > 0
+      sidebarData.projects && sidebarData.projects.length > 0
         ? [
-            ...listProject?.projects?.map(
-              (project: IProject, index: number) => {
-                return getItem(
-                  project?.name,
-                  `sub${index + 1}`,
-                  <AppstoreOutlined />,
-                  fetchStagesData(project._id)
-                  // [
-                  //   ...project.stages.map((stage: IStage, index2: number) =>
-                  //     getItem("Submenu", `sub${index2 + 1}`, null, [
-                  //       getItem("Option 7", index2 + 1),
-                  //       getItem("Option 8", index2 + 1),
-                  //     ])
-                  //   ),
-                  // ]
-                );
-              }
-            ),
+            ...sidebarData.projects.map((project: IProject, index: number) => {
+              return getItem(
+                project.name,
+                `sub1${index + 1}`,
+                <AppstoreOutlined />,
+                project.stages?.map((stage: IStage, index2: number) =>
+                  getItem(
+                    stage.name,
+                    `sub2${uuid()}`,
+                    <AccountBookOutlined />,
+                    []
+                  )
+                )
+
+                // [
+                //   ...project?.stages.map((stage: IStage, index2: number) =>
+                //     getItem("Submenu", `sub${index2 + 1}`, null, [
+                //       getItem("Option 7", index2 + 1),
+                //       getItem("Option 8", index2 + 1),
+                //     ])
+                //   ),
+                // ]
+              );
+            }),
 
             { type: "divider" },
-            getItem("Contact", "grp", null, [getItem("mindx", "14")], "group"),
+            getItem("Contact", "grp", null, [getItem("Mindx", "14")], "group"),
           ]
         : [
             { type: "divider" },
@@ -108,13 +118,13 @@ const Sidebar = () => {
               "Contact",
               "grp",
               null,
-              [getItem("no project", "14")],
+              [getItem("No Project", "14")],
               "group"
             ),
           ];
     return newItems;
-  }, [listProject]);
-
+  }, [listProject, sidebarData]);
+  // khi click vào thanh sidebar
   const onClick: MenuProps["onClick"] = (e) => {
     console.log("click ", e);
   };
@@ -182,8 +192,6 @@ const Sidebar = () => {
             width: "100%",
             height: "100%",
           }}
-          defaultSelectedKeys={["1"]}
-          defaultOpenKeys={["sub1"]}
           mode="inline"
           items={items}
         />
