@@ -1,13 +1,18 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 import { IStages } from "./StagesPage";
 <<<<<<< HEAD
 import { useAppDispatch, useAppSelector } from "../../redux/hook";
+=======
+import { IStages } from "./StagesPage";
+>>>>>>> ba34688 (format code)
 import { toastErr, toastSuccess } from "../../redux/slice/toastSlice";
 import { CloseOutlined, LoadingOutlined } from "@ant-design/icons";
 import axios from "axios";
 import dayjs from "dayjs";
 import "dayjs/locale/zh-cn";
 import { Dispatch, SetStateAction, useMemo, useState } from "react";
+<<<<<<< HEAD
 import { useParams } from "react-router";
 
 =======
@@ -39,6 +44,10 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useParams } from 'react-router';
 
 
+=======
+import { useDispatch, useSelector } from "react-redux";
+import { useParams } from "react-router";
+>>>>>>> ba34688 (format code)
 
 >>>>>>> b1ab2c1 (edit form stage)
 import {
@@ -49,6 +58,7 @@ import {
   Form,
   Input,
   Row,
+<<<<<<< HEAD
 <<<<<<< HEAD
   Typography,
 } from "antd";
@@ -66,6 +76,11 @@ import {
 
 
 >>>>>>> b1ab2c1 (edit form stage)
+=======
+  Typography,
+} from "antd";
+
+>>>>>>> ba34688 (format code)
 const { TextArea } = Input;
 const { Title } = Typography;
 
@@ -86,9 +101,12 @@ interface IForm {
   setCreateStages?: Dispatch<SetStateAction<boolean>>;
   setFinishCount: Dispatch<SetStateAction<number>>;
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 
 >>>>>>> 6a063c4 (update stage form)
+=======
+>>>>>>> ba34688 (format code)
   setEditStages?: Dispatch<
     SetStateAction<{ status: boolean; stages: IStages | {} }>
   >;

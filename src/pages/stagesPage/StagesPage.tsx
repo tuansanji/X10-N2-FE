@@ -1,6 +1,7 @@
 import FormStages from "./FormStages";
 import Loading from "../../components/support/Loading";
 <<<<<<< HEAD
+<<<<<<< HEAD
 import { useAppDispatch, useAppSelector } from "../../redux/hook";
 import { reloadSidebar } from "../../redux/slice/menuSlice";
 import { DeleteFilled, EditFilled } from "@ant-design/icons";
@@ -9,10 +10,16 @@ import { Button, message, Pagination, Popconfirm, Space, Table } from "antd";
 import { listStages } from "../../data/statges";
 import { reloadSidebar } from "../../redux/slice/menuSlice";
 >>>>>>> b1ab2c1 (edit form stage)
+=======
+import { reloadSidebar } from "../../redux/slice/menuSlice";
+import { DeleteFilled, EditFilled } from "@ant-design/icons";
+import { Button, message, Pagination, Popconfirm, Space, Table } from "antd";
+>>>>>>> ba34688 (format code)
 import Search from "antd/es/input/Search";
 import axios from "axios";
 import moment from "moment";
 import React, { useEffect, useMemo, useRef, useState } from "react";
+<<<<<<< HEAD
 <<<<<<< HEAD
 import { Link, useParams } from "react-router-dom";
 
@@ -46,6 +53,12 @@ import type { SizeType } from "antd/es/config-provider/SizeContext";
 import type { FilterConfirmProps } from "antd/es/table/interface";
 // import { TablePaginationPosition } from 'antd/lib/table';
 >>>>>>> b1ab2c1 (edit form stage)
+=======
+import { useDispatch, useSelector } from "react-redux";
+import { Link, useParams } from "react-router-dom";
+
+import type { ColumnsType } from "antd/es/table";
+>>>>>>> ba34688 (format code)
 
 export interface IStages {
   _id?: string;
@@ -116,8 +129,12 @@ const StagesPage: React.FC = () => {
 =======
   const dispatch = useDispatch();
   const token: string = useSelector((state: any) => state.auth.userInfo.token);
+<<<<<<< HEAD
 
 >>>>>>> b1ab2c1 (edit form stage)
+=======
+  // lấy dữ liệu stages theo page
+>>>>>>> ba34688 (format code)
   useEffect(() => {
     setLoading(true);
     axios
