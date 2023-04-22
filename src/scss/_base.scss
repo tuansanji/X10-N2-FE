@@ -31,3 +31,13 @@
     left: 30px !important;
   }
 }
+.btn_close {
+  z-index: 56;
+  position: absolute;
+  right: 20px;
+  top: 10px;
+  cursor: pointer;
+  &:hover {
+    opacity: 0.5;
+  }
+}

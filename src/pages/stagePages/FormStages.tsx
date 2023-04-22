@@ -1,12 +1,20 @@
 import { IStages } from "./StagesPage";
-import { Button, DatePicker, Form, Input, Select } from "antd";
-import { Breadcrumb, Space, Tabs } from "antd";
 import { Rule } from "antd/lib/form";
 import locale from "antd/locale/zh_CN";
 import dayjs from "dayjs";
 import "dayjs/locale/zh-cn";
 import moment from "moment";
 import { Dispatch, SetStateAction, useEffect, useMemo, useState } from "react";
+import {
+  Button,
+  DatePicker,
+  Form,
+  Input,
+  Select,
+  Breadcrumb,
+  Space,
+  Tabs,
+} from "antd";
 
 import {
   CloseOutlined,
@@ -139,6 +147,7 @@ const FormStages: React.FC<IForm> = ({
           <h2 className="form_title">{title}</h2>
           <Form
             form={form}
+            className="form_antd"
             labelCol={{ span: 7 }}
             wrapperCol={{ span: 20 }}
             labelAlign="left"
