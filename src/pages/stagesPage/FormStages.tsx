@@ -1,55 +1,13 @@
-<<<<<<< HEAD
-<<<<<<< HEAD
 import { IStages } from "./StagesPage";
-<<<<<<< HEAD
 import { useAppDispatch, useAppSelector } from "../../redux/hook";
-=======
-import { IStages } from "./StagesPage";
->>>>>>> ba34688 (format code)
 import { toastErr, toastSuccess } from "../../redux/slice/toastSlice";
 import { CloseOutlined, LoadingOutlined } from "@ant-design/icons";
 import axios from "axios";
 import dayjs from "dayjs";
 import "dayjs/locale/zh-cn";
 import { Dispatch, SetStateAction, useMemo, useState } from "react";
-<<<<<<< HEAD
 import { useParams } from "react-router";
 
-=======
-import { toastSuccess } from "../../redux/slice/toastSlice";
-import { Rule } from "antd/lib/form";
-import locale from "antd/locale/zh_CN";
-import axios from "axios";
-import dayjs from "dayjs";
-import "dayjs/locale/zh-cn";
-import moment from "moment";
-import { Dispatch, SetStateAction, useEffect, useMemo, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { useParams } from "react-router";
-import { toast } from "react-toastify";
->>>>>>> 6a063c4 (update stage form)
-=======
-import { IStages } from './StagesPage';
-import { toastErr, toastSuccess } from '../../redux/slice/toastSlice';
-import axios from 'axios';
-import dayjs from 'dayjs';
-import 'dayjs/locale/zh-cn';
-import {
-  Dispatch,
-  SetStateAction,
-  useMemo,
-  useState
-  } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { useParams } from 'react-router';
-
-
-=======
-import { useDispatch, useSelector } from "react-redux";
-import { useParams } from "react-router";
->>>>>>> ba34688 (format code)
-
->>>>>>> b1ab2c1 (edit form stage)
 import {
   Breadcrumb,
   Button,
@@ -58,29 +16,9 @@ import {
   Form,
   Input,
   Row,
-<<<<<<< HEAD
-<<<<<<< HEAD
   Typography,
 } from "antd";
 
-=======
-
-  Typography,
-} from "antd";
-
-import {
-  CloseOutlined,
-  LoadingOutlined,
-
-} from "@ant-design/icons";
-
-
->>>>>>> b1ab2c1 (edit form stage)
-=======
-  Typography,
-} from "antd";
-
->>>>>>> ba34688 (format code)
 const { TextArea } = Input;
 const { Title } = Typography;
 
@@ -100,13 +38,6 @@ interface IForm {
   editStages?: { status: boolean; stages: IStages | {} };
   setCreateStages?: Dispatch<SetStateAction<boolean>>;
   setFinishCount: Dispatch<SetStateAction<number>>;
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-
->>>>>>> 6a063c4 (update stage form)
-=======
->>>>>>> ba34688 (format code)
   setEditStages?: Dispatch<
     SetStateAction<{ status: boolean; stages: IStages | {} }>
   >;
@@ -123,17 +54,11 @@ const FormStages: React.FC<IForm> = ({
   setEditStages,
 }: IForm) => {
   const [form] = Form.useForm();
-<<<<<<< HEAD
   const dispatch = useAppDispatch();
   const params = useParams();
   const token: string = useAppSelector(
     (state: any) => state.auth.userInfo.token
   );
-=======
-  const dispatch = useDispatch();
-  const params = useParams();
-  const token: string = useSelector((state: any) => state.auth.userInfo.token);
->>>>>>> 6a063c4 (update stage form)
   const [loading, setLoading] = useState(false);
 
   // hàm xử lí form
@@ -159,15 +84,7 @@ const FormStages: React.FC<IForm> = ({
         .catch((err) => {
           setLoading(false);
 
-<<<<<<< HEAD
-<<<<<<< HEAD
           dispatch(toastErr(err.response.data?.message));
-=======
-          dispatch(toastSuccess(err.response.data?.message));
->>>>>>> 6a063c4 (update stage form)
-=======
-          dispatch(toastErr(err.response.data?.message));
->>>>>>> b1ab2c1 (edit form stage)
         });
     } else {
       if ("key" in editStages.stages)
@@ -190,15 +107,7 @@ const FormStages: React.FC<IForm> = ({
           .catch((err) => {
             setLoading(false);
 
-<<<<<<< HEAD
-<<<<<<< HEAD
             dispatch(toastErr(err.response.data?.message));
-=======
-            dispatch(toastSuccess(err.response.data?.message));
->>>>>>> 6a063c4 (update stage form)
-=======
-            dispatch(toastErr(err.response.data?.message));
->>>>>>> b1ab2c1 (edit form stage)
           });
     }
   };
@@ -303,15 +212,7 @@ const FormStages: React.FC<IForm> = ({
                         form.getFieldValue("endDateExpected");
                       return endDateExpected && current
                         ? current < dayjs(Date.now()) ||
-<<<<<<< HEAD
-<<<<<<< HEAD
                             current > dayjs(endDateExpected)
-=======
-                            current >= dayjs(endDateExpected)
->>>>>>> 6a063c4 (update stage form)
-=======
-                            current > dayjs(endDateExpected)
->>>>>>> b1ab2c1 (edit form stage)
                         : current < dayjs(Date.now());
                     }}
                   />
