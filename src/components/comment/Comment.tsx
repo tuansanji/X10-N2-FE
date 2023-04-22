@@ -5,7 +5,6 @@ export interface IComment {
   content: string;
 }
 const Comment: React.FC<IComment> = ({ content }: IComment) => {
-  const htmlString = `<p>nếu một mai</p><ul><li>aèn;làm;là</li><li>àksanlfnlà4</li><li>áknflkánlkfnsa</li></ul>`;
   return (
     <div key={uuid()} className="comment_content">
       <img
@@ -17,11 +16,7 @@ const Comment: React.FC<IComment> = ({ content }: IComment) => {
         <p className="title">
           sanj <span>17-11-2023 15:40</span>
         </p>
-        <div className="content">
-          {/* <div dangerouslySetInnerHTML={{ __html: htmlString }} />
-           */}
-          {parse(content)}
-        </div>
+        <div className="content">{parse(content)}</div>
         <div className="action-buttons ">
           <span className="">Pin</span>
           <span className="">Delete</span>

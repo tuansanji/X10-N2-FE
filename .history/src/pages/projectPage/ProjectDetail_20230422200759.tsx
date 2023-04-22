@@ -1,12 +1,21 @@
-import ProjectInfo from "./ProjectInfo";
+<<<<<<< HEAD
+import axios from "axios";
+import MemberList from "../Members/MemberList";
+import StagesPage from "../stagePages/StagesPage";
+import { Breadcrumb, Space, Tabs, Skeleton } from "antd";
+import React, { useEffect, useState } from "react";
+=======
+import ProjectInfo from "../../components/projectForm/ProjectInfo";
+import { deslugify } from "../../utils/decode";
 import MemberList from "../Members/MemberList";
 import StagesPage from "../stagesPage/StagesPage";
-import { Breadcrumb, Skeleton, Space, Tabs } from "antd";
-import axios from "axios";
-import React, { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
+import { Breadcrumb, Space, Tabs } from "antd";
+import React from "react";
+>>>>>>> b36726e (update form stages)
 import { useParams, useSearchParams } from "react-router-dom";
 import { Link } from "react-router-dom";
+import { useSelector } from "react-redux";
+import ProjectInfo from "./ProjectInfo";
 
 //
 export interface ProjectDetail {
