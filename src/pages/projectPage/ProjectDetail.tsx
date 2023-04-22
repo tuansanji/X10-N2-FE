@@ -60,7 +60,11 @@ const ProjectDetail: React.FC = () => {
   ];
 
   const handleTabLick = (tabLabel: string) => {
-    setSearchParams({ currentTab: tabLabel });
+    if (tabLabel === "General Information") {
+      setSearchParams({ currentTab: tabLabel });
+    } else {
+      setSearchParams({ currentTab: tabLabel, pageIndex: "1", pageSize: "8" });
+    }
   };
 
   return (

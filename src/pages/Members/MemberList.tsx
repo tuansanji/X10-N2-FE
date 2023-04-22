@@ -417,7 +417,6 @@ const MemberList: React.FC = () => {
           <Table
             columns={columns}
             dataSource={showData()}
-            scroll={{ x: 1440 }}
             pagination={{
               position: ["bottomCenter"],
               total: pagination.total,
