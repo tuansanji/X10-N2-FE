@@ -1,5 +1,10 @@
 import { IProject } from "../../components/sidebar/Sidebar";
-import { Link, useSearchParams } from "react-router-dom";
+import {
+  Link,
+  useSearchParams,
+  useNavigate,
+  createSearchParams,
+} from "react-router-dom";
 import Loading from "../../components/support/Loading";
 import { DeleteFilled, EditFilled, SearchOutlined } from "@ant-design/icons";
 import {
@@ -12,6 +17,7 @@ import {
   Modal,
   message,
   Popconfirm,
+  Typography,
 } from "antd";
 import moment from "moment";
 import React, { useMemo, useRef, useState } from "react";
@@ -35,9 +41,12 @@ export interface DataType {
 }
 type DataIndex = keyof DataType;
 const { Search } = Input;
+const { Text } = Typography;
 
 const ListProject: React.FC = () => {
+  const navigate = useNavigate();
   const listProject = useSelector((state: any) => state.project?.listProject);
+  const initialQuery = useSelector((state: any) => state.queryParams);
   const loading = useSelector((state: any) => state.project?.isFetching);
   const [size, setSize] = useState<SizeType>("large");
   const [statusFilter, setStatusFilter] = useState<string>("all");
@@ -75,6 +84,13 @@ const ListProject: React.FC = () => {
     console.log(value);
   };
 
+  const navigateProject = (record: any) => {
+    navigate({
+      pathname: `${record.key}`,
+      search: `${createSearchParams({ currentTab: "General Information" })}`,
+    });
+  };
+
   const columns: ColumnsType<DataType> = useMemo(
     () => [
       {
@@ -86,7 +102,12 @@ const ListProject: React.FC = () => {
         render: (_, record: DataType) => {
           return (
             <>
-              <Link to={`/${record.key}`}>{record.name}</Link>
+              <Text
+                className="project-name"
+                onClick={() => navigateProject(record)}
+              >
+                {record.name}
+              </Text>
             </>
           );
         },

@@ -515,6 +515,11 @@
   font-size: 12px;
 }
 
+.project-name {
+  cursor: pointer;
+  color: #1677ff;
+}
+
 .modal_task {
   display: flex;
   flex-direction: column;

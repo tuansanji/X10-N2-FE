@@ -4,13 +4,14 @@ import { projectSlice } from "./slice/projectSlice";
 import { combineReducers, configureStore } from "@reduxjs/toolkit";
 import { persistReducer, persistStore } from "redux-persist";
 import storage from "redux-persist/lib/storage";
+import { queryParamsSlice } from "./slice/paramsSlice";
 // import autoMergeLevel2 from 'redux-persist/lib/stateReconciler/autoMergeLevel2';
 
 const persistConfig = {
   key: "root",
   version: 1,
   storage,
-  blacklist: ["auth"],
+  blacklist: ["auth", "queryParams"],
   //   stateReconciler: autoMergeLevel2,
 };
 
@@ -24,6 +25,7 @@ const rootReducer = combineReducers({
   auth: persistReducer(authPersistConfig, authReducer),
   project: projectSlice.reducer,
   menu: menuSlice.reducer,
+  queryParams: queryParamsSlice.reducer,
 });
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
-import { Params, useParams } from "react-router-dom";
+import { Params, useParams, useSearchParams } from "react-router-dom";
 import {
   Button,
   Input,
@@ -141,6 +141,8 @@ const UpdateMemberRole: React.FC<MemberRolePropTypes> = ({
 };
 
 const MemberList: React.FC = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const queryParams = useSelector((state: any) => state.queryParams);
   const params = useParams();
   const token = useSelector((state: any) => state.auth.userInfo.token);
   const [memberData, setMemberData] = useState<any[]>([]);
@@ -165,7 +167,7 @@ const MemberList: React.FC = () => {
           method: "get",
           url: `${process.env.REACT_APP_BACKEND_URL}/project/members/${params.projectId}`,
           headers: { Authorization: `Bearer ${token}` },
-          params: { page: pagination.pageIndex, limit: 10 },
+          params: { page: queryParams.currentPage, limit: 10 },
         });
         setMemberData(response.data.members);
         setPagination({
@@ -236,7 +238,7 @@ const MemberList: React.FC = () => {
   };
 
   // **** PAGE CHANGE SẼ GỬI TIẾP API GET USER MEMBER ĐỂ LẤY THEO PAGE TƯƠNG ỨNG ****
-  const handlePageChange = async (page: number, pageSize: number) => {
+  const handlePageChange = async (page: number) => {
     setIsLoading(true);
     try {
       const response = await axios({
@@ -251,6 +253,7 @@ const MemberList: React.FC = () => {
         total: response.data.total,
         pageIndex: response.data.currentPage,
       });
+      setSearchParams({ ...queryParams, currentPage: page });
       setIsLoading(false);
     } catch (err) {
       console.error(err);

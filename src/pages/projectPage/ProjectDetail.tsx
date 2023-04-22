@@ -4,8 +4,9 @@ import StagesPage from "../stagePages/StagesPage";
 import { Breadcrumb, Space, Tabs, Skeleton } from "antd";
 import React, { useEffect, useState } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
+import { setCurrentTab } from "../../redux/slice/paramsSlice";
 import { Link } from "react-router-dom";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import ProjectInfo from "./ProjectInfo";
 
 //
@@ -19,8 +20,10 @@ export interface ProjectDetail {
 }
 
 const ProjectDetail: React.FC = () => {
+  const dispatch = useDispatch();
   const params = useParams();
   const token = useSelector((state: any) => state.auth.userInfo.token);
+  const queryParams = useSelector((state: any) => state.queryParams);
   const [searchParams, setSearchParams] = useSearchParams();
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<object>({});
@@ -29,6 +32,12 @@ const ProjectDetail: React.FC = () => {
     { title: <Link to="/">Home (Project List)</Link> },
     { title: projectDetail?.name },
   ];
+
+  console.log("Query Params:", queryParams);
+  useEffect(() => {
+    let query = Object.fromEntries([...searchParams]);
+    dispatch(setCurrentTab(query));
+  }, [searchParams]);
 
   useEffect(() => {
     const getProjectDetail = async () => {
@@ -60,10 +69,10 @@ const ProjectDetail: React.FC = () => {
   ];
 
   const handleTabLick = (tabLabel: string) => {
-    if (tabLabel === "General Information") {
+    if (tabLabel === "Stages" || "Members") {
+      setSearchParams({ currentTab: tabLabel, currentPage: "1" });
+    } else if (tabLabel === "General Information") {
       setSearchParams({ currentTab: tabLabel });
-    } else {
-      setSearchParams({ currentTab: tabLabel, pageIndex: "1", pageSize: "8" });
     }
   };
 
@@ -76,7 +85,7 @@ const ProjectDetail: React.FC = () => {
           <Breadcrumb items={breadcrumbItem} />
           <Tabs
             onTabClick={handleTabLick}
-            activeKey={searchParams.get("currentTab") || "General Information"}
+            activeKey={queryParams.currentTab}
             type="card"
             size="large"
             items={tabItems}
