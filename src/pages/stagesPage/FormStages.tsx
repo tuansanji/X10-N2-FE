@@ -1,18 +1,12 @@
-import { IStages } from './StagesPage';
-import { toastErr, toastSuccess } from '../../redux/slice/toastSlice';
-import axios from 'axios';
-import dayjs from 'dayjs';
-import 'dayjs/locale/zh-cn';
-import {
-  Dispatch,
-  SetStateAction,
-  useMemo,
-  useState
-  } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { useParams } from 'react-router';
-
-
+import { IStages } from "./StagesPage";
+import { toastErr, toastSuccess } from "../../redux/slice/toastSlice";
+import { CloseOutlined, LoadingOutlined } from "@ant-design/icons";
+import axios from "axios";
+import dayjs from "dayjs";
+import "dayjs/locale/zh-cn";
+import { Dispatch, SetStateAction, useMemo, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { useParams } from "react-router";
 
 import {
   Breadcrumb,
@@ -22,16 +16,8 @@ import {
   Form,
   Input,
   Row,
-
   Typography,
 } from "antd";
-
-import {
-  CloseOutlined,
-  LoadingOutlined,
-
-} from "@ant-design/icons";
-
 
 const { TextArea } = Input;
 const { Title } = Typography;
@@ -52,7 +38,6 @@ interface IForm {
   editStages?: { status: boolean; stages: IStages | {} };
   setCreateStages?: Dispatch<SetStateAction<boolean>>;
   setFinishCount: Dispatch<SetStateAction<number>>;
-
   setEditStages?: Dispatch<
     SetStateAction<{ status: boolean; stages: IStages | {} }>
   >;
@@ -74,7 +59,7 @@ const FormStages: React.FC<IForm> = ({
   const token: string = useSelector((state: any) => state.auth.userInfo.token);
   const [loading, setLoading] = useState(false);
 
-  // Hàm xử lý khi Form gửi đi
+  // hàm xử lí form
   const onFinish = (stages: IStagesCreate) => {
     setLoading(true);
     if (!editStages) {

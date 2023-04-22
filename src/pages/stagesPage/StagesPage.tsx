@@ -1,39 +1,16 @@
 import FormStages from "./FormStages";
-import { IProject } from "../../components/sidebar/Sidebar";
 import Loading from "../../components/support/Loading";
-import { listStages } from "../../data/statges";
 import { reloadSidebar } from "../../redux/slice/menuSlice";
+import { DeleteFilled, EditFilled } from "@ant-design/icons";
+import { Button, message, Pagination, Popconfirm, Space, Table } from "antd";
 import Search from "antd/es/input/Search";
 import axios from "axios";
 import moment from "moment";
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import Highlighter from "react-highlight-words";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useParams } from "react-router-dom";
-import slugify from "slugify";
-import {
-  Button,
-  Input,
-  message,
-  Modal,
-  Pagination,
-  Popconfirm,
-  Select,
-  Space,
-  Table,
-  Tag,
-} from "antd";
-import {
-  DeleteFilled,
-  EditFilled,
-  ExclamationCircleOutlined,
-  SearchOutlined,
-} from "@ant-design/icons";
-import type { InputRef } from "antd";
-import type { ColumnsType, TableProps, ColumnType } from "antd/es/table";
-import type { SizeType } from "antd/es/config-provider/SizeContext";
-import type { FilterConfirmProps } from "antd/es/table/interface";
-// import { TablePaginationPosition } from 'antd/lib/table';
+
+import type { ColumnsType } from "antd/es/table";
 
 export interface IStages {
   _id?: string;
@@ -56,7 +33,7 @@ interface DataType {
   endDateExpected: string;
   endDateActual: string;
 }
-type DataIndex = keyof DataType;
+
 const StagesPage: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [messageApi, contextHolder] = message.useMessage();
@@ -81,7 +58,7 @@ const StagesPage: React.FC = () => {
   const params = useParams();
   const dispatch = useDispatch();
   const token: string = useSelector((state: any) => state.auth.userInfo.token);
-
+  // lấy dữ liệu stages theo page
   useEffect(() => {
     setLoading(true);
     axios
@@ -199,6 +176,7 @@ const StagesPage: React.FC = () => {
         });
     }
   };
+  //dữ liệu table
   const columns: ColumnsType<DataType> = useMemo(
     () => [
       {
@@ -273,7 +251,7 @@ const StagesPage: React.FC = () => {
     ],
     [stagesData]
   );
-
+  // dữ liệu stages trong table
   const data: DataType[] = useMemo(() => {
     if (!stagesData?.stages) return [];
 
@@ -287,10 +265,6 @@ const StagesPage: React.FC = () => {
         : "",
     }));
   }, [stagesData?.stages]);
-
-  const pagination: TableProps<any>["pagination"] = {
-    position: ["bottomCenter"],
-  };
 
   return (
     <div className="content_project-page stages_page">
