@@ -1,8 +1,25 @@
-import React, { useState } from "react";
-import { Button, Input, Divider, Table, Modal, Typography, Select } from "antd";
+import React, { useState, useEffect, useCallback } from "react";
+import axios from "axios";
+import { Params, useParams } from "react-router-dom";
+import {
+  Button,
+  Input,
+  Divider,
+  Table,
+  Modal,
+  Typography,
+  Select,
+  Popconfirm,
+  message,
+  Skeleton,
+} from "antd";
 import { ColumnsType } from "antd/es/table";
 import moment from "moment";
+import dayjs from "dayjs";
+import { formatDate } from "../../ultils/formatDate";
 import { DeleteFilled } from "@ant-design/icons";
+import { useSelector } from "react-redux";
+import AddMember from "./AddMember";
 
 const { Search } = Input;
 const { Text, Title } = Typography;
@@ -11,107 +28,234 @@ interface MemberDataType {
   name: string;
   role: string;
   joinDate: string;
+  key?: string;
 }
 
-const projectUser = [
-  { name: "Nguyen Van A", role: "Project Owner", joinDate: new Date(), id: 1 },
-  {
-    name: "Nguyen Van B",
-    role: "Project Manager",
-    joinDate: new Date(),
-    id: 2,
-  },
-  {
-    name: "Nguyen Van C",
-    role: "Project Supervisor",
-    joinDate: new Date(),
-    id: 3,
-  },
-  { name: "Nguyen Van D", role: "Project Member", joinDate: new Date(), id: 4 },
-  { name: "Nguyen Van E", role: "Project Member", joinDate: new Date(), id: 5 },
-  { name: "Nguyen Van F", role: "Project Member", joinDate: new Date(), id: 6 },
-  { name: "Nguyen Van G", role: "Project Member", joinDate: new Date(), id: 7 },
-  { name: "Nguyen Van E", role: "Project Member", joinDate: new Date(), id: 8 },
-  { name: "Nguyen Van F", role: "Project Member", joinDate: new Date(), id: 9 },
-  {
-    name: "Nguyen Van G",
-    role: "Project Member",
-    joinDate: new Date(),
-    id: 10,
-  },
-];
+interface PopupPropTypes {
+  record: MemberDataType;
+  token: string;
+  params: { projectId?: string };
+  setMemberData: React.Dispatch<React.SetStateAction<any[]>>;
+}
+
+interface MemberRolePropTypes {
+  record: MemberDataType;
+  roleSelectOptions: any[];
+  params: { projectId?: string };
+  token: string;
+  setMemberData: React.Dispatch<React.SetStateAction<any[]>>;
+}
+
+const DeleteConfirmPopup: React.FC<PopupPropTypes> = ({
+  record,
+  params,
+  token,
+  setMemberData,
+}) => {
+  const [open, setOpen] = useState<boolean>(false);
+  const [confirmLoading, setConfirmLoading] = useState<boolean>(false);
+
+  const handleConfirm = async (stages: MemberDataType) => {
+    setConfirmLoading(true);
+    try {
+      const response = await axios({
+        method: "post",
+        url: `${process.env.REACT_APP_BACKEND_URL}/project/members/remove/${params.projectId}`,
+        headers: { Authorization: `Bearer ${token}` },
+        data: { id: stages.key },
+      });
+      setMemberData(response.data.members);
+      message.success(response.data.message);
+      setConfirmLoading(false);
+      setOpen(false);
+    } catch (err) {
+      console.error(err);
+      setConfirmLoading(false);
+      setOpen(false);
+    }
+  };
+
+  return (
+    <>
+      <Popconfirm
+        disabled={record.role === "manager" && true}
+        placement="topRight"
+        title="Delete Member"
+        description="Are you sure to delete this member?"
+        open={open}
+        onConfirm={() => handleConfirm(record)}
+        onCancel={() => setOpen(false)}
+        okButtonProps={{ loading: confirmLoading }}
+      >
+        <Button
+          icon={<DeleteFilled />}
+          disabled={record.role === "manager" && true}
+          onClick={() => setOpen(true)}
+        />
+      </Popconfirm>
+    </>
+  );
+};
+
+const UpdateMemberRole: React.FC<MemberRolePropTypes> = ({
+  record,
+  roleSelectOptions,
+  params,
+  token,
+  setMemberData,
+}) => {
+  const [roleUpdating, setRoleUpdating] = useState<boolean>(false);
+  const updateRole = async (selectValue: any, record: MemberDataType) => {
+    setRoleUpdating(true);
+    try {
+      const response = await axios({
+        method: "post",
+        url: `${process.env.REACT_APP_BACKEND_URL}/project/members/update/${params.projectId}`,
+        headers: { Authorization: `Bearer ${token}` },
+        data: {
+          id: record.key,
+          role: selectValue,
+          joiningDate: formatDate(record.joinDate),
+        },
+      });
+      setMemberData(response.data.members);
+      message.success(response.data.message);
+      setRoleUpdating(false);
+    } catch (err) {
+      console.error(err);
+      setRoleUpdating(false);
+    }
+  };
+  return (
+    <>
+      <Select
+        loading={roleUpdating && true}
+        disabled={record.role === "manager" && true}
+        onSelect={(value) => updateRole(value, record)}
+        value={record.role}
+        options={roleSelectOptions}
+        dropdownMatchSelectWidth={false}
+      />
+    </>
+  );
+};
 
 const MemberList: React.FC = () => {
-  const [memberData, setMemberData] = useState<any[]>(projectUser);
-  const [searchInput, setSearchInput] = useState<string>("");
+  const params = useParams();
+  const token = useSelector((state: any) => state.auth.userInfo.token);
+  const [memberData, setMemberData] = useState<any[]>([]);
   const [memberInfoModal, setmemberInfoModal] = useState<any>({});
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [showMemberInfoModal, setShowMemberInfoModal] =
     useState<boolean>(false);
   const [showAddMemberModal, setShowAddMemberModal] = useState<boolean>(false);
-  const [newMem, setNewMem] = useState<object>({});
+  const [searchInput, setSearchInput] = useState<string>("");
+  const [searchResult, setSearchResult] = useState<any>([]);
+  const [pagination, setPagination] = useState<any>({
+    pageIndex: 1,
+    total: null,
+  });
+
+  // Lấy List member thuộc project
+  useEffect(() => {
+    const getMemberData = async () => {
+      try {
+        setIsLoading(true);
+        const response = await axios({
+          method: "get",
+          url: `${process.env.REACT_APP_BACKEND_URL}/project/members/${params.projectId}`,
+          headers: { Authorization: `Bearer ${token}` },
+          params: { page: pagination.pageIndex, limit: 10 },
+        });
+        setMemberData(response.data.members);
+        setPagination({
+          ...pagination,
+          total: response.data.total,
+          pageIndex: response.data.currentPage,
+        });
+        setIsLoading(false);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    getMemberData();
+  }, []);
 
   // Validate điều kiện 1 dự án chỉ có 1 owner và 3 manager
-  let managerOptionValidate = memberData.filter((data: any) => {
-    return data.role === "Project Manager";
+  let leaderCount = memberData.filter((data: any) => {
+    return data.role === "leader";
   });
-
-  let ownerOptionValidate = memberData.filter((data: any) => {
-    return data.role === "Project Owner";
-  });
-  // Kết thúc Validate
 
   const roleSelectOptions = [
     {
-      value: "Project Owner",
-      label: "Project Owner",
-      disabled: ownerOptionValidate.length >= 1 && true,
+      value: "manager",
+      label: "Manager",
+      disabled: true,
     },
     {
-      value: "Project Manager",
-      label: "Project Manager",
-      disabled: managerOptionValidate.length >= 3 && true,
+      value: "leader",
+      label: "Leader",
+      disabled: leaderCount?.length >= 3 && true,
     },
-    { value: "Project Supervisor", label: "Project Supervisor" },
-    { value: "Project Member", label: "Project Member" },
+    { value: "supervisor", label: "Supervisor" },
+    { value: "member", label: "Member" },
   ];
+  // Kết thúc Validate
 
-  // Add Member function trong modal
-  const handleAddMember = (value: any) => {
-    setShowAddMemberModal(false);
-  };
-
-  // Search Member trong bảng chính: Cần API search theo tên thành viên trong dự án
-  const handleSearchMember = (value: string) => {
-    setSearchInput("");
-  };
-
-  // Update Role cho member trong dự án: Cần API cập nhật lại thông tin người dùng trong dự án
-  const updateRole = (selectValue: any, indexValue: number) => {
-    let updatedRole = memberData.map((element: any, index: number) => {
-      if (indexValue === index) {
-        return { ...element, role: selectValue };
+  // Search Member thuộc project
+  useEffect(() => {
+    const searchUsers = async () => {
+      setIsLoading(true);
+      try {
+        const response = await axios({
+          method: "get",
+          url: `${process.env.REACT_APP_BACKEND_URL}/user/search`,
+          params: { query: searchInput },
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        let result = memberData.filter((member: any) =>
+          response.data.users.some((user: any) => user._id === member.data._id)
+        );
+        setSearchResult(result);
+        setIsLoading(false);
+      } catch (err) {
+        console.error(err);
+        setIsLoading(false);
       }
-      return element;
-    });
-    setMemberData(updatedRole);
-  };
-
-  // Cũng gọi API để cập nhật lại người dùng trong dự án?
-  const handleDeleteMember = (indexValue: any) => {
-    let newData = memberData.filter((element: any, index: number) => {
-      return indexValue !== index;
-    });
-    setMemberData(newData);
-  };
+    };
+    setTimeout(searchUsers, 1000);
+  }, [searchInput]);
 
   // Show thông tin chi tiết member khi click vào từng member
-  // Nếu show thông tin chi tiết thì lại cần 1 API để get chi tiết user?
   const showMemberModal = (indexValue: any) => {
     let memberInfo = memberData.filter((element: any, index: number) => {
       return indexValue === index;
     });
     setmemberInfoModal(memberInfo[0]);
     setShowMemberInfoModal(true);
+  };
+
+  // **** PAGE CHANGE SẼ GỬI TIẾP API GET USER MEMBER ĐỂ LẤY THEO PAGE TƯƠNG ỨNG ****
+  const handlePageChange = async (page: number, pageSize: number) => {
+    setIsLoading(true);
+    try {
+      const response = await axios({
+        method: "get",
+        url: `${process.env.REACT_APP_BACKEND_URL}/project/members/${params.projectId}`,
+        headers: { Authorization: `Bearer ${token}` },
+        params: { page, limit: 10 },
+      });
+      setMemberData(response.data.members);
+      setPagination({
+        ...pagination,
+        total: response.data.total,
+        pageIndex: response.data.currentPage,
+      });
+      setIsLoading(false);
+    } catch (err) {
+      console.error(err);
+      setIsLoading(false);
+    }
   };
 
   // Setup Table
@@ -142,11 +286,12 @@ const MemberList: React.FC = () => {
       render: (_, record: MemberDataType, index: number) => {
         return (
           <>
-            <Select
-              onSelect={(value) => updateRole(value, index)}
-              value={record.role}
-              options={roleSelectOptions}
-              dropdownMatchSelectWidth={false}
+            <UpdateMemberRole
+              setMemberData={setMemberData}
+              params={params}
+              token={token}
+              record={record}
+              roleSelectOptions={roleSelectOptions}
             />
           </>
         );
@@ -164,9 +309,11 @@ const MemberList: React.FC = () => {
       render: (_, record: MemberDataType, index: number) => {
         return (
           <>
-            <Button
-              icon={<DeleteFilled />}
-              onClick={() => handleDeleteMember(index)}
+            <DeleteConfirmPopup
+              setMemberData={setMemberData}
+              record={record}
+              params={params}
+              token={token}
             />
           </>
         );
@@ -176,18 +323,39 @@ const MemberList: React.FC = () => {
 
   const data: MemberDataType[] = memberData.map((data) => {
     return {
-      key: data.id,
-      name: data.name,
+      key: data.data._id,
+      name: data.data.fullName,
       role: data.role,
-      joinDate: moment(data.joinDate).format("DD/MM/YYYY"),
+      joinDate: moment(data.joiningDate).format("DD/MM/YYYY"),
     };
   });
+
+  const searchData: MemberDataType[] = searchResult?.map((data: any) => {
+    return {
+      key: data.data._id,
+      name: data.data.fullName,
+      role: data.role,
+      joinDate: moment(data.joiningDate).format("DD/MM/YYYY"),
+    };
+  });
+
+  // Show data của bảng tùy theo input ở searchBar
+  function showData() {
+    if (searchResult?.length > 0) {
+      return searchData;
+    } else if (searchInput && searchResult?.length === 0) {
+      return undefined;
+    } else if (searchInput === "" && searchResult?.length === 0) {
+      return data;
+    }
+  }
+
   //Kết thúc setup table
 
   return (
     <div className="member-list">
       {/* Member Info Modal */}
-      <Modal
+      {/* <Modal
         footer={null}
         centered
         open={showMemberInfoModal}
@@ -199,7 +367,7 @@ const MemberList: React.FC = () => {
         <p>{memberInfoModal.name}</p>
         <p>{memberInfoModal.role}</p>
         <p>{moment(memberInfoModal.joinDate).format("DD/MM/YYYY")}</p>
-      </Modal>
+      </Modal> */}
 
       {/* Add Member Modal */}
       <Modal
@@ -208,38 +376,14 @@ const MemberList: React.FC = () => {
         onCancel={() => {
           setShowAddMemberModal(false);
         }}
-        footer={
-          <>
-            <Button type="primary" onClick={handleAddMember}>
-              Add Members
-            </Button>
-            <Button onClick={() => setShowAddMemberModal(false)}>Cancel</Button>
-          </>
-        }
+        footer={null}
       >
-        <Title level={3}>Add Members</Title>
-        {/* Tìm User trong công ty để nhét vào dự án 
-        Call API search User theo input? */}
-        <Search
-          value={searchInput}
-          allowClear
-          onChange={(event: any) => setSearchInput(event?.target.value)}
-          onSearch={handleSearchMember}
-          placeholder="Full Name"
-          size="large"
-          style={{ width: "300px" }}
+        <AddMember
+          setMemberData={setMemberData}
+          closeModal={setShowAddMemberModal}
+          memberData={memberData}
+          leaderCount={leaderCount}
         />
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            margin: "2rem 0",
-          }}
-        >
-          <div>Full Name</div>
-          <div>Select Role</div>
-          <div>X</div>
-        </div>
       </Modal>
 
       {/* Main Content */}
@@ -247,29 +391,42 @@ const MemberList: React.FC = () => {
         <Button
           type="primary"
           size="large"
-          onClick={() => setShowAddMemberModal(true)}
+          onClick={() => {
+            setSearchInput("");
+            setShowAddMemberModal(true);
+          }}
         >
           Add Members
         </Button>
+
+        {/* Search Project Member Input */}
         <Search
           value={searchInput}
           allowClear
-          onChange={(event: any) => setSearchInput(event?.target.value)}
-          onSearch={handleSearchMember}
+          onChange={(event: any) => setSearchInput(event.target.value)}
           placeholder="Member Name"
           size="large"
           style={{ width: "300px" }}
         />
       </div>
       <Divider />
-      <div className="content">
-        <Table
-          columns={columns}
-          dataSource={data}
-          scroll={{ x: 1440 }}
-          pagination={{ position: ["bottomCenter"] }}
-        />
-      </div>
+      {isLoading ? (
+        <Skeleton />
+      ) : (
+        <div className="content">
+          <Table
+            columns={columns}
+            dataSource={showData()}
+            pagination={{
+              position: ["bottomCenter"],
+              total: pagination.total,
+              pageSize: 10,
+              current: pagination.pageIndex,
+              onChange: handlePageChange,
+            }}
+          />
+        </div>
+      )}
     </div>
   );
 };

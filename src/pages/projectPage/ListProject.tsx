@@ -22,7 +22,7 @@ import type { InputRef } from "antd";
 import type { ColumnsType, TableProps, ColumnType } from "antd/es/table";
 import type { SizeType } from "antd/es/config-provider/SizeContext";
 import type { FilterConfirmProps } from "antd/es/table/interface";
-import ProjectInfo from "../../components/projectForm/ProjectInfo";
+import ProjectForm from "../../components/projectForm/ProjectForm";
 
 // import { TablePaginationPosition } from 'antd/lib/table';
 export interface DataType {
@@ -47,6 +47,7 @@ const ListProject: React.FC = () => {
   const [projectDetail, setProjectDetail] = useState<any>();
   const [openEditProject, setOpenEditProject] = useState<boolean>(false);
   const [searchInput, setSearchInput] = useState<string>("");
+  console.log(listProject);
 
   const confirm = (stages: DataType) => {
     console.log(stages);
@@ -111,10 +112,10 @@ const ListProject: React.FC = () => {
             case "ongoing":
               bgColor = "#F0E155";
               break;
-            case "complete":
+            case "completed":
               bgColor = "#44CB39";
               break;
-            case "suspension":
+            case "suspended":
               bgColor = "#EC2B2B";
               break;
             case "preparing":
@@ -229,7 +230,7 @@ const ListProject: React.FC = () => {
           footer={null}
           onCancel={() => setOpenCreateProject(false)}
         >
-          <ProjectInfo
+          <ProjectForm
             title="Create New Project"
             useCase="create"
             closeModal={setOpenCreateProject}
@@ -242,7 +243,7 @@ const ListProject: React.FC = () => {
           footer={null}
           onCancel={() => setOpenEditProject(false)}
         >
-          <ProjectInfo
+          <ProjectForm
             title="Edit Project Info"
             useCase="edit"
             closeModal={setOpenEditProject}
@@ -279,10 +280,10 @@ const ListProject: React.FC = () => {
               onChange={handleChange}
               options={[
                 { value: "all", label: "All" },
-                { value: "complete", label: "Complete" },
-                { value: "suspension", label: "Suspension" }, //tạm đình chỉ
-                { value: "open", label: "Open" }, //Chuẩn bị
-                { value: "ongoing", label: "Ongoing" }, //đang thực hiện
+                { value: "completed", label: "Completed" },
+                { value: "suspended", label: "Suspended" }, //tạm đình chỉ
+                { value: "preparing", label: "Preparing" }, //Chuẩn bị
+                { value: "ongoing", label: "On Going" }, //đang thực hiện
                 // { value: "processing", label: "Processing" }, //đang thực hiện
                 // { value: "preparing", label: "Preparing" }, //chuẩn bị
               ]}
