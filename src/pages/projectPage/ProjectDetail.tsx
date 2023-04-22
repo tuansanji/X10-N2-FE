@@ -1,7 +1,7 @@
 import ProjectInfo from "../../components/projectForm/ProjectInfo";
 import { deslugify } from "../../utils/decode";
 import MemberList from "../Members/MemberList";
-import StagesPage from "../StagesPage/StagesPage";
+import StagesPage from "../stagesPage/StagesPage";
 import { Breadcrumb, Space, Tabs } from "antd";
 import React from "react";
 import { useParams, useSearchParams } from "react-router-dom";
