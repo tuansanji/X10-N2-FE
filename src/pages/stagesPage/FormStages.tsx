@@ -1,15 +1,19 @@
-import { IStages } from "./StagesPage";
-import { toastSuccess } from "../../redux/slice/toastSlice";
-import { Rule } from "antd/lib/form";
-import locale from "antd/locale/zh_CN";
-import axios from "axios";
-import dayjs from "dayjs";
-import "dayjs/locale/zh-cn";
-import moment from "moment";
-import { Dispatch, SetStateAction, useEffect, useMemo, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { useParams } from "react-router";
-import { toast } from "react-toastify";
+import { IStages } from './StagesPage';
+import { toastErr, toastSuccess } from '../../redux/slice/toastSlice';
+import axios from 'axios';
+import dayjs from 'dayjs';
+import 'dayjs/locale/zh-cn';
+import {
+  Dispatch,
+  SetStateAction,
+  useMemo,
+  useState
+  } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { useParams } from 'react-router';
+
+
+
 import {
   Breadcrumb,
   Button,
@@ -18,19 +22,17 @@ import {
   Form,
   Input,
   Row,
-  Select,
-  Space,
-  Tabs,
+
   Typography,
 } from "antd";
 
 import {
   CloseOutlined,
   LoadingOutlined,
-  PlusOutlined,
+
 } from "@ant-design/icons";
 
-const { RangePicker } = DatePicker;
+
 const { TextArea } = Input;
 const { Title } = Typography;
 
@@ -95,7 +97,7 @@ const FormStages: React.FC<IForm> = ({
         .catch((err) => {
           setLoading(false);
 
-          dispatch(toastSuccess(err.response.data?.message));
+          dispatch(toastErr(err.response.data?.message));
         });
     } else {
       if ("key" in editStages.stages)
@@ -118,7 +120,7 @@ const FormStages: React.FC<IForm> = ({
           .catch((err) => {
             setLoading(false);
 
-            dispatch(toastSuccess(err.response.data?.message));
+            dispatch(toastErr(err.response.data?.message));
           });
     }
   };
@@ -223,7 +225,7 @@ const FormStages: React.FC<IForm> = ({
                         form.getFieldValue("endDateExpected");
                       return endDateExpected && current
                         ? current < dayjs(Date.now()) ||
-                            current >= dayjs(endDateExpected)
+                            current > dayjs(endDateExpected)
                         : current < dayjs(Date.now());
                     }}
                   />
@@ -247,7 +249,7 @@ const FormStages: React.FC<IForm> = ({
                       return (
                         current &&
                         (current < dayjs(Date.now()) ||
-                          current < dayjs(startDate))
+                          current <= dayjs(startDate))
                       );
                     }}
                   />

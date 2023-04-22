@@ -1,13 +1,19 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { IProject } from "./../../../../.history/x10-t2/src/components/sidebar/Sidebar_20230418113742";
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+
 export interface ProjectState {
-  listProject: object[];
+  listProject: {
+    projects: any;
+  };
   isFetching: boolean;
   error: boolean;
 }
 export const projectSlice = createSlice({
   name: "project",
   initialState: {
-    listProject: [],
+    listProject: {
+      projects: [],
+    },
     isFetching: false,
     error: false,
   } as ProjectState,
@@ -15,7 +21,10 @@ export const projectSlice = createSlice({
     getAllProjectStart: (state) => {
       state.isFetching = true;
     },
-    getAllProjectSuccess: (state, action) => {
+    getAllProjectSuccess: (
+      state,
+      action: PayloadAction<{ projects: IProject }>
+    ) => {
       state.listProject = action.payload;
 
       state.isFetching = false;

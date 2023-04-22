@@ -414,7 +414,7 @@
 /* css phần sidebar */
 .container_sidebar {
   flex-shrink: 0;
-  height: 100%;
+  height: calc(100% - 55px);
   position: relative;
   width: 340px;
   transition: all 0.3s linear;
@@ -455,6 +455,21 @@
   height: 100%;
   overflow-y: auto;
   max-height: calc(100vh - 60px);
+}
+.container_sidebar .sidebar__menu:where(.css-dev-only-do-not-override-htwhyh).ant-menu-inline > .ant-menu-item,
+.container_sidebar .sidebar__menu :where(.css-dev-only-do-not-override-htwhyh).ant-menu-vertical > .ant-menu-item,
+.container_sidebar .sidebar__menu :where(.css-dev-only-do-not-override-htwhyh).ant-menu-inline > .ant-menu-submenu > .ant-menu-submenu-title,
+.container_sidebar .sidebar__menu :where(.css-dev-only-do-not-override-htwhyh).ant-menu-vertical > .ant-menu-submenu > .ant-menu-submenu-title {
+  background-color: white;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+.container_sidebar .sidebar__menu:where(.css-dev-only-do-not-override-htwhyh).ant-menu-inline > .ant-menu-item:hover,
+.container_sidebar .sidebar__menu :where(.css-dev-only-do-not-override-htwhyh).ant-menu-vertical > .ant-menu-item:hover,
+.container_sidebar .sidebar__menu :where(.css-dev-only-do-not-override-htwhyh).ant-menu-inline > .ant-menu-submenu > .ant-menu-submenu-title:hover,
+.container_sidebar .sidebar__menu :where(.css-dev-only-do-not-override-htwhyh).ant-menu-vertical > .ant-menu-submenu > .ant-menu-submenu-title:hover {
+  background-color: #d1d6de;
 }
 .container_sidebar .sidebar__menu::-webkit-scrollbar {
   width: 4px;
@@ -578,6 +593,11 @@
   margin: 0 auto;
 }
 
+.stages_page .pagination {
+  display: flex;
+  justify-content: center;
+  padding-top: 20px;
+}
 .stages_page .modal {
   position: fixed;
   top: 0;
