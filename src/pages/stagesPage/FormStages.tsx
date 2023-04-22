@@ -1,11 +1,11 @@
 import { IStages } from "./StagesPage";
+import { useAppDispatch, useAppSelector } from "../../redux/hook";
 import { toastErr, toastSuccess } from "../../redux/slice/toastSlice";
 import { CloseOutlined, LoadingOutlined } from "@ant-design/icons";
 import axios from "axios";
 import dayjs from "dayjs";
 import "dayjs/locale/zh-cn";
 import { Dispatch, SetStateAction, useMemo, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
 import { useParams } from "react-router";
 
 import {
@@ -54,9 +54,11 @@ const FormStages: React.FC<IForm> = ({
   setEditStages,
 }: IForm) => {
   const [form] = Form.useForm();
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const params = useParams();
-  const token: string = useSelector((state: any) => state.auth.userInfo.token);
+  const token: string = useAppSelector(
+    (state: any) => state.auth.userInfo.token
+  );
   const [loading, setLoading] = useState(false);
 
   // hàm xử lí form

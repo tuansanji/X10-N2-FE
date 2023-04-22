@@ -1,5 +1,6 @@
 import FormStages from "./FormStages";
 import Loading from "../../components/support/Loading";
+import { useAppDispatch, useAppSelector } from "../../redux/hook";
 import { reloadSidebar } from "../../redux/slice/menuSlice";
 import { DeleteFilled, EditFilled } from "@ant-design/icons";
 import { Button, message, Pagination, Popconfirm, Space, Table } from "antd";
@@ -7,7 +8,6 @@ import Search from "antd/es/input/Search";
 import axios from "axios";
 import moment from "moment";
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
 import { Link, useParams } from "react-router-dom";
 
 import type { ColumnsType } from "antd/es/table";
@@ -56,8 +56,10 @@ const StagesPage: React.FC = () => {
   });
   const searchRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const params = useParams();
-  const dispatch = useDispatch();
-  const token: string = useSelector((state: any) => state.auth.userInfo.token);
+  const dispatch = useAppDispatch();
+  const token: string = useAppSelector(
+    (state: any) => state.auth.userInfo.token
+  );
   // lấy dữ liệu stages theo page
   useEffect(() => {
     setLoading(true);
