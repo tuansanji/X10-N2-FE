@@ -1,16 +1,51 @@
 import FormStages from "./FormStages";
 import Loading from "../../components/support/Loading";
+<<<<<<< HEAD
 import { useAppDispatch, useAppSelector } from "../../redux/hook";
 import { reloadSidebar } from "../../redux/slice/menuSlice";
 import { DeleteFilled, EditFilled } from "@ant-design/icons";
 import { Button, message, Pagination, Popconfirm, Space, Table } from "antd";
+=======
+import { listStages } from "../../data/statges";
+import { reloadSidebar } from "../../redux/slice/menuSlice";
+>>>>>>> b1ab2c1 (edit form stage)
 import Search from "antd/es/input/Search";
 import axios from "axios";
 import moment from "moment";
 import React, { useEffect, useMemo, useRef, useState } from "react";
+<<<<<<< HEAD
 import { Link, useParams } from "react-router-dom";
 
 import type { ColumnsType } from "antd/es/table";
+=======
+import Highlighter from "react-highlight-words";
+import { useDispatch, useSelector } from "react-redux";
+import { Link, useParams } from "react-router-dom";
+import slugify from "slugify";
+import {
+  Button,
+  Input,
+  message,
+  Modal,
+  Pagination,
+  Popconfirm,
+  Select,
+  Space,
+  Table,
+  Tag,
+} from "antd";
+import {
+  DeleteFilled,
+  EditFilled,
+  ExclamationCircleOutlined,
+  SearchOutlined,
+} from "@ant-design/icons";
+import type { InputRef } from "antd";
+import type { ColumnsType, TableProps, ColumnType } from "antd/es/table";
+import type { SizeType } from "antd/es/config-provider/SizeContext";
+import type { FilterConfirmProps } from "antd/es/table/interface";
+// import { TablePaginationPosition } from 'antd/lib/table';
+>>>>>>> b1ab2c1 (edit form stage)
 
 export interface IStages {
   _id?: string;
@@ -40,6 +75,7 @@ const StagesPage: React.FC = () => {
   const [createStages, setCreateStages] = useState<boolean>(false);
   const [searchInput, setSearchInput] = useState<string>("");
 <<<<<<< HEAD
+<<<<<<< HEAD
   const [finishCount, setFinishCount] = useState<number>(0);
   const [pageNumber, setPageNumber] = useState<number>(1);
   const [stagesData, setStagesData] = useState<IStagesData>({
@@ -52,6 +88,16 @@ const StagesPage: React.FC = () => {
   const [stagesData, setStagesData] = useState<IStagesData>();
   const [finishCount, setFinishCount] = useState<number>(0);
 >>>>>>> 6a063c4 (update stage form)
+=======
+  const [finishCount, setFinishCount] = useState<number>(0);
+  const [pageNumber, setPageNumber] = useState<number>(1);
+  const [stagesData, setStagesData] = useState<IStagesData>({
+    stages: [],
+    currentPage: 1,
+    total: 1,
+    totalPages: 1,
+  });
+>>>>>>> b1ab2c1 (edit form stage)
   const [editStages, setEditStages] = useState<{
     status: boolean;
     stages: IStages | {};
@@ -61,20 +107,30 @@ const StagesPage: React.FC = () => {
   });
   const searchRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const params = useParams();
+<<<<<<< HEAD
   const dispatch = useAppDispatch();
   const token: string = useAppSelector(
     (state: any) => state.auth.userInfo.token
   );
   // lấy dữ liệu stages theo page
+=======
+  const dispatch = useDispatch();
+  const token: string = useSelector((state: any) => state.auth.userInfo.token);
+
+>>>>>>> b1ab2c1 (edit form stage)
   useEffect(() => {
     setLoading(true);
     axios
       .get(
 <<<<<<< HEAD
+<<<<<<< HEAD
         `${process.env.REACT_APP_BACKEND_URL}/project/stages/${params.projectId}?page=${pageNumber}`,
 =======
         `${process.env.REACT_APP_BACKEND_URL}/project/stages/${params.projectId}`,
 >>>>>>> 6a063c4 (update stage form)
+=======
+        `${process.env.REACT_APP_BACKEND_URL}/project/stages/${params.projectId}?page=${pageNumber}`,
+>>>>>>> b1ab2c1 (edit form stage)
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -89,12 +145,17 @@ const StagesPage: React.FC = () => {
         message.error(err.response.data.message);
       });
 <<<<<<< HEAD
+<<<<<<< HEAD
   }, [finishCount, token, pageNumber]);
   // hám xóa
 =======
   }, [finishCount, token]);
 
 >>>>>>> 6a063c4 (update stage form)
+=======
+  }, [finishCount, token, pageNumber]);
+  // hám xóa
+>>>>>>> b1ab2c1 (edit form stage)
   const confirm = (stages: DataType) => {
     messageApi.open({
       key: stages.key,
@@ -155,10 +216,13 @@ const StagesPage: React.FC = () => {
     }, 300);
   };
   //hám search
+<<<<<<< HEAD
 =======
   };
 
 >>>>>>> 6a063c4 (update stage form)
+=======
+>>>>>>> b1ab2c1 (edit form stage)
   const handleSearchMember = (value: string) => {
     setLoading(true);
     if (value) {
