@@ -11,12 +11,12 @@ export const queryParamsSlice = createSlice({
   name: "queryParams",
   initialState,
   reducers: {
-    setCurrentTab: (state, action) => {
+    setQuery: (state, action) => {
       return action.payload;
     },
   },
 });
 
-export const { setCurrentTab } = queryParamsSlice.actions;
+export const { setQuery } = queryParamsSlice.actions;
 
 export default queryParamsSlice.reducer;

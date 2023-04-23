@@ -1,6 +1,11 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
-import { Params, useParams, useSearchParams } from "react-router-dom";
+import {
+  useParams,
+  useSearchParams,
+  useNavigate,
+  createSearchParams,
+} from "react-router-dom";
 import {
   Button,
   Input,
@@ -22,7 +27,7 @@ import { useSelector } from "react-redux";
 import AddMember from "./AddMember";
 
 const { Search } = Input;
-const { Text, Title } = Typography;
+const { Text } = Typography;
 
 interface MemberDataType {
   name: string;
@@ -141,6 +146,8 @@ const UpdateMemberRole: React.FC<MemberRolePropTypes> = ({
 };
 
 const MemberList: React.FC = () => {
+  const timeOutRef = useRef<any>(null);
+  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const queryParams = useSelector((state: any) => state.queryParams);
   const params = useParams();
@@ -212,7 +219,7 @@ const MemberList: React.FC = () => {
         const response = await axios({
           method: "get",
           url: `${process.env.REACT_APP_BACKEND_URL}/user/search`,
-          params: { query: searchInput },
+          params: { query: queryParams.search },
           headers: { Authorization: `Bearer ${token}` },
         });
         let result = memberData.filter((member: any) =>
@@ -225,7 +232,10 @@ const MemberList: React.FC = () => {
         setIsLoading(false);
       }
     };
-    setTimeout(searchUsers, 1000);
+    timeOutRef.current = setTimeout(searchUsers, 1500);
+    return () => {
+      clearTimeout(timeOutRef.current);
+    };
   }, [searchInput]);
 
   // Show thông tin chi tiết member khi click vào từng member
@@ -259,6 +269,37 @@ const MemberList: React.FC = () => {
       console.error(err);
       setIsLoading(false);
     }
+  };
+
+  const handleInputChange = (event: any) => {
+    if (event.target.value === "") {
+      let searchQuery = searchParams.get("search");
+      if (searchQuery === "") {
+        setSearchInput(event.target.value);
+        setSearchParams({ ...queryParams, search: event.target.value });
+      } else {
+        searchParams.delete("search");
+        let newQuery = Object.fromEntries([...searchParams]);
+        console.log("Query:", newQuery);
+        setSearchParams(newQuery);
+      }
+    } else {
+      setSearchInput(event.target.value);
+      setSearchParams({ ...queryParams, search: event.target.value });
+    }
+  };
+
+  const handleSearchBox = (value: string, event: any) => {
+    if (value === "") {
+      searchParams.delete("search");
+      let newQuery = Object.fromEntries([...searchParams]);
+      console.log("Query:", newQuery);
+      setSearchParams(newQuery);
+    } else {
+      setSearchParams({ ...queryParams, search: value });
+    }
+    console.log("Value:", value);
+    console.log("Event:", event);
   };
 
   // Setup Table
@@ -404,9 +445,10 @@ const MemberList: React.FC = () => {
 
         {/* Search Project Member Input */}
         <Search
-          value={searchInput}
+          value={queryParams.search === "" ? searchInput : queryParams.search}
           allowClear
-          onChange={(event: any) => setSearchInput(event.target.value)}
+          onChange={handleInputChange}
+          onSearch={handleSearchBox}
           placeholder="Member Name"
           size="large"
           style={{ width: "300px" }}

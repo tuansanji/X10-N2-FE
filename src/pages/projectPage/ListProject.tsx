@@ -56,7 +56,6 @@ const ListProject: React.FC = () => {
   const [projectDetail, setProjectDetail] = useState<any>();
   const [openEditProject, setOpenEditProject] = useState<boolean>(false);
   const [searchInput, setSearchInput] = useState<string>("");
-  console.log(listProject);
 
   const confirm = (stages: DataType) => {
     console.log(stages);

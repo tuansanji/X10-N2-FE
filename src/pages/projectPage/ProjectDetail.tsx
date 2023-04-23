@@ -3,14 +3,19 @@ import MemberList from "../Members/MemberList";
 import StagesPage from "../stagePages/StagesPage";
 import { Breadcrumb, Space, Tabs, Skeleton } from "antd";
 import React, { useEffect, useState } from "react";
-import { useParams, useSearchParams } from "react-router-dom";
-import { setCurrentTab } from "../../redux/slice/paramsSlice";
+import {
+  useParams,
+  useSearchParams,
+  useNavigate,
+  createSearchParams,
+} from "react-router-dom";
+import { setQuery } from "../../redux/slice/paramsSlice";
 import { Link } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import ProjectInfo from "./ProjectInfo";
 
 //
-export interface ProjectDetail {
+export interface ProjectType {
   name: string;
   description: string;
   startDate: Date;
@@ -20,6 +25,7 @@ export interface ProjectDetail {
 }
 
 const ProjectDetail: React.FC = () => {
+  const navigate = useNavigate();
   const dispatch = useDispatch();
   const params = useParams();
   const token = useSelector((state: any) => state.auth.userInfo.token);
@@ -27,17 +33,43 @@ const ProjectDetail: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<object>({});
-  const [projectDetail, setProjectDetail] = useState<ProjectDetail>();
+  const [projectDetail, setProjectDetail] = useState<ProjectType>();
   const breadcrumbItem = [
     { title: <Link to="/">Home (Project List)</Link> },
     { title: projectDetail?.name },
   ];
 
-  console.log("Query Params:", queryParams);
   useEffect(() => {
     let query = Object.fromEntries([...searchParams]);
-    dispatch(setCurrentTab(query));
+    console.log("Main Query:", query);
+    dispatch(setQuery(query));
   }, [searchParams]);
+
+  // useEffect(() => {
+  //   // remove the t parameter if it is present in the URL. This happens when we are redirected back from an OAuth
+  //   // flow.
+  //   if (
+  //     queryParams.currentTab === "General Information" &&
+  //     searchParams.has("currentPage")
+  //   ) {
+  //     const pageQuery = searchParams.get("currentPage");
+  //     if (pageQuery) {
+  //       searchParams.delete("currentPage");
+  //       const newParams: { [key: string]: string } = {};
+  //       searchParams.forEach((value: string, key: string) => {
+  //         newParams[key] = value;
+  //       });
+
+  //       setSearchParams(newParams);
+  //       navigate(
+  //         {
+  //           search: createSearchParams(newParams).toString(),
+  //         },
+  //         { replace: true }
+  //       );
+  //     }
+  //   }
+  // }, [navigate, searchParams, setSearchParams]);
 
   useEffect(() => {
     const getProjectDetail = async () => {
@@ -68,12 +100,8 @@ const ProjectDetail: React.FC = () => {
     { label: "Members", key: "Members", children: <MemberList /> },
   ];
 
-  const handleTabLick = (tabLabel: string) => {
-    if (tabLabel === "Stages" || "Members") {
-      setSearchParams({ currentTab: tabLabel, currentPage: "1" });
-    } else if (tabLabel === "General Information") {
-      setSearchParams({ currentTab: tabLabel });
-    }
+  const handleTabChange = (tabLabel: string) => {
+    setSearchParams({ currentTab: tabLabel, currentPage: "1" });
   };
 
   return (
@@ -84,7 +112,7 @@ const ProjectDetail: React.FC = () => {
         <Space direction="vertical" size="large" style={{ display: "flex" }}>
           <Breadcrumb items={breadcrumbItem} />
           <Tabs
-            onTabClick={handleTabLick}
+            onTabClick={handleTabChange}
             activeKey={queryParams.currentTab}
             type="card"
             size="large"
