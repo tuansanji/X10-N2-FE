@@ -1,6 +1,7 @@
 import authReducer from "./slice/authSlice";
 import { menuSlice } from "./slice/menuSlice";
 import { projectSlice } from "./slice/projectSlice";
+import { toastSlice } from "./slice/toastSlice";
 import { combineReducers, configureStore } from "@reduxjs/toolkit";
 import { persistReducer, persistStore } from "redux-persist";
 import storage from "redux-persist/lib/storage";
@@ -26,6 +27,7 @@ const rootReducer = combineReducers({
   project: projectSlice.reducer,
   menu: menuSlice.reducer,
   queryParams: queryParamsSlice.reducer,
+  toast: toastSlice.reducer,
 });
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);

@@ -120,20 +120,24 @@
   margin-right: auto;
 }
 
-.login, .forgot-password {
+.login,
+.forgot-password {
   position: relative;
 }
-.login img, .forgot-password img {
+.login img,
+.forgot-password img {
   display: block;
   height: auto;
   width: 100%;
   object-fit: cover;
   opacity: 0.5;
 }
-.login h3, .forgot-password h3 {
+.login h3,
+.forgot-password h3 {
   text-align: center;
 }
-.login .form-container, .forgot-password .form-container {
+.login .form-container,
+.forgot-password .form-container {
   position: absolute;
   top: 0;
   left: 0;
@@ -142,30 +146,38 @@
   margin-right: auto;
   width: 500px;
 }
-.login .form-layout, .forgot-password .form-layout {
+.login .form-layout,
+.forgot-password .form-layout {
   margin: auto;
   padding: 0 4rem;
   max-width: 100%;
 }
-.login .form-layout .ant-col.ant-form-item-label, .forgot-password .form-layout .ant-col.ant-form-item-label {
+.login .form-layout .ant-col.ant-form-item-label,
+.forgot-password .form-layout .ant-col.ant-form-item-label {
   padding: 0;
 }
-.login .form-layout .ant-form-item-control-input, .forgot-password .form-layout .ant-form-item-control-input {
+.login .form-layout .ant-form-item-control-input,
+.forgot-password .form-layout .ant-form-item-control-input {
   text-align: center;
 }
-.login .form-layout .ant-form-item-control-input button, .forgot-password .form-layout .ant-form-item-control-input button {
+.login .form-layout .ant-form-item-control-input button,
+.forgot-password .form-layout .ant-form-item-control-input button {
   width: 100%;
 }
-.login .form-title, .forgot-password .form-title {
+.login .form-title,
+.forgot-password .form-title {
   margin: 2rem 4rem;
 }
-.login .ant-form-item:last-child button, .forgot-password .ant-form-item:last-child button {
+.login .ant-form-item:last-child button,
+.forgot-password .ant-form-item:last-child button {
   margin-top: 1rem;
 }
-.login .ant-typography, .forgot-password .ant-typography {
+.login .ant-typography,
+.forgot-password .ant-typography {
   text-align: center;
 }
-.login .login-divider, .forgot-password .login-divider {
+.login .login-divider,
+.forgot-password .login-divider {
   width: 100%;
   padding: 0 4rem;
 }
@@ -414,7 +426,7 @@
 /* css phần sidebar */
 .container_sidebar {
   flex-shrink: 0;
-  height: calc(100% - 55px);
+  height: 100%;
   position: relative;
   width: 340px;
   transition: all 0.3s linear;
@@ -455,21 +467,6 @@
   height: 100%;
   overflow-y: auto;
   max-height: calc(100vh - 60px);
-}
-.container_sidebar .sidebar__menu:where(.css-dev-only-do-not-override-htwhyh).ant-menu-inline > .ant-menu-item,
-.container_sidebar .sidebar__menu :where(.css-dev-only-do-not-override-htwhyh).ant-menu-vertical > .ant-menu-item,
-.container_sidebar .sidebar__menu :where(.css-dev-only-do-not-override-htwhyh).ant-menu-inline > .ant-menu-submenu > .ant-menu-submenu-title,
-.container_sidebar .sidebar__menu :where(.css-dev-only-do-not-override-htwhyh).ant-menu-vertical > .ant-menu-submenu > .ant-menu-submenu-title {
-  background-color: white;
-  position: sticky;
-  top: 0;
-  z-index: 10;
-}
-.container_sidebar .sidebar__menu:where(.css-dev-only-do-not-override-htwhyh).ant-menu-inline > .ant-menu-item:hover,
-.container_sidebar .sidebar__menu :where(.css-dev-only-do-not-override-htwhyh).ant-menu-vertical > .ant-menu-item:hover,
-.container_sidebar .sidebar__menu :where(.css-dev-only-do-not-override-htwhyh).ant-menu-inline > .ant-menu-submenu > .ant-menu-submenu-title:hover,
-.container_sidebar .sidebar__menu :where(.css-dev-only-do-not-override-htwhyh).ant-menu-vertical > .ant-menu-submenu > .ant-menu-submenu-title:hover {
-  background-color: #d1d6de;
 }
 .container_sidebar .sidebar__menu::-webkit-scrollbar {
   width: 4px;
@@ -528,53 +525,6 @@
 
 .btn_status span {
   font-size: 12px;
-}
-
-.project-name {
-  cursor: pointer;
-  color: #1677ff;
-}
-
-.tasks_page {
-  padding: 32px;
-}
-@media only screen and (max-width: 768px) {
-  .tasks_page {
-    padding: 10px;
-  }
-}
-.tasks_page .ant-space {
-  width: 100%;
-}
-.tasks_page .ant-divider {
-  margin: 16px;
-}
-.tasks_page .tool_bar {
-  display: flex;
-  gap: 16px;
-}
-.tasks_page .ant-input-search {
-  width: 300px;
-}
-.tasks_page button:first-child {
-  margin-right: auto;
-}
-.tasks_page .tasks_board {
-  display: flex;
-  width: 100%;
-  gap: 16px;
-}
-.tasks_page .tasks_board .column_container {
-  width: 100%;
-}
-.tasks_page .tasks_board .column_container .column_containter_title {
-  text-align: center;
-}
-.tasks_page .tasks_board .column_container .task_item {
-  margin: 16px 0;
-  text-align: center;
-  border: 1px solid black;
-  padding: 16px 0;
 }
 
 .modal_task {
@@ -640,11 +590,6 @@
   margin: 0 auto;
 }
 
-.stages_page .pagination {
-  display: flex;
-  justify-content: center;
-  padding-top: 20px;
-}
 .stages_page .modal {
   position: fixed;
   top: 0;
@@ -797,7 +742,6 @@
   margin-top: 1rem;
   color: #ec2b2b;
 }
-
 .ck.ck-editor {
   width: 100%;
   height: 100%;

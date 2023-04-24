@@ -1,6 +1,6 @@
-import _ from "lodash";
 import { AnyAction, Dispatch } from "@reduxjs/toolkit";
 import axios from "axios";
+import _ from "lodash";
 import {
   getAllProjectError,
   getAllProjectStart,

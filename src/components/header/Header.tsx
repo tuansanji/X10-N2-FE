@@ -43,12 +43,18 @@ const Header = () => {
             >
               <Link className="" to="/user/infor">
                 <Space>
-                  {user.fullName}
+                  {user.userInfo.fullName}
                   <DownOutlined />
                 </Space>
               </Link>
             </Dropdown>
-            <img srcSet={`${user.avatar} 2x`} alt="" />
+            <img
+              srcSet={`${
+                user.userInfo.avatar ||
+                "https://st.quantrimang.com/photos/image/072015/22/avatar.jpg"
+              } 2x`}
+              alt=""
+            />
           </div>
         ) : (
           <Link to="/auth/login">
