@@ -1,12 +1,12 @@
 import React from "react";
 import { Descriptions, Typography, Button } from "antd";
 import dayjs from "dayjs";
-import { ProjectDetail } from "./ProjectDetail";
+import { ProjectType } from "./ProjectDetail";
 
 const { Title, Text } = Typography;
 
 interface PropTypes {
-  projectDetail?: ProjectDetail;
+  projectDetail?: ProjectType;
 }
 
 const ProjectInfo: React.FC<PropTypes> = ({ projectDetail }) => {

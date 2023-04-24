@@ -1,6 +1,7 @@
 import FormStages from "./FormStages";
 import Loading from "../../components/support/Loading";
 import { useAppDispatch, useAppSelector } from "../../redux/hook";
+import { listStages } from "../../data/statges";
 import { reloadSidebar } from "../../redux/slice/menuSlice";
 import { DeleteFilled, EditFilled } from "@ant-design/icons";
 import { Button, message, Pagination, Popconfirm, Space, Table } from "antd";
@@ -254,19 +255,30 @@ const StagesPage: React.FC = () => {
     [stagesData]
   );
   // dữ liệu stages trong table
-  const data: DataType[] = useMemo(() => {
-    if (!stagesData?.stages) return [];
+  // const data: DataType[] = useMemo(() => {
+  //   if (!stagesData?.stages) return [];
 
-    return stagesData.stages.map((stage: IStages) => ({
-      key: stage._id,
-      name: stage.name,
-      startDate: moment(stage.startDate).format("YYYY-MM-DD"),
-      endDateExpected: moment(stage.endDateExpected).format("YYYY-MM-DD"),
-      endDateActual: stage.endDateActual
-        ? moment(stage.endDateActual).format("YYYY-MM-DD")
-        : "",
-    }));
-  }, [stagesData?.stages]);
+  //   return stagesData.stages.map((stage: IStages) => ({
+  //     key: stage._id,
+  //     name: stage.name,
+  //     startDate: moment(stage.startDate).format("YYYY-MM-DD"),
+  //     endDateExpected: moment(stage.endDateExpected).format("YYYY-MM-DD"),
+  //     endDateActual: stage.endDateActual
+  //       ? moment(stage.endDateActual).format("YYYY-MM-DD")
+  //       : "",
+  //   }));
+  // }, [stagesData?.stages]);
+
+  //DATA ĐỂ TEST THỬ VÀO TRANG DANH SÁCH TASK
+  const data: any[] = listStages.map((data) => {
+    return {
+      key: data._id,
+      name: data.name,
+      startDate: data.startDate,
+      endDateExpected: data.estimatedEndDate,
+      endDateActual: data.actualEndDate,
+    };
+  });
 
   return (
     <div className="content_project-page stages_page">

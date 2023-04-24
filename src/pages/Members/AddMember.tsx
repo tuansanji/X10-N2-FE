@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useParams } from "react-router-dom";
 import { Input, Typography, Button, Select, message } from "antd";
 import axios from "axios";
@@ -32,6 +32,7 @@ const AddMember: React.FC<PropTypes> = ({
   setMemberData,
 }) => {
   const params = useParams();
+  const timeOutRef = useRef<any>(null);
   const token = useSelector((state: any) => state.auth.userInfo.token);
   const [searchInput, setSearchInput] = useState<string>();
   const [searchResult, setSearchResult] = useState<UserSearchResult[]>([]);
@@ -116,7 +117,10 @@ const AddMember: React.FC<PropTypes> = ({
         console.error(err);
       }
     };
-    setTimeout(searchUsers, 1000);
+    timeOutRef.current = setTimeout(searchUsers, 1000);
+    return () => {
+      clearTimeout(timeOutRef.current);
+    };
   }, [searchInput]);
 
   // Chọn User sau khi có kết quả Search
