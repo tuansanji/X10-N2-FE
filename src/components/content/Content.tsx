@@ -1,6 +1,6 @@
-import ListProject from "../../pages/ProjectPage/ListProject";
-import ProjectDetail from "../../pages/ProjectPage/ProjectDetail";
-import TasksPage from "../../pages/TasksPage/TasksPage";
+import ListProject from "../../pages/projectPage/ListProject";
+import ProjectDetail from "../../pages/projectPage/ProjectDetail";
+import TasksPage from "../../pages/tasksPage/TasksPage";
 import React from "react";
 import { useSelector } from "react-redux";
 import { Route, Routes } from "react-router";

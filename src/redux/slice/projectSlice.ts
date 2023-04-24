@@ -1,4 +1,4 @@
-import { IProject } from "./../../../../.history/x10-t2/src/components/sidebar/Sidebar_20230418113742";
+import { IProject } from "../../components/sidebar/Sidebar";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 export interface ProjectState {
