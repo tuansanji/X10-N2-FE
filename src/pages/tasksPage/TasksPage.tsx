@@ -1,6 +1,12 @@
 import TaskForm, { ITask } from "./TaskForm";
 import TaskInfo from "./TaskInfo";
 import { descriptionTest } from "../../data/statges";
+import { EyeOutlined } from "@ant-design/icons";
+import React, { useEffect, useMemo, useState } from "react";
+import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
+import { Link, useParams } from "react-router-dom";
+import * as Scroll from "react-scroll";
+import { v4 as uuidv4 } from "uuid";
 import {
   Breadcrumb,
   Button,
@@ -12,11 +18,6 @@ import {
   Tabs,
   Typography,
 } from "antd";
-import React, { useEffect, useMemo, useState } from "react";
-import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
-import { Link, useParams } from "react-router-dom";
-import * as Scroll from "react-scroll";
-import { v4 as uuidv4 } from "uuid";
 
 import type { TabsProps } from "antd";
 
@@ -32,6 +33,7 @@ interface ColumnData {
 
 interface TaskItemProp {
   task: any;
+  handleOpenInfoTask?: (task: ITask) => void;
 }
 
 const initialData = [
@@ -88,23 +90,23 @@ const list = [
   { id: uuidv4(), name: "Task R", status: "cancel" },
 ];
 
-const TaskItem: React.FC<TaskItemProp> = ({ task }) => {
+const TaskItem: React.FC<TaskItemProp> = ({ task, handleOpenInfoTask }) => {
   return (
     <>
       <div>
         <div> {task.name}</div>
         <div> {task.status}</div>
+        <div
+          onClick={() => handleOpenInfoTask?.(task)}
+          style={{ color: "red" }}
+        >
+          <EyeOutlined />
+        </div>
       </div>
     </>
   );
 };
-// function TabContent({ id, children }: any) {
-//   return (
-//     <Element name={id}>
-//       <div style={{ height: "100vh" }}>{children}</div>
-//     </Element>
-//   );
-// }
+
 const TasksPage = () => {
   const params = useParams();
   const [tasksColumns, setTasksColumns] = useState<ColumnData[]>([]);
@@ -112,7 +114,9 @@ const TasksPage = () => {
   const [statusForm, setStatusForm] = useState(false);
   const [openInfo, setOpenInfo] = useState(false);
   const [edit, setEdit] = useState(false);
-  const [activeTab, setActiveTab] = useState<any>("1");
+  // đúng là ITask mà để any để test
+  const [taskCurrent, setTaskCurrent] = useState<any>();
+
   const taskTypeOptions = [
     {
       label: `Task Type: All`,
@@ -198,30 +202,33 @@ const TasksPage = () => {
       setTasksColumns(newState);
     }
   };
-  const handleTabClick = (key: any) => {
-    setActiveTab(key);
-  };
+  // tạo task
   const handleCreateTask = () => {
     setIsModalOpen(true);
     setStatusForm(false);
     setEdit(false);
   };
+  // chỉnh sửa task
   const handleEditTask = () => {
     setIsModalOpen(true);
     setStatusForm(true);
     setEdit(!edit);
   };
+  // cancel modal
   const handleCancel = () => {
     setIsModalOpen(false);
     setEdit(false);
     setOpenInfo(false);
   };
-  const handleOpenInfoTask = () => {
+  // mở tab thông tin task
+  const handleOpenInfoTask = (task: ITask) => {
     setIsModalOpen(true);
     setOpenInfo(true);
+    setTaskCurrent(task);
   };
+  // cuộn xuống phần tử khi nháy vào( sẽ cố gắng để thay đổi khi cuộn trang luôn)
   const handleTabLick = (tabLabel: string) => {
-    if (tabLabel === "1") {
+    if (tabLabel === "info") {
       const element = document.getElementById("form_task");
       if (element) {
         element.scrollIntoView({
@@ -230,7 +237,7 @@ const TasksPage = () => {
           inline: "nearest",
         });
       }
-    } else if (tabLabel === "2") {
+    } else if (tabLabel === "exchange") {
       const element = document.getElementById("task_info");
       if (element) {
         element.scrollIntoView({
@@ -255,33 +262,29 @@ const TasksPage = () => {
     endDateActual: new Date("2024-12-31T00:00:00.000Z"),
     description: descriptionTest,
   };
+  //phần lựa chọn trong tab info
   const items: TabsProps["items"] = [
     {
-      key: "1",
+      key: "info",
       label: `Info task`,
       children: "",
     },
     {
-      key: "2",
+      key: "exchange",
       label: `Job exchange`,
       children: "",
     },
   ];
   return (
     <div className="tasks_page">
-      <Button type="primary" onClick={handleCreateTask}>
-        Create
-      </Button>
-
-      <Button type="primary" onClick={handleOpenInfoTask}>
-        Info
-      </Button>
+      {/* modal create-info-edit */}
       <Modal
         title=""
         width="70%"
         open={isModalOpen}
         onCancel={handleCancel}
         maskClosable={false}
+        style={{ top: "50px" }}
         footer={[]}
       >
         {!statusForm && !openInfo && (
@@ -322,6 +325,7 @@ const TasksPage = () => {
                   data: fakeData,
                 }}
                 button="Update"
+                taskDemo={taskCurrent}
               />
             ) : (
               <TaskForm
@@ -334,6 +338,7 @@ const TasksPage = () => {
                   status: true,
                   data: fakeData,
                 }}
+                taskDemo={taskCurrent}
               />
             )}
 
@@ -344,7 +349,7 @@ const TasksPage = () => {
       <Space direction="vertical" size="large">
         <Breadcrumb items={breadcrumItems} />
         <div className="tool_bar">
-          <Button size="large" type="primary">
+          <Button size="large" type="primary" onClick={handleCreateTask}>
             Create Task
           </Button>
           <Select
@@ -387,7 +392,10 @@ const TasksPage = () => {
                                     {...provided.dragHandleProps}
                                     {...provided.draggableProps}
                                   >
-                                    <TaskItem task={task} />
+                                    <TaskItem
+                                      task={task}
+                                      handleOpenInfoTask={handleOpenInfoTask}
+                                    />
                                   </div>
                                 );
                               }}
@@ -407,17 +415,3 @@ const TasksPage = () => {
   );
 };
 export default TasksPage;
-
-{
-  /*
-const TasksPage = () => {
- 
-
- 
-  return (
-    <div className="tasks_page">
-    
-    </div>
-  );
-}; */
-}

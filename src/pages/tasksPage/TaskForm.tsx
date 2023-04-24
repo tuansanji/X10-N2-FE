@@ -52,14 +52,22 @@ interface ITaskForm {
     status: boolean;
     data?: ITask;
   };
+  taskDemo?: any;
   button?: string;
   setIsModalOpen: Dispatch<SetStateAction<boolean>>;
   setStatusForm: Dispatch<SetStateAction<boolean>>;
 }
 
 const TaskForm = (props: ITaskForm) => {
-  const { title, statusForm, setIsModalOpen, setStatusForm, taskInfo, button } =
-    props;
+  const {
+    title,
+    statusForm,
+    setIsModalOpen,
+    setStatusForm,
+    taskInfo,
+    button,
+    taskDemo,
+  } = props;
   const [description, setDescription] = useState<string>("");
   const [loading, setLoading] = useState(true);
   const [breadcrumb, setBreadcrumb] = useState({
@@ -69,8 +77,8 @@ const TaskForm = (props: ITaskForm) => {
   });
   const params = useParams();
   const [form] = Form.useForm();
-
   const user = useAppSelector((state: RootState) => state.auth?.userInfo);
+
   const onFinish = (data: any) => {
     const allData: ITask = Object.assign(data, {
       creator: statusForm ? user.fullName : taskInfo?.data?.creator,
@@ -80,7 +88,7 @@ const TaskForm = (props: ITaskForm) => {
     console.log(allData);
     // setIsModalOpen(false);
   };
-
+  console.log(taskDemo);
   const initialValues = useMemo(() => {
     if (taskInfo?.data && statusForm) {
       return {
@@ -158,6 +166,8 @@ const TaskForm = (props: ITaskForm) => {
       ) : (
         <Breadcrumb items={breadcrumbItem} style={{ fontSize: "12px" }} />
       )}
+      {/* <Skeleton /> */}
+
       <Form
         initialValues={initialValues}
         size="large"

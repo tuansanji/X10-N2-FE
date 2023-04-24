@@ -20,11 +20,7 @@ const TaskInfo = () => {
   const [comment, setComment] = useState<string>("");
   const commentListRef = useRef<HTMLDivElement | null>(null);
   const editorRef = useRef<ClassicEditor | null>(null);
-  const breadcrumbItem = [
-    { title: "project-name" },
-    { title: "stages-name" },
-    { title: "task-name" },
-  ];
+
   const handleSendComment = () => {
     if (comment) {
       setListComment([...listComment, { content: comment }]);
@@ -34,29 +30,17 @@ const TaskInfo = () => {
     }
   };
 
-  // ClassicEditor.create(document.querySelector("#editor") as HTMLElement, {
-  //   plugins: [
-  //     Image,
-  //     ImageToolbar,
-  //     ImageCaption,
-  //     ImageStyle,
-  //     ImageResize,
-  //     // LinkImage,
-  //   ],
-  //   image: {
-  //     toolbar: [
-  //       "imageStyle:block",
-  //       "imageStyle:side",
-  //       "|",
-  //       "toggleImageCaption",
-  //       "imageTextAlternative",
-  //       "|",
-  //       // "linkImage",
-  //     ],
-  //   },
-  // })
-  //   .then(/* ... */)
-  //   .catch(/* ... */);
+  // ClassicEditor
+  //   .create( document.querySelector( '#editor' ), {
+  //       plugins: [ Essentials, Paragraph, Heading, List, Bold, Italic ],
+  //       toolbar: [ 'heading', 'bold', 'italic', 'numberedList', 'bulletedList' ]
+  //   } )
+  //   .then( editor => {
+  //       console.log( 'Editor was initialized', editor );
+  //   } )
+  //   .catch( error => {
+  //       console.error( error.stack );
+  //   } );
 
   return (
     <div className="task_info--container" id="task_info">
@@ -81,17 +65,14 @@ const TaskInfo = () => {
                   alt=""
                   className="img_user"
                 />
-                {/* <ReactQuillFC
-                  setIsComment={setIsComment}
-                  setComment={setComment}
-                  comment={comment}
-                /> */}
+
                 <CKEditor
                   // disabled
                   // config={{
-                  //   image: {
-                  //     toolbar: ["toggleImageCaption", "imageTextAlternative"],
-                  //   },
+                  //   // image: {
+                  //   //   toolbar: ["toggleImageCaption", "imageTextAlternative"],
+                  //   // },
+                  //   removePlugins: ["Image", "Table", "Link"],
                   // }}
                   editor={ClassicEditor}
                   data=""
