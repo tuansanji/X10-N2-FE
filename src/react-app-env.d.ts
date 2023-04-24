@@ -11,3 +11,4 @@ declare module "*.svg" {
 }
 declare module "uuid";
 declare module "lodash";
+declare module "react-scroll";

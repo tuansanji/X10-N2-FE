@@ -193,3 +193,32 @@
 
   margin: 0 auto;
 }
+
+.form_task {
+  .ant-form-item.css-dev-only-do-not-override-htwhyh {
+    margin-bottom: 0;
+  }
+
+  td {
+    img {
+      object-fit: cover;
+      width: 300px;
+      height: 300px;
+    }
+  }
+}
+.task__info--container {
+  .ant-tabs.ant-tabs-top.css-dev-only-do-not-override-htwhyh {
+    position: sticky;
+    top: 0;
+    background-color: #fff;
+    z-index: 10;
+  }
+  .action__btn {
+    position: absolute;
+    padding: 0 50px;
+    right: 0;
+    top: 67px;
+    z-index: 12;
+  }
+}

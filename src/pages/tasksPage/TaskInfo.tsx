@@ -20,11 +20,7 @@ const TaskInfo = () => {
   const [comment, setComment] = useState<string>("");
   const commentListRef = useRef<HTMLDivElement | null>(null);
   const editorRef = useRef<ClassicEditor | null>(null);
-  const breadcrumbItem = [
-    { title: "project-name" },
-    { title: "stages-name" },
-    { title: "task-name" },
-  ];
+
   const handleSendComment = () => {
     if (comment) {
       setListComment([...listComment, { content: comment }]);
@@ -34,89 +30,21 @@ const TaskInfo = () => {
     }
   };
 
-  // ClassicEditor.create(document.querySelector("#editor") as HTMLElement, {
-  //   plugins: [
-  //     Image,
-  //     ImageToolbar,
-  //     ImageCaption,
-  //     ImageStyle,
-  //     ImageResize,
-  //     // LinkImage,
-  //   ],
-  //   image: {
-  //     toolbar: [
-  //       "imageStyle:block",
-  //       "imageStyle:side",
-  //       "|",
-  //       "toggleImageCaption",
-  //       "imageTextAlternative",
-  //       "|",
-  //       // "linkImage",
-  //     ],
-  //   },
-  // })
-  //   .then(/* ... */)
-  //   .catch(/* ... */);
+  // ClassicEditor
+  //   .create( document.querySelector( '#editor' ), {
+  //       plugins: [ Essentials, Paragraph, Heading, List, Bold, Italic ],
+  //       toolbar: [ 'heading', 'bold', 'italic', 'numberedList', 'bulletedList' ]
+  //   } )
+  //   .then( editor => {
+  //       console.log( 'Editor was initialized', editor );
+  //   } )
+  //   .catch( error => {
+  //       console.error( error.stack );
+  //   } );
 
   return (
-    <div className="task_info--container">
+    <div className="task_info--container" id="task_info">
       <div className="modal modal_task">
-        <div className="breadcrumbItem">
-          <Breadcrumb items={breadcrumbItem} />
-        </div>
-        <div className="modal_table">
-          <Descriptions
-            title="JOB DETAILS"
-            bordered
-            column={2}
-            labelStyle={{
-              width: "15%",
-              textAlign: "start",
-              verticalAlign: "top",
-            }}
-            contentStyle={{
-              textAlign: "start",
-              verticalAlign: "top",
-
-              width: "35%",
-            }}
-          >
-            <Descriptions.Item label="Title" span={2}>
-              tiêu đề công việc lorem
-            </Descriptions.Item>
-
-            <Descriptions.Item label="Job Code">rafce</Descriptions.Item>
-            <Descriptions.Item label="Status">
-              <Badge status="processing" text="Running" />
-            </Descriptions.Item>
-            <Descriptions.Item label="Type of work">
-              loại công việc Lorem ipsum dolor sit amet consectetur
-            </Descriptions.Item>
-            <Descriptions.Item label="Priority">độ ưu tiên</Descriptions.Item>
-            <Descriptions.Item label="Creator">người tạo</Descriptions.Item>
-            <Descriptions.Item label="Executor">
-              người thi hành
-            </Descriptions.Item>
-
-            <Descriptions.Item label="Date created">ngày tạo</Descriptions.Item>
-            <Descriptions.Item label="Start date" span={1}>
-              ngày bắt đầu
-            </Descriptions.Item>
-
-            <Descriptions.Item label="Deadline">hạn chót</Descriptions.Item>
-            <Descriptions.Item label="Actual end date" span={1}>
-              ngày kết thúc thực tế
-            </Descriptions.Item>
-
-            <Descriptions.Item
-              span={2}
-              style={{ textAlign: "start", verticalAlign: "top" }}
-              label="Descriptions"
-            >
-              {parse(`<a>sanji</a>`)}
-            </Descriptions.Item>
-          </Descriptions>
-        </div>
         <div className="modal_comment">
           <h3 className="comment_title">JOB EXCHANGE</h3>
           <div className="comments_container ">
@@ -137,24 +65,19 @@ const TaskInfo = () => {
                   alt=""
                   className="img_user"
                 />
-                {/* <ReactQuillFC
-                  setIsComment={setIsComment}
-                  setComment={setComment}
-                  comment={comment}
-                /> */}
+
                 <CKEditor
                   // disabled
                   // config={{
-                  //   image: {
-                  //     toolbar: ["toggleImageCaption", "imageTextAlternative"],
-                  //   },
+                  //   // image: {
+                  //   //   toolbar: ["toggleImageCaption", "imageTextAlternative"],
+                  //   // },
+                  //   removePlugins: ["Image", "Table", "Link"],
                   // }}
                   editor={ClassicEditor}
                   data=""
                   onReady={(editor) => {
                     editorRef.current = editor;
-                    // You can store the "editor" and use when it is needed.
-                    // console.log("Editor is ready to use!", editor);
                   }}
                   onChange={(event, editor) => {
                     const data = editor.getData();
