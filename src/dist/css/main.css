@@ -520,6 +520,48 @@
   color: #1677ff;
 }
 
+.tasks_page {
+  padding: 32px;
+}
+@media only screen and (max-width: 768px) {
+  .tasks_page {
+    padding: 10px;
+  }
+}
+.tasks_page .ant-space {
+  width: 100%;
+}
+.tasks_page .ant-divider {
+  margin: 16px;
+}
+.tasks_page .tool_bar {
+  display: flex;
+  gap: 16px;
+}
+.tasks_page .ant-input-search {
+  width: 300px;
+}
+.tasks_page button:first-child {
+  margin-right: auto;
+}
+.tasks_page .tasks_board {
+  display: flex;
+  width: 100%;
+  gap: 16px;
+}
+.tasks_page .tasks_board .column_container {
+  width: 100%;
+}
+.tasks_page .tasks_board .column_container .column_containter_title {
+  text-align: center;
+}
+.tasks_page .tasks_board .column_container .task_item {
+  margin: 16px 0;
+  text-align: center;
+  border: 1px solid black;
+  padding: 16px 0;
+}
+
 .modal_task {
   display: flex;
   flex-direction: column;

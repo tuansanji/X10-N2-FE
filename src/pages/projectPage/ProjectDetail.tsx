@@ -35,7 +35,7 @@ const ProjectDetail: React.FC = () => {
   const [error, setError] = useState<object>({});
   const [projectDetail, setProjectDetail] = useState<ProjectType>();
   const breadcrumbItem = [
-    { title: <Link to="/">Home (Project List)</Link> },
+    { title: <Link to="/">Home</Link> },
     { title: projectDetail?.name },
   ];
 

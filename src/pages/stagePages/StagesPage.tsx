@@ -89,15 +89,7 @@ const StagesPage: React.FC = () => {
 
         sorter: (a, b) => a.name.localeCompare(b.name),
         render: (_, record: DataType) => (
-          <Link
-            to={`/${params.projectName}/${slugify(record.name, {
-              replacement: "-", // Thay thế dấu cách bằng dấu gạch ngang
-              // remove: /[*+~.()'"!:@]/g, // Loại bỏ các ký tự đặc biệt
-              lower: true, // Chuyển đổi chữ hoa thành chữ thường
-            })}}`}
-          >
-            {record.name}
-          </Link>
+          <Link to={`/${params.projectId}/${record.key}`}>{record.name}</Link>
         ),
       },
 

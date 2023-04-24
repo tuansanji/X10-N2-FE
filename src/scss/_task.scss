@@ -1,3 +1,51 @@
+.tasks_page {
+  padding: 32px;
+  @include maxWidth($tablet-width) {
+    padding: 10px;
+  }
+
+  .ant-space {
+    width: 100%;
+  }
+
+  .ant-divider {
+    margin: 16px;
+  }
+
+  .tool_bar {
+    display: flex;
+    gap: 16px;
+  }
+  .ant-input-search {
+    width: 300px;
+  }
+
+  button:first-child {
+    margin-right: auto;
+  }
+
+  .tasks_board {
+    display: flex;
+    width: 100%;
+    gap: 16px;
+
+    .column_container {
+      width: 100%;
+
+      .column_containter_title {
+        text-align: center;
+      }
+
+      .task_item {
+        margin: 16px 0;
+        text-align: center;
+        border: 1px solid black;
+        padding: 16px 0;
+      }
+    }
+  }
+}
+
 // .tasks_page {
 //   .task_info {
 //     position: fixed;
