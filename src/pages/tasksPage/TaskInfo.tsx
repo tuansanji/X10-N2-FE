@@ -59,64 +59,8 @@ const TaskInfo = () => {
   //   .catch(/* ... */);
 
   return (
-    <div className="task_info--container">
+    <div className="task_info--container" id="task_info">
       <div className="modal modal_task">
-        <div className="breadcrumbItem">
-          <Breadcrumb items={breadcrumbItem} />
-        </div>
-        <div className="modal_table">
-          <Descriptions
-            title="JOB DETAILS"
-            bordered
-            column={2}
-            labelStyle={{
-              width: "15%",
-              textAlign: "start",
-              verticalAlign: "top",
-            }}
-            contentStyle={{
-              textAlign: "start",
-              verticalAlign: "top",
-
-              width: "35%",
-            }}
-          >
-            <Descriptions.Item label="Title" span={2}>
-              tiêu đề công việc lorem
-            </Descriptions.Item>
-
-            <Descriptions.Item label="Job Code">rafce</Descriptions.Item>
-            <Descriptions.Item label="Status">
-              <Badge status="processing" text="Running" />
-            </Descriptions.Item>
-            <Descriptions.Item label="Type of work">
-              loại công việc Lorem ipsum dolor sit amet consectetur
-            </Descriptions.Item>
-            <Descriptions.Item label="Priority">độ ưu tiên</Descriptions.Item>
-            <Descriptions.Item label="Creator">người tạo</Descriptions.Item>
-            <Descriptions.Item label="Executor">
-              người thi hành
-            </Descriptions.Item>
-
-            <Descriptions.Item label="Date created">ngày tạo</Descriptions.Item>
-            <Descriptions.Item label="Start date" span={1}>
-              ngày bắt đầu
-            </Descriptions.Item>
-
-            <Descriptions.Item label="Deadline">hạn chót</Descriptions.Item>
-            <Descriptions.Item label="Actual end date" span={1}>
-              ngày kết thúc thực tế
-            </Descriptions.Item>
-
-            <Descriptions.Item
-              span={2}
-              style={{ textAlign: "start", verticalAlign: "top" }}
-              label="Descriptions"
-            >
-              {parse(`<a>sanji</a>`)}
-            </Descriptions.Item>
-          </Descriptions>
-        </div>
         <div className="modal_comment">
           <h3 className="comment_title">JOB EXCHANGE</h3>
           <div className="comments_container ">
@@ -153,8 +97,6 @@ const TaskInfo = () => {
                   data=""
                   onReady={(editor) => {
                     editorRef.current = editor;
-                    // You can store the "editor" and use when it is needed.
-                    // console.log("Editor is ready to use!", editor);
                   }}
                   onChange={(event, editor) => {
                     const data = editor.getData();

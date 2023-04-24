@@ -1,6 +1,7 @@
 import { IStages } from "./StagesPage";
+import { UseMessageApiReturnType } from "../../components/support/Message";
 import { useAppDispatch, useAppSelector } from "../../redux/hook";
-import { toastErr, toastSuccess } from "../../redux/slice/toastSlice";
+import { ProjectType } from "../projectPage/ProjectDetail";
 import { CloseOutlined, LoadingOutlined } from "@ant-design/icons";
 import axios from "axios";
 import dayjs from "dayjs";
@@ -36,6 +37,8 @@ interface IForm {
   endDateActual?: boolean;
   button: string;
   editStages?: { status: boolean; stages: IStages | {} };
+  projectDetail?: ProjectType;
+  showMessage: UseMessageApiReturnType["showMessage"];
   setCreateStages?: Dispatch<SetStateAction<boolean>>;
   setFinishCount: Dispatch<SetStateAction<number>>;
   setEditStages?: Dispatch<
@@ -49,18 +52,21 @@ const FormStages: React.FC<IForm> = ({
   endDateActual = true,
   button,
   editStages,
+  projectDetail,
+  showMessage,
   setFinishCount,
   setCreateStages,
   setEditStages,
 }: IForm) => {
   const [form] = Form.useForm();
-  const dispatch = useAppDispatch();
+  // const dispatch = useAppDispatch();
   const params = useParams();
+
+  const [loading, setLoading] = useState(false);
+
   const token: string = useAppSelector(
     (state: any) => state.auth.userInfo.token
   );
-  const [loading, setLoading] = useState(false);
-
   // hàm xử lí form
   const onFinish = (stages: IStagesCreate) => {
     setLoading(true);
@@ -78,16 +84,19 @@ const FormStages: React.FC<IForm> = ({
         )
         .then((res) => {
           setLoading(false);
-          dispatch(toastSuccess(res.data?.message));
+          setCreateStages?.(false);
+
+          showMessage("success", res.data.message, 2);
+          //để gọi lại api(đối số useEffect)
           setFinishCount((prev) => prev + 1);
         })
         .catch((err) => {
           setLoading(false);
 
-          dispatch(toastErr(err.response.data?.message));
+          showMessage("error", err.response.data?.message, 2);
         });
     } else {
-      if ("key" in editStages.stages)
+      if ("key" in editStages.stages) {
         axios
           .post(
             `${process.env.REACT_APP_BACKEND_URL}/stage/update/${editStages?.stages?.key}`,
@@ -101,14 +110,19 @@ const FormStages: React.FC<IForm> = ({
           )
           .then((res) => {
             setLoading(false);
-            dispatch(toastSuccess(res.data?.message));
+            //để gọi lại api(đối số useEffect)
             setFinishCount((prev) => prev + 1);
+            setEditStages?.({
+              status: false,
+              stages: {},
+            });
+            showMessage("success", res.data.message, 2);
           })
           .catch((err) => {
             setLoading(false);
-
-            dispatch(toastErr(err.response.data?.message));
+            showMessage("error", err.response.data?.message, 2);
           });
+      }
     }
   };
 
@@ -140,7 +154,7 @@ const FormStages: React.FC<IForm> = ({
     : {};
   const breadcrumbItem = useMemo(
     () => [
-      { title: "Project Name" },
+      { title: projectDetail?.name },
       {
         title:
           editStages?.stages && "name" in editStages.stages

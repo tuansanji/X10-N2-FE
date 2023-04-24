@@ -1,17 +1,24 @@
+import TaskForm, { ITask } from "./TaskForm";
+import TaskInfo from "./TaskInfo";
+import { descriptionTest } from "../../data/statges";
 import {
   Breadcrumb,
   Button,
+  Divider,
+  Input,
+  Modal,
   Select,
   Space,
+  Tabs,
   Typography,
-  Input,
-  Divider,
 } from "antd";
-import TaskInfo from "./TaskInfo";
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useMemo, useState } from "react";
+import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
 import { Link, useParams } from "react-router-dom";
+import * as Scroll from "react-scroll";
 import { v4 as uuidv4 } from "uuid";
-import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
+
+import type { TabsProps } from "antd";
 
 const { Text, Title } = Typography;
 const { Search } = Input;
@@ -91,11 +98,21 @@ const TaskItem: React.FC<TaskItemProp> = ({ task }) => {
     </>
   );
 };
-
+// function TabContent({ id, children }: any) {
+//   return (
+//     <Element name={id}>
+//       <div style={{ height: "100vh" }}>{children}</div>
+//     </Element>
+//   );
+// }
 const TasksPage = () => {
   const params = useParams();
   const [tasksColumns, setTasksColumns] = useState<ColumnData[]>([]);
-
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [statusForm, setStatusForm] = useState(false);
+  const [openInfo, setOpenInfo] = useState(false);
+  const [edit, setEdit] = useState(false);
+  const [activeTab, setActiveTab] = useState<any>("1");
   const taskTypeOptions = [
     {
       label: `Task Type: All`,
@@ -181,9 +198,149 @@ const TasksPage = () => {
       setTasksColumns(newState);
     }
   };
-
+  const handleTabClick = (key: any) => {
+    setActiveTab(key);
+  };
+  const handleCreateTask = () => {
+    setIsModalOpen(true);
+    setStatusForm(false);
+    setEdit(false);
+  };
+  const handleEditTask = () => {
+    setIsModalOpen(true);
+    setStatusForm(true);
+    setEdit(!edit);
+  };
+  const handleCancel = () => {
+    setIsModalOpen(false);
+    setEdit(false);
+    setOpenInfo(false);
+  };
+  const handleOpenInfoTask = () => {
+    setIsModalOpen(true);
+    setOpenInfo(true);
+  };
+  const handleTabLick = (tabLabel: string) => {
+    if (tabLabel === "1") {
+      const element = document.getElementById("form_task");
+      if (element) {
+        element.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+          inline: "nearest",
+        });
+      }
+    } else if (tabLabel === "2") {
+      const element = document.getElementById("task_info");
+      if (element) {
+        element.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+          inline: "nearest",
+        });
+      }
+    }
+  };
+  const fakeData = {
+    title: "tạo trang comment",
+    jobCode: "ABCD123",
+    status: "open",
+    typeOfWork: "mission",
+    priority: "high",
+    creator: "is' me ",
+    executor: "it's you",
+    dateCreated: new Date("2024-12-31T00:00:00.000Z"),
+    startDate: new Date("2024-12-31T00:00:00.000Z"),
+    deadline: new Date("2024-12-31T00:00:00.000Z"),
+    endDateActual: new Date("2024-12-31T00:00:00.000Z"),
+    description: descriptionTest,
+  };
+  const items: TabsProps["items"] = [
+    {
+      key: "1",
+      label: `Info task`,
+      children: "",
+    },
+    {
+      key: "2",
+      label: `Job exchange`,
+      children: "",
+    },
+  ];
   return (
     <div className="tasks_page">
+      <Button type="primary" onClick={handleCreateTask}>
+        Create
+      </Button>
+
+      <Button type="primary" onClick={handleOpenInfoTask}>
+        Info
+      </Button>
+      <Modal
+        title=""
+        width="70%"
+        open={isModalOpen}
+        onCancel={handleCancel}
+        maskClosable={false}
+        footer={[]}
+      >
+        {!statusForm && !openInfo && (
+          <TaskForm
+            key={statusForm ? "create" : "update"}
+            title="Create new task"
+            setIsModalOpen={setIsModalOpen}
+            statusForm={false}
+            setStatusForm={setStatusForm}
+            taskInfo={{
+              status: false,
+            }}
+            button="Create"
+          />
+        )}
+
+        {openInfo && (
+          <div className="task__info--container">
+            <Tabs
+              defaultActiveKey="1"
+              items={items}
+              onTabClick={handleTabLick}
+            />
+            <div className="action__btn">
+              <Button type="primary" onClick={handleEditTask}>
+                {edit ? "Cancel" : "Edit"}
+              </Button>
+            </div>
+            {statusForm && edit ? (
+              <TaskForm
+                key={statusForm ? "create" : "update"}
+                title="Edit task"
+                setIsModalOpen={setIsModalOpen}
+                statusForm={statusForm}
+                setStatusForm={setStatusForm}
+                taskInfo={{
+                  status: false,
+                  data: fakeData,
+                }}
+                button="Update"
+              />
+            ) : (
+              <TaskForm
+                key={statusForm ? "create" : "update"}
+                title=""
+                setIsModalOpen={setIsModalOpen}
+                statusForm={statusForm}
+                setStatusForm={setStatusForm}
+                taskInfo={{
+                  status: true,
+                  data: fakeData,
+                }}
+              />
+            )}
+
+            <TaskInfo />
+          </div>
+        )}
+      </Modal>
       <Space direction="vertical" size="large">
         <Breadcrumb items={breadcrumItems} />
         <div className="tool_bar">
@@ -249,5 +406,18 @@ const TasksPage = () => {
     </div>
   );
 };
-
 export default TasksPage;
+
+{
+  /*
+const TasksPage = () => {
+ 
+
+ 
+  return (
+    <div className="tasks_page">
+    
+    </div>
+  );
+}; */
+}
