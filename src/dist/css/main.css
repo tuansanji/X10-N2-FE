@@ -547,7 +547,7 @@
   width: 100%;
 }
 .tasks_page .ant-divider {
-  margin: 16px;
+  margin: 16px 0;
 }
 .tasks_page .tool_bar {
   display: flex;
@@ -575,6 +575,7 @@
   text-align: center;
   border: 1px solid black;
   padding: 16px 0;
+  cursor: pointer;
 }
 
 .modal_task {

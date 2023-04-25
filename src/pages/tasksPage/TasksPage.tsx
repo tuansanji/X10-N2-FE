@@ -33,36 +33,42 @@ const initialData = [
     name: "open",
     title: "Open",
     items: [],
+    dropAllow: true,
   },
   {
     id: "in-progress",
     title: "In Progress",
     items: [],
     name: "in progress",
+    dropAllow: true,
   },
   {
     id: "in-review",
     title: "In Review",
     items: [],
     name: "in review",
+    dropAllow: true,
   },
   {
     id: "re-open",
     title: "Re-Open",
     items: [],
     name: "re-open",
+    dropAllow: true,
   },
   {
     id: "done",
     title: "Done",
     items: [],
     name: "done",
+    dropAllow: true,
   },
   {
     id: "cancel",
     title: "Cancel",
     items: [],
     name: "cancel",
+    dropAllow: true,
   },
 ];
 
@@ -125,20 +131,83 @@ const TasksPage = () => {
     setTasksColumns(initialData);
   }, []);
 
+  const handleDragStart = (result: any) => {
+    const startCol = tasksColumns.filter(
+      (column: any, index: number) => column.id === result.source.droppableId
+    )[0];
+    if (startCol.id === "done") {
+      const newState = tasksColumns.map((column: any) => {
+        if (column.id === "done") {
+          return { ...column, dropAllow: true };
+        } else return { ...column, dropAllow: false };
+      });
+      setTasksColumns(newState);
+      return;
+    }
+
+    if (startCol.id === "cancel") {
+      const newState = tasksColumns.map((column: any) => {
+        return { ...column, dropAllow: false };
+      });
+      setTasksColumns(newState);
+      return;
+    }
+
+    if (startCol.id === "in-review") {
+      const newState = tasksColumns.map((column: any) => {
+        if (column.id !== "open" && column.id !== "in-progress") {
+          return { ...column, dropAllow: true };
+        } else return { ...column, dropAllow: false };
+      });
+      setTasksColumns(newState);
+      return;
+    }
+
+    if (startCol.id === "re-open") {
+      const newState = tasksColumns.map((column: any) => {
+        if (column.id === "in-progress" || column.id === "re-open") {
+          return { ...column, dropAllow: true };
+        } else return { ...column, dropAllow: false };
+      });
+      setTasksColumns(newState);
+      return;
+    }
+
+    let colIndex = tasksColumns.indexOf(startCol);
+    let newState = tasksColumns.map((column: any, index: number) => {
+      if (index !== colIndex && index !== colIndex + 1) {
+        return { ...column, dropAllow: false };
+      } else return column;
+    });
+    setTasksColumns(newState);
+  };
+
   const handleDragEnd = (result: any) => {
     const { destination, source } = result;
+    console.log(result);
 
     // Check nếu kéo và không thả vào bảng
-    if (!destination) return;
+    if (!destination) {
+      const newState = tasksColumns.map((column) => {
+        return { ...column, dropAllow: true };
+      });
+      setTasksColumns(newState);
+      return;
+    }
 
     // Check nếu kéo và thả lại vào vị trí cũ
     if (
       destination.droppableId === source.droppableId &&
       destination.index === source.index
     ) {
+      const newState = tasksColumns.map((column) => {
+        return { ...column, dropAllow: true };
+      });
+      setTasksColumns(newState);
       return;
     }
 
+    //Lấy thông tin 2 column mà item được kéo ra và thả đến để cập nhật lại
     const sourceCol = tasksColumns.filter(
       (column) => column.id === source.droppableId
     )[0];
@@ -154,28 +223,30 @@ const TasksPage = () => {
       const newColumn = { ...sourceCol, items: newTasks };
       const newState = tasksColumns.map((column) => {
         if (column.id === newColumn.id) {
-          return newColumn;
+          return { ...newColumn, dropAllow: true };
         } else {
-          return column;
+          return { ...column, dropAllow: true };
         }
       });
       setTasksColumns(newState);
     }
     // Check nếu kéo và thả sang các cột khác
     else {
-      const newSourceTasks = Array.from(sourceCol.items);
-      const [removedItem] = newSourceTasks.splice(source.index, 1);
-      const newSourceCol = { ...sourceCol, items: newSourceTasks };
-      const newDesTasks = Array.from(desCol.items);
-      newDesTasks.splice(destination.index, 0, removedItem);
-      const newDesCol = { ...desCol, items: newDesTasks };
+      const newSourceTasks = Array.from(sourceCol.items); //Lấy task array từ object source column
+      const [removedItem] = newSourceTasks.splice(source.index, 1); // Lấy ra khỏi task array item được drag
+      const newSourceCol = { ...sourceCol, items: newSourceTasks }; // Cập nhật lại source column (đã bị lấy 1 task ra)
+      removedItem.status = destination.droppableId;
+      const newDesTasks = Array.from(desCol.items); // Lấy task array từ object đích đến
+      newDesTasks.splice(destination.index, 0, removedItem); //Thêm vào array đó item được remove từ array nguồn
+      const newDesCol = { ...desCol, items: newDesTasks }; //Cập nhật lại column đích
+      //tạo State mới gồm 2 column đã được cập nhật thông tin
       const newState = tasksColumns.map((column) => {
         if (column.id === newSourceCol.id) {
-          return newSourceCol;
+          return { ...newSourceCol, dropAllow: true };
         } else if (column.id === newDesCol.id) {
-          return newDesCol;
+          return { ...newDesCol, dropAllow: true };
         } else {
-          return column;
+          return { ...column, dropAllow: true };
         }
       });
       setTasksColumns(newState);
@@ -201,16 +272,26 @@ const TasksPage = () => {
         </div>
         <Divider />
         <div className="tasks_board">
-          <DragDropContext onDragEnd={handleDragEnd}>
-            {tasksColumns.map((column: any) => {
+          <DragDropContext
+            onDragEnd={handleDragEnd}
+            onDragStart={handleDragStart}
+          >
+            {tasksColumns.map((column: any, index: number) => {
               return (
-                <Droppable droppableId={column.id} key={column.id}>
+                <Droppable
+                  droppableId={column.id}
+                  key={column.id}
+                  isDropDisabled={!column.dropAllow}
+                >
                   {(provided, snapshot) => {
                     return (
                       <div
                         ref={provided.innerRef}
                         {...provided.droppableProps}
                         className="column_container"
+                        style={{
+                          cursor: column.dropAllow ? "" : "not-allowed",
+                        }}
                       >
                         <Title level={3} className="column_containter_title">
                           {column.title}
@@ -237,6 +318,7 @@ const TasksPage = () => {
                             </Draggable>
                           );
                         })}
+                        {provided.placeholder}
                       </div>
                     );
                   }}
