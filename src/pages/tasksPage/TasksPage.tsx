@@ -165,7 +165,11 @@ const TasksPage = () => {
 
     if (startCol.id === "re-open") {
       const newState = tasksColumns.map((column: any) => {
-        if (column.id === "in-progress" || column.id === "re-open") {
+        if (
+          column.id === "in-progress" ||
+          column.id === "re-open" ||
+          column.id === "cancel"
+        ) {
           return { ...column, dropAllow: true };
         } else return { ...column, dropAllow: false };
       });
@@ -175,7 +179,11 @@ const TasksPage = () => {
 
     let colIndex = tasksColumns.indexOf(startCol);
     let newState = tasksColumns.map((column: any, index: number) => {
-      if (index !== colIndex && index !== colIndex + 1) {
+      if (
+        index !== colIndex &&
+        index !== colIndex + 1 &&
+        column.id !== "cancel"
+      ) {
         return { ...column, dropAllow: false };
       } else return column;
     });

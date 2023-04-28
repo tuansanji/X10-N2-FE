@@ -6,7 +6,10 @@ import { formatDate } from "../../utils/formatDate";
 import { DeleteFilled } from "@ant-design/icons";
 import { ColumnsType } from "antd/es/table";
 import moment from "moment";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
+import { ToastContainer } from "react-toastify";
+import { toastSuccess, toastErr } from "../../redux/slice/toastSlice";
+import { setQuery, deleteQuery } from "../../redux/slice/paramsSlice";
 
 import {
   Button,
@@ -54,6 +57,7 @@ const DeleteConfirmPopup: React.FC<PopupPropTypes> = ({
 }) => {
   const [open, setOpen] = useState<boolean>(false);
   const [confirmLoading, setConfirmLoading] = useState<boolean>(false);
+  const dispatch = useDispatch();
 
   const handleConfirm = async (stages: MemberDataType) => {
     setConfirmLoading(true);
@@ -65,7 +69,7 @@ const DeleteConfirmPopup: React.FC<PopupPropTypes> = ({
         data: { id: stages.key },
       });
       setMemberData(response.data.members);
-      message.success(response.data.message);
+      dispatch(toastSuccess(response.data.message));
       setConfirmLoading(false);
       setOpen(false);
     } catch (err) {
@@ -77,6 +81,7 @@ const DeleteConfirmPopup: React.FC<PopupPropTypes> = ({
 
   return (
     <>
+      <ToastContainer />
       <Popconfirm
         disabled={record.role === "manager" && true}
         placement="topRight"
@@ -105,6 +110,7 @@ const UpdateMemberRole: React.FC<MemberRolePropTypes> = ({
   setMemberData,
 }) => {
   const [roleUpdating, setRoleUpdating] = useState<boolean>(false);
+  const dispatch = useDispatch();
   const updateRole = async (selectValue: any, record: MemberDataType) => {
     setRoleUpdating(true);
     try {
@@ -119,7 +125,7 @@ const UpdateMemberRole: React.FC<MemberRolePropTypes> = ({
         },
       });
       setMemberData(response.data.members);
-      message.success(response.data.message);
+      dispatch(toastSuccess(response.data.message));
       setRoleUpdating(false);
     } catch (err) {
       console.error(err);
@@ -128,6 +134,7 @@ const UpdateMemberRole: React.FC<MemberRolePropTypes> = ({
   };
   return (
     <>
+      <ToastContainer />
       <Select
         loading={roleUpdating && true}
         disabled={record.role === "manager" && true}
@@ -142,7 +149,8 @@ const UpdateMemberRole: React.FC<MemberRolePropTypes> = ({
 
 const MemberList: React.FC = () => {
   const timeOutRef = useRef<any>(null);
-  const navigate = useNavigate();
+  const searchRef = useRef<any>(null);
+  const dispatch = useDispatch();
   const [searchParams, setSearchParams] = useSearchParams();
   const queryParams = useSelector((state: any) => state.queryParams);
   const params = useParams();
@@ -159,7 +167,8 @@ const MemberList: React.FC = () => {
     pageIndex: 1,
     total: null,
   });
-
+  console.log("Pagination:", pagination);
+  console.log("Query Params:", queryParams);
   // Lấy List member thuộc project
   useEffect(() => {
     const getMemberData = async () => {
@@ -209,29 +218,35 @@ const MemberList: React.FC = () => {
   // Search Member thuộc project
   useEffect(() => {
     const searchUsers = async () => {
-      setIsLoading(true);
-      try {
-        const response = await axios({
-          method: "get",
-          url: `${process.env.REACT_APP_BACKEND_URL}/user/search`,
-          params: { query: queryParams.search },
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        let result = memberData.filter((member: any) =>
-          response.data.users.some((user: any) => user._id === member.data._id)
-        );
-        setSearchResult(result);
-        setIsLoading(false);
-      } catch (err) {
-        console.error(err);
-        setIsLoading(false);
+      if (queryParams.search) {
+        setIsLoading(true);
+        try {
+          const response = await axios({
+            method: "get",
+            url: `${process.env.REACT_APP_BACKEND_URL}/user/search`,
+            params: { query: queryParams.search },
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          let result = memberData.filter((member: any) =>
+            response.data.users.some(
+              (user: any) => user._id === member.data._id
+            )
+          );
+
+          setSearchResult(result);
+
+          setIsLoading(false);
+        } catch (err) {
+          console.error(err);
+          setIsLoading(false);
+        }
       }
     };
     timeOutRef.current = setTimeout(searchUsers, 1500);
     return () => {
       clearTimeout(timeOutRef.current);
     };
-  }, [searchInput]);
+  }, [queryParams.search]);
 
   // Show thông tin chi tiết member khi click vào từng member
   const showMemberModal = (indexValue: any) => {
@@ -259,6 +274,7 @@ const MemberList: React.FC = () => {
         pageIndex: response.data.currentPage,
       });
       setSearchParams({ ...queryParams, currentPage: page });
+
       setIsLoading(false);
     } catch (err) {
       console.error(err);
@@ -267,35 +283,27 @@ const MemberList: React.FC = () => {
   };
 
   const handleInputChange = (event: any) => {
-    if (event.target.value === "") {
-      let searchQuery = searchParams.get("search");
-      if (searchQuery === "") {
-        setSearchInput(event.target.value);
-        setSearchParams({ ...queryParams, search: event.target.value });
-      } else {
-        searchParams.delete("search");
-        let newQuery = Object.fromEntries([...searchParams]);
-        console.log("Query:", newQuery);
-        setSearchParams(newQuery);
-      }
-    } else {
-      setSearchInput(event.target.value);
-      setSearchParams({ ...queryParams, search: event.target.value });
-    }
+    let value = event.target.value;
+    dispatch(setQuery({ ...queryParams, search: value }));
+    setSearchParams({ ...queryParams, search: value });
   };
 
-  const handleSearchBox = (value: string, event: any) => {
-    if (value === "") {
-      searchParams.delete("search");
-      let newQuery = Object.fromEntries([...searchParams]);
-      console.log("Query:", newQuery);
-      setSearchParams(newQuery);
-    } else {
-      setSearchParams({ ...queryParams, search: value });
+  useEffect(() => {
+    if (queryParams.search === "" && searchParams.has("search")) {
+      dispatch(deleteQuery("search"));
+      setSearchParams({ ...queryParams });
     }
-    console.log("Value:", value);
-    console.log("Event:", event);
-  };
+  }, [queryParams.search]);
+
+  // const handleSearchBox = (value: string, event: any) => {
+  //   if (value === "") {
+  //     searchParams.delete("search");
+  //     setSearchParams(searchParams);
+  //     setSearchResult([]);
+  //   }
+  //   setSearchParams({ ...queryParams, search: value });
+  //   dispatch(setQuery({ ...queryParams, search: value }));
+  // };
 
   // Setup Table
   const columns: ColumnsType<MemberDataType> = [
@@ -369,26 +377,6 @@ const MemberList: React.FC = () => {
     };
   });
 
-  const searchData: MemberDataType[] = searchResult?.map((data: any) => {
-    return {
-      key: data.data._id,
-      name: data.data.fullName,
-      role: data.role,
-      joinDate: moment(data.joiningDate).format("DD/MM/YYYY"),
-    };
-  });
-
-  // Show data của bảng tùy theo input ở searchBar
-  function showData() {
-    if (searchResult?.length > 0) {
-      return searchData;
-    } else if (searchInput && searchResult?.length === 0) {
-      return undefined;
-    } else if (searchInput === "" && searchResult?.length === 0) {
-      return data;
-    }
-  }
-
   //Kết thúc setup table
 
   return (
@@ -440,10 +428,10 @@ const MemberList: React.FC = () => {
 
         {/* Search Project Member Input */}
         <Search
-          value={queryParams.search === "" ? searchInput : queryParams.search}
+          value={queryParams.search}
           allowClear
           onChange={handleInputChange}
-          onSearch={handleSearchBox}
+          // onSearch={handleSearchBox}
           placeholder="Member Name"
           size="large"
           style={{ width: "300px" }}
@@ -456,7 +444,7 @@ const MemberList: React.FC = () => {
         <div className="content">
           <Table
             columns={columns}
-            dataSource={showData()}
+            dataSource={data}
             pagination={{
               position: ["bottomCenter"],
               total: pagination.total,

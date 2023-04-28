@@ -1,11 +1,17 @@
 import { BellOutlined, DownOutlined } from "@ant-design/icons";
 import { Button, Dropdown, Space } from "antd";
 import React, { useState } from "react";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
+
 import { Link } from "react-router-dom";
+import { setLogout } from "../../redux/slice/authSlice";
 
 const Header = () => {
   const user = useSelector((state: any) => state.auth);
+  const dispatch = useDispatch();
+  const handleLogout = () => {
+    dispatch(setLogout("Log Out"));
+  };
 
   const items = [
     {
@@ -16,7 +22,11 @@ const Header = () => {
     {
       key: "4",
       danger: true,
-      label: <Link to="">Đăng xuất</Link>,
+      label: (
+        <Link to="/" onClick={handleLogout}>
+          Đăng xuất
+        </Link>
+      ),
     },
   ];
   return (

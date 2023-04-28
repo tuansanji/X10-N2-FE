@@ -1,4 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
+import _ from 'lodash'
 
 // interface queryParamsTypes {
 //   currentTab: string;
@@ -14,9 +15,12 @@ export const queryParamsSlice = createSlice({
     setQuery: (state, action) => {
       return action.payload;
     },
+  deleteQuery: (state, action) => {
+    delete state[action.payload]
+  }
   },
 });
 
-export const { setQuery } = queryParamsSlice.actions;
+export const { setQuery, deleteQuery } = queryParamsSlice.actions;
 
 export default queryParamsSlice.reducer;

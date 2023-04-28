@@ -2,8 +2,10 @@ import React, { useEffect, useState, useRef } from "react";
 import { useParams } from "react-router-dom";
 import { Input, Typography, Button, Select, message } from "antd";
 import axios from "axios";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { LoadingOutlined, CloseOutlined } from "@ant-design/icons";
+import { toastSuccess, toastErr } from "../../redux/slice/toastSlice";
+import { ToastContainer } from "react-toastify";
 
 const { Title, Text } = Typography;
 const { Search } = Input;
@@ -33,6 +35,7 @@ const AddMember: React.FC<PropTypes> = ({
 }) => {
   const params = useParams();
   const timeOutRef = useRef<any>(null);
+  const dispatch = useDispatch();
   const token = useSelector((state: any) => state.auth.userInfo.token);
   const [searchInput, setSearchInput] = useState<string>();
   const [searchResult, setSearchResult] = useState<UserSearchResult[]>([]);
@@ -182,7 +185,7 @@ const AddMember: React.FC<PropTypes> = ({
           headers: { Authorization: `Bearer ${token}` },
         });
         setMemberData(response.data.members);
-        message.success(response.data.message);
+        dispatch(toastSuccess(response.data.message));
         setAddMemberFetching(false);
         setSelectedResult([]);
         setSearchInput("");
