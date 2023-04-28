@@ -1,12 +1,12 @@
-import React, { useState, useEffect, useRef } from "react";
-import axios from "axios";
-import { useParams, useSearchParams, useNavigate } from "react-router-dom";
 import AddMember from "./AddMember";
 import { formatDate } from "../../utils/formatDate";
 import { DeleteFilled } from "@ant-design/icons";
 import { ColumnsType } from "antd/es/table";
+import axios from "axios";
 import moment from "moment";
+import React, { useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 
 import {
   Button,
@@ -24,11 +24,12 @@ import {
 const { Search } = Input;
 const { Text } = Typography;
 
-interface MemberDataType {
+export interface MemberDataType {
   name: string;
   role: string;
   joinDate: string;
   key?: string;
+  fullName?: string;
 }
 
 interface PopupPropTypes {

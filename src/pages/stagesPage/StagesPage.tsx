@@ -1,17 +1,31 @@
 import FormStages from "./FormStages";
+import StageReview from "./StageReview";
 import { useAxios } from "../../components/hook/useAxios";
 import Loading from "../../components/support/Loading";
 import { listStages } from "../../data/statges";
 import { useAppDispatch, useAppSelector } from "../../redux/hook";
 import { reloadSidebar } from "../../redux/slice/menuSlice";
 import { ProjectType } from "../projectPage/ProjectDetail";
-import { DeleteFilled, EditFilled } from "@ant-design/icons";
-import { Button, message, Pagination, Popconfirm, Space, Table } from "antd";
 import Search from "antd/es/input/Search";
 import axios from "axios";
 import moment from "moment";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
+import {
+  Button,
+  message,
+  Modal,
+  Pagination,
+  Popconfirm,
+  Space,
+  Table,
+} from "antd";
+import {
+  DeleteFilled,
+  EditFilled,
+  EyeFilled,
+  EyeOutlined,
+} from "@ant-design/icons";
 import useMessageApi, {
   UseMessageApiReturnType,
 } from "../../components/support/Message";
@@ -49,6 +63,8 @@ const StagesPage: React.FC<PropTypes> = (props: PropTypes) => {
   const [searchInput, setSearchInput] = useState<string>();
   const [finishCount, setFinishCount] = useState<number>(0);
   const [pageNumber, setPageNumber] = useState<number>(1);
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const [stageCurrentReview, setStageCurrentReview] = useState<string>("");
   const [stagesData, setStagesData] = useState<IStagesData>({
     stages: [],
     currentPage: 1,
@@ -131,6 +147,11 @@ const StagesPage: React.FC<PropTypes> = (props: PropTypes) => {
       page: (searchParams.get("page") as string) || "1",
     });
   };
+  //hàm modal
+  const handleCancel = () => {
+    setIsModalOpen(false);
+  };
+
   useEffect(() => {
     setPageNumber(Number(searchParams.get("page")) || 1);
   }, []);
@@ -143,12 +164,9 @@ const StagesPage: React.FC<PropTypes> = (props: PropTypes) => {
       if (searchParams.get("name")) {
         axios
           .get(
-            `${
-              process.env.REACT_APP_BACKEND_URL
-            }/stage/search?name=${searchParams
-              .get("name")
-              ?.split("+")
-              .join(" ")}`,
+            `${process.env.REACT_APP_BACKEND_URL}/project/stages/search/${
+              params.projectId
+            }?page=1&name=${searchParams.get("name")?.split("+").join(" ")}`,
             {
               headers: { Authorization: `Bearer ${token}` },
             }
@@ -173,14 +191,13 @@ const StagesPage: React.FC<PropTypes> = (props: PropTypes) => {
     if (value) {
       axios
         .get(
-          `${process.env.REACT_APP_BACKEND_URL}/stage/search?name=${value}`,
+          `${process.env.REACT_APP_BACKEND_URL}/project/stages/search/${params.projectId}?page=1&name=${value}`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
         )
         .then((res) => {
           setStagesData(res.data);
-
           setLoading(false);
           setSearchInput("");
         })
@@ -275,6 +292,14 @@ const StagesPage: React.FC<PropTypes> = (props: PropTypes) => {
             >
               <DeleteFilled style={{ fontSize: "16px", cursor: "pointer" }} />
             </Popconfirm>
+            <span
+              onClick={() => {
+                setIsModalOpen(true);
+                setStageCurrentReview(record.key || "");
+              }}
+            >
+              <EyeFilled style={{ fontSize: "16px", cursor: "pointer" }} />
+            </span>
           </Space>
         ),
       },
@@ -282,30 +307,30 @@ const StagesPage: React.FC<PropTypes> = (props: PropTypes) => {
     [stagesData]
   );
   // dữ liệu stages trong table
-  // const data: DataType[] = useMemo(() => {
-  //   if (!stagesData?.stages) return [];
+  const data: DataType[] = useMemo(() => {
+    if (!stagesData?.stages) return [];
 
-  //   return stagesData.stages.map((stage: IStages) => ({
-  //     key: stage._id,
-  //     name: stage.name,
-  //     startDate: moment(stage.startDate).format("YYYY-MM-DD"),
-  //     endDateExpected: moment(stage.endDateExpected).format("YYYY-MM-DD"),
-  //     endDateActual: stage.endDateActual
-  //       ? moment(stage.endDateActual).format("YYYY-MM-DD")
-  //       : "",
-  //   }));
-  // }, [stagesData?.stages]);
+    return stagesData.stages.map((stage: IStages) => ({
+      key: stage._id,
+      name: stage.name,
+      startDate: moment(stage.startDate).format("YYYY-MM-DD"),
+      endDateExpected: moment(stage.endDateExpected).format("YYYY-MM-DD"),
+      endDateActual: stage.endDateActual
+        ? moment(stage.endDateActual).format("YYYY-MM-DD")
+        : "",
+    }));
+  }, [stagesData?.stages]);
 
   //DATA ĐỂ TEST THỬ VÀO TRANG DANH SÁCH TASK
-  const data: any[] = listStages.map((data) => {
-    return {
-      key: data._id,
-      name: data.name,
-      startDate: data.startDate,
-      endDateExpected: data.estimatedEndDate,
-      endDateActual: data.actualEndDate,
-    };
-  });
+  // const data: any[] = listStages.map((data) => {
+  //   return {
+  //     key: data._id,
+  //     name: data.name,
+  //     startDate: data.startDate,
+  //     endDateExpected: data.estimatedEndDate,
+  //     endDateActual: data.actualEndDate,
+  //   };
+  // });
 
   return (
     <div className="content_project-page stages_page">
@@ -318,7 +343,7 @@ const StagesPage: React.FC<PropTypes> = (props: PropTypes) => {
             size={"large"}
             onClick={() => setCreateStages(true)}
           >
-            Create Stages
+            Create Stage
           </Button>
         </div>
         <div className="header_right">
@@ -384,6 +409,18 @@ const StagesPage: React.FC<PropTypes> = (props: PropTypes) => {
           setEditStages={setEditStages}
         />
       )}
+
+      <Modal
+        title=""
+        width="70%"
+        open={isModalOpen}
+        onCancel={handleCancel}
+        maskClosable={false}
+        style={{ top: "50px" }}
+        footer={[]}
+      >
+        <StageReview stageId={stageCurrentReview} />
+      </Modal>
     </div>
   );
 };

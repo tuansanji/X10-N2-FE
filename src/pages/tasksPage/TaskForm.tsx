@@ -1,6 +1,8 @@
 import ReactQuillFC from "../../components/comment/ReactQuill";
+import { useAxios } from "../../components/hook/useAxios";
 import { useAppSelector } from "../../redux/hook";
 import { RootState } from "../../redux/store";
+import { MemberDataType } from "../Members/MemberList";
 import { LoadingOutlined, UserOutlined } from "@ant-design/icons";
 import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
 import { CKEditor } from "@ckeditor/ckeditor5-react";
@@ -25,25 +27,23 @@ import {
   Descriptions,
   Form,
   Input,
-  message,
   Select,
   Skeleton,
-  Upload,
 } from "antd";
 
 export interface ITask {
   title: string;
-  jobCode: string;
+  jobCode?: string;
   status: string;
   typeOfWork: string;
   priority: string;
   creator: string;
   executor: string;
-  dateCreated: Date;
+  dateCreated?: Date;
   startDate: Date;
   deadline: Date;
   endDateActual: Date;
-  description: string;
+  description?: string;
 }
 interface ITaskForm {
   title: string;
@@ -56,6 +56,18 @@ interface ITaskForm {
   button?: string;
   setIsModalOpen: Dispatch<SetStateAction<boolean>>;
   setStatusForm: Dispatch<SetStateAction<boolean>>;
+}
+
+interface IUser {
+  data: {
+    _id: string;
+    fullName: string;
+    avatar: string;
+    email: string;
+    username: string;
+  };
+  role: string;
+  joiningDate: Date;
 }
 
 const TaskForm = (props: ITaskForm) => {
@@ -78,7 +90,14 @@ const TaskForm = (props: ITaskForm) => {
   const params = useParams();
   const [form] = Form.useForm();
   const user = useAppSelector((state: RootState) => state.auth?.userInfo);
+  // search user trong project
+  const { responseData, isLoading } = useAxios(
+    "get",
+    `/project/members/all/${params.projectId}`,
+    []
+  );
 
+  // hàm submit form
   const onFinish = (data: any) => {
     const allData: ITask = Object.assign(data, {
       creator: statusForm ? user.fullName : taskInfo?.data?.creator,
@@ -88,12 +107,11 @@ const TaskForm = (props: ITaskForm) => {
     console.log(allData);
     // setIsModalOpen(false);
   };
-  console.log(taskDemo);
+
   const initialValues = useMemo(() => {
     if (taskInfo?.data && statusForm) {
       return {
         title: taskInfo?.data?.title,
-        jobCode: taskInfo?.data?.jobCode,
         status: taskInfo?.data?.status,
         typeOfWork: taskInfo?.data?.typeOfWork,
         priority: taskInfo?.data?.priority,
@@ -114,6 +132,7 @@ const TaskForm = (props: ITaskForm) => {
       };
     }
   }, [taskInfo]);
+  // lấy dữ liệu cho breadcrumb
   useEffect(() => {
     (async () => {
       setLoading(true);
@@ -157,6 +176,13 @@ const TaskForm = (props: ITaskForm) => {
 
     [breadcrumb]
   );
+  const onChange = (value: string) => {
+    console.log(`selected ${value}`);
+  };
+
+  const onSearch = (value: string) => {
+    console.log("search:", value);
+  };
 
   return (
     <div className="form_task" id="form_task">
@@ -193,7 +219,15 @@ const TaskForm = (props: ITaskForm) => {
         >
           <Descriptions.Item label="Title" span={2}>
             {!taskInfo.status ? (
-              <Form.Item name="title">
+              <Form.Item
+                name="title"
+                rules={[
+                  {
+                    required: true,
+                    message: "Please input your task name!",
+                  },
+                ]}
+              >
                 <Input placeholder="Title..." />
               </Form.Item>
             ) : (
@@ -202,13 +236,15 @@ const TaskForm = (props: ITaskForm) => {
           </Descriptions.Item>
 
           <Descriptions.Item label="Job Code">
-            {!taskInfo.status ? (
+            {/* {!taskInfo.status ? (
               <Form.Item name="jobCode">
-                <Input placeholder="Job Code..." />
+                <Input placeholder="Job Code..." disabled />
               </Form.Item>
-            ) : (
-              taskInfo?.data?.jobCode
+            ) : ( */}
+            {taskInfo?.data?.jobCode || (
+              <span style={{ opacity: 0.4 }}>Auto generated</span>
             )}
+            {/* )} */}
           </Descriptions.Item>
           <Descriptions.Item label="Status">
             {!taskInfo.status ? (
@@ -273,8 +309,45 @@ const TaskForm = (props: ITaskForm) => {
           </Descriptions.Item>
           <Descriptions.Item label="Executor">
             {!taskInfo.status ? (
-              <Form.Item name="executor">
-                <Input placeholder="large size" prefix={<UserOutlined />} />
+              <Form.Item
+                name="executor"
+                rules={[
+                  {
+                    required: true,
+                    message: "please select executor!",
+                  },
+                ]}
+              >
+                <Select
+                  showSearch
+                  placeholder="Select a person"
+                  optionFilterProp="children"
+                  onChange={onChange}
+                  onSearch={onSearch}
+                  filterOption={(input, option) =>
+                    typeof option?.label === "string" &&
+                    option.label.toLowerCase().includes(input.toLowerCase())
+                  }
+                  dropdownRender={(menu) =>
+                    isLoading ? (
+                      <div
+                        style={{
+                          display: "flex",
+                          justifyContent: "center",
+                          padding: "10px 0",
+                        }}
+                      >
+                        <LoadingOutlined />
+                      </div>
+                    ) : (
+                      menu
+                    )
+                  }
+                  options={responseData?.members?.map((item: IUser) => ({
+                    label: `${item.data.fullName}-${item.role}`,
+                    value: item.data._id,
+                  }))}
+                />
               </Form.Item>
             ) : (
               taskInfo?.data?.executor
@@ -294,7 +367,15 @@ const TaskForm = (props: ITaskForm) => {
           </Descriptions.Item>
           <Descriptions.Item label="Start date" span={1}>
             {!taskInfo.status ? (
-              <Form.Item name="startDate">
+              <Form.Item
+                name="startDate"
+                rules={[
+                  {
+                    required: true,
+                    message: " Please fill it out completely",
+                  },
+                ]}
+              >
                 <DatePicker style={{ width: "100%" }} />
               </Form.Item>
             ) : (
@@ -304,8 +385,20 @@ const TaskForm = (props: ITaskForm) => {
 
           <Descriptions.Item label="Deadline">
             {!taskInfo.status ? (
-              <Form.Item name="deadline">
-                <DatePicker style={{ width: "100%" }} />
+              <Form.Item
+                name="deadline"
+                rules={[
+                  {
+                    required: true,
+                    message: " Please fill it out completely",
+                  },
+                ]}
+              >
+                <DatePicker
+                  style={{ width: "100%" }}
+                  showTime
+                  showSecond={false}
+                />
               </Form.Item>
             ) : (
               moment(taskInfo?.data?.deadline).format("DD/MM/YYYY ")

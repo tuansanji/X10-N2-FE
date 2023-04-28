@@ -48,7 +48,6 @@ export const useAxios = (
           headers: { Authorization: `Bearer ${token}` },
           ...(body ? { data: body } : {}),
         });
-        console.log("re call apo");
         dispatch({
           type: "axiosAPI/success",
           isLoading: false,

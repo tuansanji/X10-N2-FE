@@ -1,7 +1,10 @@
 import TaskForm, { ITask } from "./TaskForm";
 import TaskInfo from "./TaskInfo";
 import { descriptionTest } from "../../data/statges";
+import { useAppSelector } from "../../redux/hook";
+import { RootState } from "../../redux/store";
 import { EyeOutlined } from "@ant-design/icons";
+import axios from "axios";
 import React, { useEffect, useMemo, useState } from "react";
 import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
 import { Link, useParams } from "react-router-dom";
@@ -116,6 +119,11 @@ const TasksPage = () => {
   const [edit, setEdit] = useState(false);
   // đúng là ITask mà để any để test
   const [taskCurrent, setTaskCurrent] = useState<any>();
+  const [breadcrumb, setBreadcrumb] = useState({
+    project: "",
+    stages: "",
+  });
+  const user = useAppSelector((state: RootState) => state.auth?.userInfo);
 
   const taskTypeOptions = [
     {
@@ -131,11 +139,42 @@ const TasksPage = () => {
       value: "mission",
     },
   ];
-  const breadcrumItems = [
-    { title: <Link to="/">Home</Link> },
-    { title: <Link to={`/${params.projectId}`}>Project Name</Link> },
-    { title: "Stage Name" },
-  ];
+  // const breadcrumItems = [
+  //   { title: <Link to="/">Home</Link> },
+  //   { title: <Link to={`/${params.projectId}`}>Project Name</Link> },
+  //   { title: "Stage Name" },
+  // ];
+
+  const breadcrumItems = useMemo(
+    () => [
+      { title: <Link to="/">Home</Link> },
+      { title: <Link to={`/${params.projectId}`}>{breadcrumb?.project}</Link> },
+      {
+        title: breadcrumb.stages,
+      },
+    ],
+    [breadcrumb]
+  );
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const project = await axios.get(
+          `${process.env.REACT_APP_BACKEND_URL}/project/details/${params.projectId}`,
+          { headers: { Authorization: `Bearer ${user.token}` } }
+        );
+        const stages = await axios.get(
+          `${process.env.REACT_APP_BACKEND_URL}/stage/details/${params.stagesId}`,
+          { headers: { Authorization: `Bearer ${user.token}` } }
+        );
+        setBreadcrumb({
+          ...breadcrumb,
+          project: project.data.project.name,
+          stages: stages.data.stage.name,
+        });
+      } catch (error) {}
+    })();
+  }, []);
 
   useEffect(() => {
     initialData.map((data: any) => {
