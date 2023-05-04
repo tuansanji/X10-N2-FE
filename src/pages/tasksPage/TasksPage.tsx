@@ -1,20 +1,27 @@
 import _ from "lodash";
+import TaskForm, { ITask } from "./TaskForm";
+import TaskInfo from "./TaskInfo";
+import { descriptionTest } from "../../data/statges";
+import { EyeOutlined } from "@ant-design/icons";
+import React, { useEffect, useMemo, useState } from "react";
+import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
+import { Link, useParams, useSearchParams } from "react-router-dom";
+import { useSelector, useDispatch } from "react-redux";
+import { setQuery } from "../../redux/slice/paramsSlice";
+import * as Scroll from "react-scroll";
+import { v4 as uuidv4 } from "uuid";
 import {
   Breadcrumb,
   Button,
+  Divider,
+  Input,
+  Modal,
   Select,
   Space,
+  Tabs,
   Typography,
-  Input,
-  Divider,
 } from "antd";
-import TaskInfo from "./TaskInfo";
-import React, { useState, useEffect } from "react";
-import { Link, useParams, useSearchParams } from "react-router-dom";
-import { useSelector, useDispatch } from "react-redux";
-import { v4 as uuidv4 } from "uuid";
-import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
-import { setQuery } from "../../redux/slice/paramsSlice";
+import type { TabsProps } from "antd";
 
 const { Text, Title } = Typography;
 const { Search } = Input;
@@ -28,6 +35,7 @@ interface ColumnData {
 
 interface TaskItemProp {
   task: any;
+  handleOpenInfoTask?: (task: ITask) => void;
 }
 
 const initialData = [
@@ -104,12 +112,18 @@ const list = [
   { id: uuidv4(), name: "Task R", status: "cancel" },
 ];
 
-const TaskItem: React.FC<TaskItemProp> = ({ task }) => {
+const TaskItem: React.FC<TaskItemProp> = ({ task, handleOpenInfoTask }) => {
   return (
     <>
       <div>
         <div> {task.name}</div>
         <div> {task.status}</div>
+        <div
+          onClick={() => handleOpenInfoTask?.(task)}
+          style={{ color: "red" }}
+        >
+          <EyeOutlined />
+        </div>
       </div>
     </>
   );
@@ -130,6 +144,12 @@ const TasksPage = () => {
     let query = Object.fromEntries([...searchParams]);
     dispatch(setQuery(query));
   }, []);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [statusForm, setStatusForm] = useState(false);
+  const [openInfo, setOpenInfo] = useState(false);
+  const [edit, setEdit] = useState(false);
+  // đúng là ITask mà để any để test
+  const [taskCurrent, setTaskCurrent] = useState<any>();
 
   const taskTypeOptions = [
     {
@@ -300,13 +320,154 @@ const TasksPage = () => {
       setTasksColumns(newState);
     }
   };
-
+  // tạo task
+  const handleCreateTask = () => {
+    setIsModalOpen(true);
+    setStatusForm(false);
+    setEdit(false);
+  };
+  // chỉnh sửa task
+  const handleEditTask = () => {
+    setIsModalOpen(true);
+    setStatusForm(true);
+    setEdit(!edit);
+  };
+  // cancel modal
+  const handleCancel = () => {
+    setIsModalOpen(false);
+    setEdit(false);
+    setOpenInfo(false);
+  };
+  // mở tab thông tin task
+  const handleOpenInfoTask = (task: ITask) => {
+    setIsModalOpen(true);
+    setOpenInfo(true);
+    setTaskCurrent(task);
+  };
+  // cuộn xuống phần tử khi nháy vào( sẽ cố gắng để thay đổi khi cuộn trang luôn)
+  const handleTabLick = (tabLabel: string) => {
+    if (tabLabel === "info") {
+      const element = document.getElementById("form_task");
+      if (element) {
+        element.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+          inline: "nearest",
+        });
+      }
+    } else if (tabLabel === "exchange") {
+      const element = document.getElementById("task_info");
+      if (element) {
+        element.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+          inline: "nearest",
+        });
+      }
+    }
+  };
+  const fakeData = {
+    title: "tạo trang comment",
+    jobCode: "ABCD123",
+    status: "open",
+    typeOfWork: "mission",
+    priority: "high",
+    creator: "is' me ",
+    executor: "it's you",
+    dateCreated: new Date("2024-12-31T00:00:00.000Z"),
+    startDate: new Date("2024-12-31T00:00:00.000Z"),
+    deadline: new Date("2024-12-31T00:00:00.000Z"),
+    endDateActual: new Date("2024-12-31T00:00:00.000Z"),
+    description: descriptionTest,
+  };
+  //phần lựa chọn trong tab info
+  const items: TabsProps["items"] = [
+    {
+      key: "info",
+      label: `Info task`,
+      children: "",
+    },
+    {
+      key: "exchange",
+      label: `Job exchange`,
+      children: "",
+    },
+  ];
   return (
     <div className="tasks_page">
+      {/* modal create-info-edit */}
+      <Modal
+        title=""
+        width="70%"
+        open={isModalOpen}
+        onCancel={handleCancel}
+        maskClosable={false}
+        style={{ top: "50px" }}
+        footer={[]}
+      >
+        {!statusForm && !openInfo && (
+          <TaskForm
+            key={statusForm ? "create" : "update"}
+            title="Create new task"
+            setIsModalOpen={setIsModalOpen}
+            statusForm={false}
+            setStatusForm={setStatusForm}
+            taskInfo={{
+              status: false,
+            }}
+            button="Create"
+          />
+        )}
+
+        {openInfo && (
+          <div className="task__info--container">
+            <Tabs
+              defaultActiveKey="1"
+              items={items}
+              onTabClick={handleTabLick}
+            />
+            <div className="action__btn">
+              <Button type="primary" onClick={handleEditTask}>
+                {edit ? "Cancel" : "Edit"}
+              </Button>
+            </div>
+            {statusForm && edit ? (
+              <TaskForm
+                key={statusForm ? "create" : "update"}
+                title="Edit task"
+                setIsModalOpen={setIsModalOpen}
+                statusForm={statusForm}
+                setStatusForm={setStatusForm}
+                taskInfo={{
+                  status: false,
+                  data: fakeData,
+                }}
+                button="Update"
+                taskDemo={taskCurrent}
+              />
+            ) : (
+              <TaskForm
+                key={statusForm ? "create" : "update"}
+                title=""
+                setIsModalOpen={setIsModalOpen}
+                statusForm={statusForm}
+                setStatusForm={setStatusForm}
+                taskInfo={{
+                  status: true,
+                  data: fakeData,
+                }}
+                taskDemo={taskCurrent}
+              />
+            )}
+
+            <TaskInfo />
+          </div>
+        )}
+      </Modal>
       <Space direction="vertical" size="large">
         <Breadcrumb items={breadcrumItems} />
         <div className="tool_bar">
-          <Button size="large" type="primary">
+          <Button size="large" type="primary" onClick={handleCreateTask}>
             Create Task
           </Button>
           <Select
@@ -374,7 +535,10 @@ const TasksPage = () => {
                                       {...provided.dragHandleProps}
                                       {...provided.draggableProps}
                                     >
-                                      <TaskItem task={task} />
+                                      <TaskItem
+                                        task={task}
+                                        handleOpenInfoTask={handleOpenInfoTask}
+                                      />
                                     </div>
                                   );
                                 }}
@@ -395,5 +559,4 @@ const TasksPage = () => {
     </div>
   );
 };
-
 export default TasksPage;

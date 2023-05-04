@@ -1,15 +1,20 @@
 import FormStages from "./FormStages";
+import { useAxios } from "../../components/hook/useAxios";
 import Loading from "../../components/support/Loading";
-import { useAppDispatch, useAppSelector } from "../../redux/hook";
 import { listStages } from "../../data/statges";
+import { useAppDispatch, useAppSelector } from "../../redux/hook";
 import { reloadSidebar } from "../../redux/slice/menuSlice";
+import { ProjectType } from "../projectPage/ProjectDetail";
 import { DeleteFilled, EditFilled } from "@ant-design/icons";
 import { Button, message, Pagination, Popconfirm, Space, Table } from "antd";
 import Search from "antd/es/input/Search";
 import axios from "axios";
 import moment from "moment";
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useSearchParams } from "react-router-dom";
+import useMessageApi, {
+  UseMessageApiReturnType,
+} from "../../components/support/Message";
 
 import type { ColumnsType } from "antd/es/table";
 
@@ -35,11 +40,13 @@ interface DataType {
   endDateActual: string;
 }
 
-const StagesPage: React.FC = () => {
+interface PropTypes {
+  projectDetail?: ProjectType;
+}
+const StagesPage: React.FC<PropTypes> = (props: PropTypes) => {
   const [loading, setLoading] = useState<boolean>(true);
-  const [messageApi, contextHolder] = message.useMessage();
   const [createStages, setCreateStages] = useState<boolean>(false);
-  const [searchInput, setSearchInput] = useState<string>("");
+  const [searchInput, setSearchInput] = useState<string>();
   const [finishCount, setFinishCount] = useState<number>(0);
   const [pageNumber, setPageNumber] = useState<number>(1);
   const [stagesData, setStagesData] = useState<IStagesData>({
@@ -55,18 +62,29 @@ const StagesPage: React.FC = () => {
     status: false,
     stages: {},
   });
+  const [searchParams, setSearchParams] = useSearchParams();
   const searchRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const params = useParams();
   const dispatch = useAppDispatch();
+  const { showMessage, contextHolder }: UseMessageApiReturnType =
+    useMessageApi();
   const token: string = useAppSelector(
     (state: any) => state.auth.userInfo.token
   );
+
+  // const { responseData, isLoading } = useAxios(
+  //   "get",
+  //   `/project/stages/${params.projectId}?page=${searchParams.get("page")}`,
+  //   [finishCount, token, pageNumber]
+  // );
   // lấy dữ liệu stages theo page
   useEffect(() => {
     setLoading(true);
     axios
       .get(
-        `${process.env.REACT_APP_BACKEND_URL}/project/stages/${params.projectId}?page=${pageNumber}`,
+        `${process.env.REACT_APP_BACKEND_URL}/project/stages/${
+          params.projectId
+        }?page=${searchParams.get("page")}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -83,11 +101,8 @@ const StagesPage: React.FC = () => {
   }, [finishCount, token, pageNumber]);
   // hám xóa
   const confirm = (stages: DataType) => {
-    messageApi.open({
-      key: stages.key,
-      type: "loading",
-      content: "Loading...",
-    });
+    showMessage("loading", "Loading...");
+
     axios
       .post(
         `${process.env.REACT_APP_BACKEND_URL}/stage/delete/${stages.key}`,
@@ -97,51 +112,63 @@ const StagesPage: React.FC = () => {
         }
       )
       .then((res) => {
-        messageApi.open({
-          key: stages.key,
-          type: "success",
-          content: res.data.message,
-          duration: 2,
-        });
+        showMessage("success", res.data?.message, 2);
+
         setFinishCount((prev) => prev + 1);
       })
       .catch((err) => {
-        messageApi.open({
-          key: stages.key,
-          type: "error",
-          content: err.response.data.message,
-          duration: 2,
-        });
+        showMessage("error", err.response.data?.message, 2);
       });
   };
-
   //hàm gọi api khi search
   const handleChangeSearch = (event: any) => {
     let value = event?.target.value;
     setSearchInput(value);
 
+    setSearchParams({
+      currentTab: "Stages",
+      name: value || "",
+      page: (searchParams.get("page") as string) || "1",
+    });
+  };
+  useEffect(() => {
+    setPageNumber(Number(searchParams.get("page")) || 1);
+  }, []);
+  // api search kết hợp url searchParams
+  useEffect(() => {
     if (searchRef.current) {
       clearTimeout(searchRef.current);
     }
-
     searchRef.current = setTimeout(() => {
-      if (value) {
+      if (searchParams.get("name")) {
         axios
           .get(
-            `${process.env.REACT_APP_BACKEND_URL}/stage/search?name=${value}`,
+            `${
+              process.env.REACT_APP_BACKEND_URL
+            }/stage/search?name=${searchParams
+              .get("name")
+              ?.split("+")
+              .join(" ")}`,
             {
               headers: { Authorization: `Bearer ${token}` },
             }
           )
           .then((res) => {
             setStagesData(res.data);
+
+            setSearchParams({
+              currentTab: "Stages",
+              name: (searchParams.get("name") as string) || "",
+              page: "1",
+            });
           })
           .catch((err) => {});
       }
-    }, 300);
-  };
+    }, 1000);
+  }, [searchInput]);
+
   //hám search
-  const handleSearchMember = (value: string) => {
+  const handleSearchStage = (value: string) => {
     setLoading(true);
     if (value) {
       axios
@@ -297,12 +324,12 @@ const StagesPage: React.FC = () => {
         <div className="header_right">
           <Space wrap>
             <Search
-              value={searchInput}
+              value={(searchParams.get("name") as string) || ""}
               allowClear
               onChange={(event: any) => {
                 handleChangeSearch(event);
               }}
-              onSearch={handleSearchMember}
+              onSearch={handleSearchStage}
               placeholder="Enter stages name..."
               size="large"
               style={{ width: "300px" }}
@@ -320,10 +347,18 @@ const StagesPage: React.FC = () => {
         />
         <div className="pagination">
           <Pagination
-            current={pageNumber}
+            current={Number(searchParams.get("page") || 1)}
             defaultCurrent={stagesData.totalPages}
             total={stagesData.total}
-            onChange={(page: number) => setPageNumber(page)}
+            onChange={(page: number) => {
+              setPageNumber(page);
+
+              setSearchParams({
+                currentTab: "Stages",
+                name: searchParams.get("name") as string,
+                page: `${page}`,
+              });
+            }}
           />
         </div>
       </div>
@@ -335,14 +370,17 @@ const StagesPage: React.FC = () => {
           endDateActual={false}
           setCreateStages={setCreateStages}
           setFinishCount={setFinishCount}
+          showMessage={showMessage}
         />
       )}
       {editStages.status && (
         <FormStages
+          showMessage={showMessage}
           setFinishCount={setFinishCount}
           editStages={editStages}
           title="Edit Stages"
           button="Update"
+          projectDetail={props.projectDetail}
           setEditStages={setEditStages}
         />
       )}

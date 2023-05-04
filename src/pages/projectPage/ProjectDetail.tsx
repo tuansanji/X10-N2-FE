@@ -1,9 +1,11 @@
 import ProjectInfo from "./ProjectInfo";
+import { setQuery } from "../../redux/slice/paramsSlice";
 import MemberList from "../Members/MemberList";
 import StagesPage from "../stagesPage/StagesPage";
 import { Breadcrumb, Skeleton, Space, Tabs } from "antd";
 import axios from "axios";
 import React, { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import {
   useParams,
   useSearchParams,
@@ -11,8 +13,6 @@ import {
   createSearchParams,
   Link,
 } from "react-router-dom";
-import { setQuery } from "../../redux/slice/paramsSlice";
-import { useSelector, useDispatch } from "react-redux";
 
 //
 export interface ProjectType {
@@ -69,7 +69,11 @@ const ProjectDetail: React.FC = () => {
       key: "General Information",
       children: <ProjectInfo projectDetail={projectDetail} />,
     },
-    { label: "Stages", key: "Stages", children: <StagesPage /> },
+    {
+      label: "Stages",
+      key: "Stages",
+      children: <StagesPage projectDetail={projectDetail} />,
+    },
     { label: "Members", key: "Members", children: <MemberList /> },
   ];
 
