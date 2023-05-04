@@ -41,40 +41,13 @@ const ProjectDetail: React.FC = () => {
 
   useEffect(() => {
     let query = Object.fromEntries([...searchParams]);
-    console.log("Main Query:", query);
     dispatch(setQuery(query));
-  }, [searchParams]);
-
-  // useEffect(() => {
-  //   // remove the t parameter if it is present in the URL. This happens when we are redirected back from an OAuth
-  //   // flow.
-  //   if (
-  //     queryParams.currentTab === "General Information" &&
-  //     searchParams.has("currentPage")
-  //   ) {
-  //     const pageQuery = searchParams.get("currentPage");
-  //     if (pageQuery) {
-  //       searchParams.delete("currentPage");
-  //       const newParams: { [key: string]: string } = {};
-  //       searchParams.forEach((value: string, key: string) => {
-  //         newParams[key] = value;
-  //       });
-
-  //       setSearchParams(newParams);
-  //       navigate(
-  //         {
-  //           search: createSearchParams(newParams).toString(),
-  //         },
-  //         { replace: true }
-  //       );
-  //     }
-  //   }
-  // }, [navigate, searchParams, setSearchParams]);
+  }, []);
 
   useEffect(() => {
     const getProjectDetail = async () => {
+      setIsLoading(true);
       try {
-        setIsLoading(true);
         const response = await axios.get(
           `${process.env.REACT_APP_BACKEND_URL}/project/details/${params.projectId}`,
           { headers: { Authorization: `Bearer ${token}` } }
@@ -105,7 +78,13 @@ const ProjectDetail: React.FC = () => {
   ];
 
   const handleTabChange = (tabLabel: string) => {
-    setSearchParams({ currentTab: tabLabel, currentPage: "1" });
+    if (tabLabel === "General Information") {
+      setSearchParams({ currentTab: tabLabel });
+      dispatch(setQuery({ currentTab: tabLabel }));
+    } else {
+      setSearchParams({ currentTab: tabLabel, currentPage: "1" });
+      dispatch(setQuery({ currentTab: tabLabel, currentPage: 1 }));
+    }
   };
 
   return (
