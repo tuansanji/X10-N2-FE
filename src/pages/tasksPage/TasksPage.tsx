@@ -1,3 +1,4 @@
+import _ from "lodash";
 import {
   Breadcrumb,
   Button,
@@ -9,9 +10,11 @@ import {
 } from "antd";
 import TaskInfo from "./TaskInfo";
 import React, { useState, useEffect } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useSearchParams } from "react-router-dom";
+import { useSelector, useDispatch } from "react-redux";
 import { v4 as uuidv4 } from "uuid";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
+import { setQuery } from "../../redux/slice/paramsSlice";
 
 const { Text, Title } = Typography;
 const { Search } = Input;
@@ -73,8 +76,22 @@ const initialData = [
 ];
 
 const list = [
-  { id: uuidv4(), name: "Task A", status: "open" },
+  {
+    id: uuidv4(),
+    name: "Task A faslkdcmaldkmcalskdmca;sdkcma;skdmc;askdmc",
+    status: "open",
+  },
   { id: uuidv4(), name: "Task B", status: "open" },
+  { id: uuidv4(), name: "Purnima Kevyn", status: "open" },
+  { id: uuidv4(), name: "Guido Kisha", status: "open" },
+  { id: uuidv4(), name: "Varinius Hartmann", status: "open" },
+  { id: uuidv4(), name: "Emmet Leonardo", status: "open" },
+  { id: uuidv4(), name: "Thaddaios Vasanti", status: "open" },
+  { id: uuidv4(), name: "Jaiden Re", status: "open" },
+  { id: uuidv4(), name: "Johnie Erastos", status: "open" },
+  { id: uuidv4(), name: "Eliseo Florian", status: "open" },
+  { id: uuidv4(), name: "Ahmad Giselmund", status: "open" },
+  { id: uuidv4(), name: "Marianna Pravina", status: "open" },
   { id: uuidv4(), name: "Task C", status: "in progress" },
   { id: uuidv4(), name: "Task D", status: "in progress" },
   { id: uuidv4(), name: "Task E", status: "in review" },
@@ -100,27 +117,50 @@ const TaskItem: React.FC<TaskItemProp> = ({ task }) => {
 
 const TasksPage = () => {
   const params = useParams();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const queryParams = useSelector((state: any) => state.queryParams);
+  const dispatch = useDispatch();
   const [tasksColumns, setTasksColumns] = useState<ColumnData[]>([]);
-
-  const taskTypeOptions = [
-    {
-      label: `Task Type: All`,
-      value: "all",
-    },
-    {
-      label: `Task Type: Issue`,
-      value: "issue",
-    },
-    {
-      label: `Task Type: Mission`,
-      value: "mission",
-    },
-  ];
   const breadcrumItems = [
     { title: <Link to="/">Home</Link> },
     { title: <Link to={`/${params.projectId}`}>Project Name</Link> },
     { title: "Stage Name" },
   ];
+  useEffect(() => {
+    let query = Object.fromEntries([...searchParams]);
+    dispatch(setQuery(query));
+  }, []);
+
+  const taskTypeOptions = [
+    {
+      label: `Type`,
+      options: [
+        { label: `All`, value: `all` },
+        { label: `Issue`, value: `issue` },
+        { label: `Task`, value: `task` },
+      ],
+    },
+  ];
+
+  const priorityOptions = [
+    {
+      label: `Priority`,
+      options: [
+        { label: `Asc`, value: `asc` },
+        { label: `Desc`, value: `desc` },
+      ],
+    },
+  ];
+
+  const selectTaskTypes = (value: string) => {
+    dispatch(setQuery({ ...queryParams, type: value }));
+    setSearchParams({ ...queryParams, type: value });
+  };
+
+  const sortPriority = (value: string) => {
+    dispatch(setQuery({ ...queryParams, priority: value }));
+    setSearchParams({ ...queryParams, priority: value });
+  };
 
   useEffect(() => {
     initialData.map((data: any) => {
@@ -271,10 +311,24 @@ const TasksPage = () => {
           </Button>
           <Select
             size="large"
+            value={`Type: ${
+              _.capitalize(queryParams.type) ||
+              taskTypeOptions[0].options[0].label
+            }`}
             options={taskTypeOptions}
-            defaultValue={taskTypeOptions[0].label}
+            dropdownMatchSelectWidth={false}
+            onChange={selectTaskTypes}
           />
-          <Select size="large" defaultValue="Sort Priority" />
+          <Select
+            size="large"
+            value={`Priority: ${
+              _.capitalize(queryParams.priority) ||
+              priorityOptions[0].options[0].label
+            }`}
+            dropdownMatchSelectWidth={false}
+            options={priorityOptions}
+            onChange={sortPriority}
+          />
           <Select size="large" defaultValue="Filter Member" />
           <Search size="large" placeholder="Task Name" />
         </div>
@@ -284,7 +338,7 @@ const TasksPage = () => {
             onDragEnd={handleDragEnd}
             onDragStart={handleDragStart}
           >
-            {tasksColumns.map((column: any, index: number) => {
+            {tasksColumns?.map((column: any, index: number) => {
               return (
                 <Droppable
                   droppableId={column.id}
@@ -301,32 +355,34 @@ const TasksPage = () => {
                           cursor: column.dropAllow ? "" : "not-allowed",
                         }}
                       >
-                        <Title level={3} className="column_containter_title">
+                        <Title level={4} className="column_containter_title">
                           {column.title}
                         </Title>
-                        {column.items.map((task: any, index: number) => {
-                          return (
-                            <Draggable
-                              key={task.id}
-                              draggableId={task.id}
-                              index={index}
-                            >
-                              {(provided, snapshot) => {
-                                return (
-                                  <div
-                                    className="task_item"
-                                    ref={provided.innerRef}
-                                    {...provided.dragHandleProps}
-                                    {...provided.draggableProps}
-                                  >
-                                    <TaskItem task={task} />
-                                  </div>
-                                );
-                              }}
-                            </Draggable>
-                          );
-                        })}
-                        {provided.placeholder}
+                        <div className="task_container">
+                          {column.items?.map((task: any, index: number) => {
+                            return (
+                              <Draggable
+                                key={task.id}
+                                draggableId={task.id}
+                                index={index}
+                              >
+                                {(provided, snapshot) => {
+                                  return (
+                                    <div
+                                      className="task_item"
+                                      ref={provided.innerRef}
+                                      {...provided.dragHandleProps}
+                                      {...provided.draggableProps}
+                                    >
+                                      <TaskItem task={task} />
+                                    </div>
+                                  );
+                                }}
+                              </Draggable>
+                            );
+                          })}
+                          {provided.placeholder}
+                        </div>
                       </div>
                     );
                   }}

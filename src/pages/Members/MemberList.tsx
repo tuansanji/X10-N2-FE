@@ -284,26 +284,22 @@ const MemberList: React.FC = () => {
 
   const handleInputChange = (event: any) => {
     let value = event.target.value;
-    dispatch(setQuery({ ...queryParams, search: value }));
-    setSearchParams({ ...queryParams, search: value });
-  };
-
-  useEffect(() => {
-    if (queryParams.search === "" && searchParams.has("search")) {
-      dispatch(deleteQuery("search"));
-      setSearchParams({ ...queryParams });
+    if (value === "" && searchParams.has("search")) {
+      let query = searchParams.get("search");
+      if (query) {
+        searchParams.delete("search");
+        const newParams: { [key: string]: string } = {};
+        searchParams.forEach((value: string, key: string) => {
+          newParams[key] = value;
+        });
+        setSearchParams(newParams);
+        dispatch(deleteQuery("search"));
+      }
+    } else {
+      dispatch(setQuery({ ...queryParams, search: value }));
+      setSearchParams({ ...queryParams, search: value });
     }
-  }, [queryParams.search]);
-
-  // const handleSearchBox = (value: string, event: any) => {
-  //   if (value === "") {
-  //     searchParams.delete("search");
-  //     setSearchParams(searchParams);
-  //     setSearchResult([]);
-  //   }
-  //   setSearchParams({ ...queryParams, search: value });
-  //   dispatch(setQuery({ ...queryParams, search: value }));
-  // };
+  };
 
   // Setup Table
   const columns: ColumnsType<MemberDataType> = [

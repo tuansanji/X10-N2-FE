@@ -10,6 +10,25 @@ interface PropTypes {
 }
 
 const ProjectInfo: React.FC<PropTypes> = ({ projectDetail }) => {
+  let bgColor: string = "";
+  switch (projectDetail?.status) {
+    case "ongoing":
+      bgColor = "#F0E155";
+      break;
+    case "completed":
+      bgColor = "#44CB39";
+      break;
+    case "suspended":
+      bgColor = "#EC2B2B";
+      break;
+    case "preparing":
+      bgColor = "#2E55DE";
+      break;
+    default:
+      bgColor = "transparent";
+      break;
+  }
+
   return (
     <div className="project-info">
       <Descriptions
@@ -26,8 +45,12 @@ const ProjectInfo: React.FC<PropTypes> = ({ projectDetail }) => {
           {projectDetail?.code}
         </Descriptions.Item>
         <Descriptions.Item label="Project Status">
-          <Button type="primary" shape="round" style={{ backgroundColor: "" }}>
-            {projectDetail?.status.toUpperCase()}
+          <Button
+            type="primary"
+            shape="round"
+            style={{ backgroundColor: bgColor }}
+          >
+            <Text strong> {projectDetail?.status.toUpperCase()}</Text>
           </Button>
         </Descriptions.Item>
         <Descriptions.Item label="Description" span={2}>
