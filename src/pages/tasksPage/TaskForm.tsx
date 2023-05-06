@@ -1,5 +1,4 @@
-import ReactQuillFC from "../../components/comment/ReactQuill";
-import { useAxios } from "../../components/hook/useAxios";
+import { useAxios } from "../../hooks";
 import { useAppSelector } from "../../redux/hook";
 import { RootState } from "../../redux/store";
 import { MemberDataType } from "../Members/MemberList";

@@ -1,12 +1,28 @@
+import ProjectForm from "../../components/projectForm/ProjectForm";
 import { IProject } from "../../components/sidebar/Sidebar";
+import Loading from "../../components/support/Loading";
+import { useAppSelector } from "../../redux/hook";
+import { RootState } from "../../redux/store";
+import projectApi from "../../services/api/projectApi";
+import { DeleteFilled, EditFilled, SearchOutlined } from "@ant-design/icons";
+import axios from "axios";
+import moment from "moment";
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import { useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
+import slugify from "slugify";
+import {
+  getAllProjectError,
+  getAllProjectStart,
+  getAllProjectSuccess,
+} from "../../redux/slice/projectSlice";
+
 import {
   Link,
   useSearchParams,
   useNavigate,
   createSearchParams,
 } from "react-router-dom";
-import Loading from "../../components/support/Loading";
-import { DeleteFilled, EditFilled, SearchOutlined } from "@ant-design/icons";
 import {
   Button,
   Input,
@@ -19,16 +35,10 @@ import {
   Popconfirm,
   Typography,
 } from "antd";
-import moment from "moment";
-import React, { useMemo, useRef, useState } from "react";
-import Highlighter from "react-highlight-words";
-import { useSelector } from "react-redux";
-import slugify from "slugify";
 import type { InputRef } from "antd";
 import type { ColumnsType, TableProps, ColumnType } from "antd/es/table";
 import type { SizeType } from "antd/es/config-provider/SizeContext";
 import type { FilterConfirmProps } from "antd/es/table/interface";
-import ProjectForm from "../../components/projectForm/ProjectForm";
 
 // import { TablePaginationPosition } from 'antd/lib/table';
 export interface DataType {
@@ -56,12 +66,35 @@ const ListProject: React.FC = () => {
   const [projectDetail, setProjectDetail] = useState<any>();
   const [openEditProject, setOpenEditProject] = useState<boolean>(false);
   const [searchInput, setSearchInput] = useState<string>("");
+  const token = useAppSelector((state: RootState) => state.auth.userInfo.token);
+  const dispatch = useDispatch();
+  // useEffect(() => {
+  //   projectApi.getAll().then((res) => console.log(res));
+  // }, []);
 
   const confirm = (stages: DataType) => {
     console.log(stages);
     message.success("Click on Yes");
     message.error("Click on No");
   };
+
+  useEffect(() => {
+    (async () => {
+      dispatch(getAllProjectStart());
+
+      try {
+        const res = await axios.get(
+          `${process.env.REACT_APP_BACKEND_URL}/project/all`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+        dispatch(getAllProjectSuccess(res.data));
+      } catch (error) {
+        dispatch(getAllProjectError());
+      }
+    })();
+  }, [token]);
 
   const handleEditProject = (indexValue: number) => {
     let projectDetail = listProject.projects.filter(

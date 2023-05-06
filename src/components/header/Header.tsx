@@ -1,18 +1,34 @@
 import { BellOutlined, DownOutlined } from "@ant-design/icons";
-import { Button, Dropdown, Space } from "antd";
-import React, { useState } from "react";
+import { Button, Dropdown, Select, Space } from "antd";
+import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 
 const Header = () => {
+  const [language, setLanguage] = useState(1);
   const user = useSelector((state: any) => state.auth);
+  const { i18n } = useTranslation();
 
+  // const currentLanguage = locales[i18n.language as keyof typeof locales];
+
+  const handleChange = (lng: string) => {
+    // i18n.changeLanguage(lng);
+    localStorage.setItem("language", JSON.stringify(lng));
+    setLanguage((prev) => prev + 1);
+  };
+  useEffect(() => {
+    if (localStorage.getItem("language")) {
+      i18n.changeLanguage(
+        JSON.parse((localStorage.getItem("language") as string) ?? "en")
+      );
+    }
+  }, [language]);
   const items = [
     {
       key: "1",
       label: <Link to="/user/infor">Thông tin tài khoản </Link>,
     },
-
     {
       key: "4",
       danger: true,
@@ -31,38 +47,45 @@ const Header = () => {
         <span>Mindx</span>
       </div>
       <div className="header_auth">
+        <Select
+          value={i18n.language}
+          style={{ width: 200 }}
+          onChange={handleChange}
+          options={[
+            {
+              label: "Languages",
+              options: [
+                { label: "Tiếng việt", value: "vi" },
+                { label: "English", value: "en" },
+              ],
+            },
+          ]}
+        />
+
         <span className="bell">
           <BellOutlined />
         </span>
-        {user ? (
-          <div className="header_auth-user">
-            <Dropdown
-              menu={{
-                items,
-              }}
-            >
-              <Link className="" to="/user/infor">
-                <Space>
-                  {user.userInfo.fullName}
-                  <DownOutlined />
-                </Space>
-              </Link>
-            </Dropdown>
-            <img
-              srcSet={`${
-                user.userInfo.avatar ||
-                "https://st.quantrimang.com/photos/image/072015/22/avatar.jpg"
-              } 2x`}
-              alt=""
-            />
-          </div>
-        ) : (
-          <Link to="/auth/login">
-            <Button type="primary" size="large">
-              Login
-            </Button>
-          </Link>
-        )}
+        <div className="header_auth-user">
+          <Dropdown
+            menu={{
+              items,
+            }}
+          >
+            <Link className="" to="/user/infor">
+              <Space>
+                {user.userInfo.fullName}
+                <DownOutlined />
+              </Space>
+            </Link>
+          </Dropdown>
+          <img
+            srcSet={`${
+              user.userInfo.avatar ||
+              "https://st.quantrimang.com/photos/image/072015/22/avatar.jpg"
+            } 2x`}
+            alt=""
+          />
+        </div>
       </div>
     </header>
   );

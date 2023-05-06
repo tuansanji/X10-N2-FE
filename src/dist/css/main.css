@@ -734,6 +734,16 @@ html {
   gap: 30px;
   flex-direction: column;
 }
+.stage__review--header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.stage__review--header h2 {
+  padding-right: 12px;
+  flex: 1;
+  text-align: center;
+}
 .stage__review--content {
   box-shadow: rgba(0, 0, 0, 0.4) 0px -1px 0px;
 }

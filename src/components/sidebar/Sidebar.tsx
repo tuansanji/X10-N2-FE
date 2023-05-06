@@ -1,4 +1,3 @@
-import { getAllProject } from "../../redux/apiRequest";
 import { useAppDispatch, useAppSelector } from "../../redux/hook";
 import { changeMenu } from "../../redux/slice/menuSlice";
 import { RootState } from "../../redux/store";
@@ -6,7 +5,9 @@ import { AccountBookOutlined, AppstoreOutlined } from "@ant-design/icons";
 import { Menu } from "antd";
 import axios from "axios";
 import React, { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { v4 as uuid } from "uuid";
+
 import type { MenuProps } from "antd";
 type MenuItem = Required<MenuProps>["items"][number];
 function getItem(
@@ -44,7 +45,7 @@ export interface IProject {
 }
 const Sidebar = () => {
   const dispatch = useAppDispatch();
-
+  const { t, i18n } = useTranslation("sidebar");
   const [sidebarData, setSidebarData] = useState<{
     projects: any;
     total: number;
@@ -103,7 +104,13 @@ const Sidebar = () => {
             }),
 
             { type: "divider" },
-            getItem("Contact", "grp", null, [getItem("Mindx", "14")], "group"),
+            getItem(
+              t("contact"),
+              "grp",
+              null,
+              [getItem("Mindx", "14")],
+              "group"
+            ),
           ]
         : [
             { type: "divider" },
@@ -116,14 +123,12 @@ const Sidebar = () => {
             ),
           ];
     return newItems;
-  }, [listProject, sidebarData]);
+  }, [listProject, sidebarData, i18n.language]);
   // khi click vào item thanh sidebar
   const onClick: MenuProps["onClick"] = (e) => {
     console.log("click ", e);
   };
-  useEffect(() => {
-    getAllProject(token, dispatch);
-  }, [token]);
+
   return (
     <aside
       className={`container_sidebar`}
@@ -132,7 +137,7 @@ const Sidebar = () => {
       }}
     >
       <div className="sidebar__title ">
-        <h4>Your Project List</h4>
+        <h4>{t("title")}</h4>
         <div
           className={
             !statusMenu ? "btn btn_sidebar" : " btn btn_sidebar active"

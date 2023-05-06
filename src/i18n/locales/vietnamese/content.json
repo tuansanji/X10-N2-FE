@@ -1,0 +1,17 @@
+{
+  "name": "Tên",
+  "startDate": "Ngày bắt đầu",
+  "endDateExpected": "Ngày kết thúc dự kiến",
+  "endDateActual": "Ngày kết thúc thực tế",
+  "action": "Hành động",
+  "createStage": "Tạo mới giai đoạn",
+  "editStage": "Chỉnh sửa giai đoạn",
+  "enterStageName": "Điền tên giai đoạn...",
+  "addReview": "Thêm đánh giá",
+  "review": "Đánh giá",
+  "tittleReview": "Hiện không có đánh giá nào",
+  "titleDeleteComment": "Xóa bình luận",
+  "desDeleteComment": "Bạn có chắc chắn để xóa bình luận này?",
+  "titleDeleteStage": "Xóa giai đoạn",
+  "desDeleteStage": "Bạn có chắc chắn xóa giai đoạn này?"
+}

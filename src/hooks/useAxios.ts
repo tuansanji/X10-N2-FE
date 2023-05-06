@@ -1,5 +1,5 @@
 import { useReducer } from "./useReducer";
-import { useAppSelector } from "../../redux/hook";
+import { useAppSelector } from "../redux/hook";
 import axios from "axios";
 import { useEffect } from "react";
 
@@ -48,6 +48,7 @@ export const useAxios = (
           headers: { Authorization: `Bearer ${token}` },
           ...(body ? { data: body } : {}),
         });
+        console.log("rerender");
         dispatch({
           type: "axiosAPI/success",
           isLoading: false,
@@ -70,5 +71,4 @@ export const useAxios = (
     isLoading: state.isLoading,
     error: state.error,
   };
-  //   return { ...state };
 };

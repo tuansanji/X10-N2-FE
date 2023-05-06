@@ -1,12 +1,12 @@
-import AddMember from "./AddMember";
-import { formatDate } from "../../utils/formatDate";
-import { DeleteFilled } from "@ant-design/icons";
-import { ColumnsType } from "antd/es/table";
-import axios from "axios";
-import moment from "moment";
-import React, { useEffect, useRef, useState } from "react";
-import { useSelector } from "react-redux";
-import { useNavigate, useParams, useSearchParams } from "react-router-dom";
+import AddMember from './AddMember';
+import { formatDate } from '../../utils/formatDate';
+import { DeleteFilled } from '@ant-design/icons';
+import { ColumnsType } from 'antd/es/table';
+import axios from 'axios';
+import moment from 'moment';
+import React, { useEffect, useRef, useState } from 'react';
+import { useSelector } from 'react-redux';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
 import {
   Button,
@@ -30,6 +30,7 @@ export interface MemberDataType {
   joinDate: string;
   key?: string;
   fullName?: string;
+  username?: string;
 }
 
 interface PopupPropTypes {
