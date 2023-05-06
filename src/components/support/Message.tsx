@@ -1,6 +1,6 @@
 import { message } from "antd";
 import { NoticeType } from "antd/es/message/interface";
-import { useEffect, useRef } from "react";
+import { useEffect, useId, useRef } from "react";
 import { v4 as uuid } from "uuid";
 
 export interface UseMessageApiReturnType {
@@ -22,7 +22,7 @@ const useMessageApi = (): UseMessageApiReturnType => {
     duration?: number
   ) => {
     messageRef.current.open({
-      key: uuid(),
+      key: 9999,
       type,
       content,
       duration,

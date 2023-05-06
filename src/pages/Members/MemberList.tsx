@@ -1,15 +1,13 @@
-import React, { useState, useEffect, useRef } from "react";
-import axios from "axios";
-import { useParams, useSearchParams, useNavigate } from "react-router-dom";
 import AddMember from "./AddMember";
+import { deleteQuery, setQuery } from "../../redux/slice/paramsSlice";
 import { formatDate } from "../../utils/formatDate";
 import { DeleteFilled } from "@ant-design/icons";
 import { ColumnsType } from "antd/es/table";
+import axios from "axios";
 import moment from "moment";
-import { useSelector, useDispatch } from "react-redux";
-import { ToastContainer } from "react-toastify";
-import { toastSuccess, toastErr } from "../../redux/slice/toastSlice";
-import { setQuery, deleteQuery } from "../../redux/slice/paramsSlice";
+import React, { useEffect, useRef, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 
 import {
   Button,
@@ -27,11 +25,12 @@ import {
 const { Search } = Input;
 const { Text } = Typography;
 
-interface MemberDataType {
+export interface MemberDataType {
   name: string;
   role: string;
   joinDate: string;
   key?: string;
+  fullName?: string;
 }
 
 interface PopupPropTypes {
@@ -69,7 +68,7 @@ const DeleteConfirmPopup: React.FC<PopupPropTypes> = ({
         data: { id: stages.key },
       });
       setMemberData(response.data.members);
-      dispatch(toastSuccess(response.data.message));
+      // dispatch(toastSuccess(response.data.message));
       setConfirmLoading(false);
       setOpen(false);
     } catch (err) {
@@ -81,7 +80,7 @@ const DeleteConfirmPopup: React.FC<PopupPropTypes> = ({
 
   return (
     <>
-      <ToastContainer />
+      {/* <ToastContainer /> */}
       <Popconfirm
         disabled={record.role === "manager" && true}
         placement="topRight"
@@ -125,7 +124,7 @@ const UpdateMemberRole: React.FC<MemberRolePropTypes> = ({
         },
       });
       setMemberData(response.data.members);
-      dispatch(toastSuccess(response.data.message));
+      // dispatch(toastSuccess(response.data.message));
       setRoleUpdating(false);
     } catch (err) {
       console.error(err);
@@ -134,7 +133,7 @@ const UpdateMemberRole: React.FC<MemberRolePropTypes> = ({
   };
   return (
     <>
-      <ToastContainer />
+      {/* <ToastContainer /> */}
       <Select
         loading={roleUpdating && true}
         disabled={record.role === "manager" && true}

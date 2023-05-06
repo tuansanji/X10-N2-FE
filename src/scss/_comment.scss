@@ -48,7 +48,7 @@
     padding: 10px;
     border-radius: 12px;
     font-size: 14px;
-
+    min-height: 60px;
     line-height: 18px;
 
     font-family: sans-serif;
@@ -67,19 +67,20 @@
 
     span {
       &:first-child {
-        color: #007bff;
         cursor: pointer;
         font-weight: 600;
+
+        color: #333;
         &:hover {
           opacity: 0.7;
         }
       }
-      &:last-child {
+      &.btn_delete {
         display: flex;
         align-items: center;
         gap: 4px;
-
-        font-weight: medium;
+        color: #333;
+        font-weight: 600;
         opacity: 0.7;
       }
     }
