@@ -1,15 +1,18 @@
 import FormStages from "./FormStages";
 import StageReview from "./StageReview";
-import { useAxios } from "../../components/hook/useAxios";
 import Loading from "../../components/support/Loading";
 import { listStages } from "../../data/statges";
+import { useAxios } from "../../hooks";
 import { useAppDispatch, useAppSelector } from "../../redux/hook";
 import { reloadSidebar } from "../../redux/slice/menuSlice";
+import stageApi from "../../services/api/stageApi";
 import { ProjectType } from "../projectPage/ProjectDetail";
+import { DeleteFilled, EditFilled, EyeFilled } from "@ant-design/icons";
 import Search from "antd/es/input/Search";
 import axios from "axios";
 import moment from "moment";
 import React, { useEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import {
   Button,
@@ -20,12 +23,6 @@ import {
   Space,
   Table,
 } from "antd";
-import {
-  DeleteFilled,
-  EditFilled,
-  EyeFilled,
-  EyeOutlined,
-} from "@ant-design/icons";
 import useMessageApi, {
   UseMessageApiReturnType,
 } from "../../components/support/Message";
@@ -57,6 +54,7 @@ interface DataType {
 interface PropTypes {
   projectDetail?: ProjectType;
 }
+
 const StagesPage: React.FC<PropTypes> = (props: PropTypes) => {
   const [loading, setLoading] = useState<boolean>(true);
   const [createStages, setCreateStages] = useState<boolean>(false);
@@ -87,67 +85,53 @@ const StagesPage: React.FC<PropTypes> = (props: PropTypes) => {
   const token: string = useAppSelector(
     (state: any) => state.auth.userInfo.token
   );
+  const { t, i18n } = useTranslation(["content", "base"]);
 
-  // const { responseData, isLoading } = useAxios(
-  //   "get",
-  //   `/project/stages/${params.projectId}?page=${searchParams.get("page")}`,
-  //   [finishCount, token, pageNumber]
-  // );
   // lấy dữ liệu stages theo page
   useEffect(() => {
     setLoading(true);
-    axios
-      .get(
-        `${process.env.REACT_APP_BACKEND_URL}/project/stages/${
-          params.projectId
-        }?page=${searchParams.get("page")}`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      )
-      .then((res) => {
-        setStagesData(res.data);
+    const subParams = {
+      page: searchParams.get("page"),
+    };
+    stageApi
+      .getStagesPagination(params.projectId as string, subParams)
+      .then((res: any) => {
+        setStagesData(res);
         setLoading(false);
         dispatch(reloadSidebar());
       })
-      .catch((err) => {
+      .catch((err: any) => {
         setLoading(false);
         message.error(err.response.data.message);
       });
   }, [finishCount, token, pageNumber]);
+
   // hám xóa
   const confirm = (stages: DataType) => {
-    showMessage("loading", "Loading...");
-
-    axios
-      .post(
-        `${process.env.REACT_APP_BACKEND_URL}/stage/delete/${stages.key}`,
-        stages.key,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      )
-      .then((res) => {
-        showMessage("success", res.data?.message, 2);
-
+    showMessage("loading", `${t("content:loading")}...`);
+    stageApi
+      .deleteStage(stages.key as string)
+      .then((res: any) => {
+        showMessage("success", res?.message, 2);
         setFinishCount((prev) => prev + 1);
       })
       .catch((err) => {
         showMessage("error", err.response.data?.message, 2);
       });
   };
+
   //hàm gọi api khi search
   const handleChangeSearch = (event: any) => {
     let value = event?.target.value;
     setSearchInput(value);
-
     setSearchParams({
       currentTab: "Stages",
       name: value || "",
       page: (searchParams.get("page") as string) || "1",
     });
   };
-  //hàm modal
+
+  //hàm cancel modal
   const handleCancel = () => {
     setIsModalOpen(false);
   };
@@ -155,6 +139,7 @@ const StagesPage: React.FC<PropTypes> = (props: PropTypes) => {
   useEffect(() => {
     setPageNumber(Number(searchParams.get("page")) || 1);
   }, []);
+
   // api search kết hợp url searchParams
   useEffect(() => {
     if (searchRef.current) {
@@ -162,18 +147,14 @@ const StagesPage: React.FC<PropTypes> = (props: PropTypes) => {
     }
     searchRef.current = setTimeout(() => {
       if (searchParams.get("name")) {
-        axios
-          .get(
-            `${process.env.REACT_APP_BACKEND_URL}/project/stages/search/${
-              params.projectId
-            }?page=1&name=${searchParams.get("name")?.split("+").join(" ")}`,
-            {
-              headers: { Authorization: `Bearer ${token}` },
-            }
-          )
-          .then((res) => {
-            setStagesData(res.data);
-
+        const subParams = {
+          page: 1,
+          name: searchParams.get("name")?.split("+").join(" "),
+        };
+        stageApi
+          .SearchStage(params.projectId as string, subParams)
+          .then((res: any) => {
+            setStagesData(res);
             setSearchParams({
               currentTab: "Stages",
               name: (searchParams.get("name") as string) || "",
@@ -189,15 +170,14 @@ const StagesPage: React.FC<PropTypes> = (props: PropTypes) => {
   const handleSearchStage = (value: string) => {
     setLoading(true);
     if (value) {
-      axios
-        .get(
-          `${process.env.REACT_APP_BACKEND_URL}/project/stages/search/${params.projectId}?page=1&name=${value}`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        )
-        .then((res) => {
-          setStagesData(res.data);
+      const subParams = {
+        page: 1,
+        name: value,
+      };
+      stageApi
+        .SearchStage(params.projectId as string, subParams)
+        .then((res: any) => {
+          setStagesData(res);
           setLoading(false);
           setSearchInput("");
         })
@@ -206,15 +186,10 @@ const StagesPage: React.FC<PropTypes> = (props: PropTypes) => {
           message.error(err.response.data.message);
         });
     } else {
-      axios
-        .get(
-          `${process.env.REACT_APP_BACKEND_URL}/project/stages/${params.projectId}`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        )
-        .then((res) => {
-          setStagesData(res.data);
+      stageApi
+        .SearchStage(params.projectId as string)
+        .then((res: any) => {
+          setStagesData(res);
           setLoading(false);
         })
         .catch((err) => {
@@ -227,7 +202,7 @@ const StagesPage: React.FC<PropTypes> = (props: PropTypes) => {
   const columns: ColumnsType<DataType> = useMemo(
     () => [
       {
-        title: "Name",
+        title: t("content:name"),
         dataIndex: "name",
         key: "name",
 
@@ -238,7 +213,7 @@ const StagesPage: React.FC<PropTypes> = (props: PropTypes) => {
       },
 
       {
-        title: "Start date",
+        title: t("content:startDate"),
         dataIndex: "startDate",
         key: "startDate",
         sorter: (a, b) => {
@@ -248,7 +223,7 @@ const StagesPage: React.FC<PropTypes> = (props: PropTypes) => {
         },
       },
       {
-        title: "end Date Expected",
+        title: t("content:endDateExpected"),
         dataIndex: "endDateExpected",
         key: "endDateExpected",
         sorter: (a, b) => {
@@ -258,7 +233,7 @@ const StagesPage: React.FC<PropTypes> = (props: PropTypes) => {
         },
       },
       {
-        title: "Actual end date",
+        title: t("content:endDateActual"),
         dataIndex: "endDateActual",
         key: "endDateActual",
         sorter: (a, b) => {
@@ -268,7 +243,7 @@ const StagesPage: React.FC<PropTypes> = (props: PropTypes) => {
         },
       },
       {
-        title: "Action",
+        title: t("content:action"),
         key: "action",
         render: (_, record: DataType) => (
           <Space size="middle">
@@ -284,11 +259,11 @@ const StagesPage: React.FC<PropTypes> = (props: PropTypes) => {
             </span>
             <Popconfirm
               placement="topRight"
-              title="Delete the stages"
-              description="Are you sure to delete this stages?"
+              title={t("content:titleDeleteStage")}
+              description={t("content:desDeleteStage")}
               onConfirm={() => confirm(record)}
-              okText="Yes"
-              cancelText="No"
+              okText={t("base:ok")}
+              cancelText={t("base:cancel")}
             >
               <DeleteFilled style={{ fontSize: "16px", cursor: "pointer" }} />
             </Popconfirm>
@@ -304,7 +279,7 @@ const StagesPage: React.FC<PropTypes> = (props: PropTypes) => {
         ),
       },
     ],
-    [stagesData]
+    [stagesData, i18n.language]
   );
   // dữ liệu stages trong table
   const data: DataType[] = useMemo(() => {
@@ -343,7 +318,7 @@ const StagesPage: React.FC<PropTypes> = (props: PropTypes) => {
             size={"large"}
             onClick={() => setCreateStages(true)}
           >
-            Create Stage
+            {t("content:createStage")}
           </Button>
         </div>
         <div className="header_right">
@@ -355,7 +330,7 @@ const StagesPage: React.FC<PropTypes> = (props: PropTypes) => {
                 handleChangeSearch(event);
               }}
               onSearch={handleSearchStage}
-              placeholder="Enter stages name..."
+              placeholder={t("content:enterStageName")}
               size="large"
               style={{ width: "300px" }}
             />
@@ -389,8 +364,8 @@ const StagesPage: React.FC<PropTypes> = (props: PropTypes) => {
       </div>
       {createStages && (
         <FormStages
-          title="Create Stages"
-          button="Create"
+          title={t("content:createStage")}
+          button={t("base:create")}
           status={false}
           endDateActual={false}
           setCreateStages={setCreateStages}
@@ -403,8 +378,8 @@ const StagesPage: React.FC<PropTypes> = (props: PropTypes) => {
           showMessage={showMessage}
           setFinishCount={setFinishCount}
           editStages={editStages}
-          title="Edit Stages"
-          button="Update"
+          title={t("content:editStage")}
+          button={t("base:update")}
           projectDetail={props.projectDetail}
           setEditStages={setEditStages}
         />

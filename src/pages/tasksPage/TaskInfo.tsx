@@ -1,16 +1,27 @@
-import Comment, { IComment } from "../../components/comment/Comment";
-import ReactQuillFC from "../../components/comment/ReactQuill";
-import { CameraFilled, CloseOutlined } from "@ant-design/icons";
-import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
-import Image from "@ckeditor/ckeditor5-image/src/image";
-import ImageCaption from "@ckeditor/ckeditor5-image/src/imagecaption";
-import ImageResize from "@ckeditor/ckeditor5-image/src/imageresize";
-import ImageStyle from "@ckeditor/ckeditor5-image/src/imagestyle";
-import ImageToolbar from "@ckeditor/ckeditor5-image/src/imagetoolbar";
-import { CKEditor } from "@ckeditor/ckeditor5-react";
-import { Badge, Breadcrumb, Button, Descriptions, message, Upload } from "antd";
-import parse from "html-react-parser";
-import React, { useEffect, useId, useRef, useState } from "react";
+import Comment, { IComment } from '../../components/comment/Comment';
+import { CameraFilled, CloseOutlined } from '@ant-design/icons';
+import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
+import Image from '@ckeditor/ckeditor5-image/src/image';
+import ImageCaption from '@ckeditor/ckeditor5-image/src/imagecaption';
+import ImageResize from '@ckeditor/ckeditor5-image/src/imageresize';
+import ImageStyle from '@ckeditor/ckeditor5-image/src/imagestyle';
+import ImageToolbar from '@ckeditor/ckeditor5-image/src/imagetoolbar';
+import { CKEditor } from '@ckeditor/ckeditor5-react';
+import {
+  Badge,
+  Breadcrumb,
+  Button,
+  Descriptions,
+  message,
+  Upload
+  } from 'antd';
+import parse from 'html-react-parser';
+import React, {
+  useEffect,
+  useId,
+  useRef,
+  useState
+  } from 'react';
 // import LinkImage from "@ckeditor/ckeditor5-link/src/linkimage";
 // import Base64UploadAdapter from "@ckeditor/ckeditor5-upload/src/adapters/base64uploadadapter";
 

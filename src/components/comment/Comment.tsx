@@ -1,19 +1,15 @@
-import { IReview } from '../../pages/stagesPage/StageReview';
-import { useAppSelector } from '../../redux/hook';
-import { RootState } from '../../redux/store';
-import { Input, Modal, Popconfirm } from 'antd';
-import { NoticeType } from 'antd/es/message/interface';
-import axios from 'axios';
-import parse from 'html-react-parser';
-import moment from 'moment';
-import React, {
-  Dispatch,
-  SetStateAction,
-  useRef,
-  useState
-  } from 'react';
-import { useParams } from 'react-router';
-import { v4 as uuid } from 'uuid';
+import { IReview } from "../../pages/stagesPage/StageReview";
+import { useAppSelector } from "../../redux/hook";
+import { RootState } from "../../redux/store";
+import stageApi from "../../services/api/stageApi";
+import { Input, Modal, Popconfirm } from "antd";
+import { NoticeType } from "antd/es/message/interface";
+import parse from "html-react-parser";
+import moment from "moment";
+import React, { Dispatch, SetStateAction, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { v4 as uuid } from "uuid";
+
 const { TextArea } = Input;
 
 export interface IComment {
@@ -33,22 +29,14 @@ const Comment: React.FC<IComment> = ({
   const [open, setOpen] = useState(false);
   const user = useAppSelector((state: RootState) => state.auth.userInfo);
   const myCommentRef = useRef<string>(reviewComment?.content || "");
-
+  const { t } = useTranslation(["content", "base"]);
   //hàm xác nhận xóa
   const handleDelete = (id: string) => {
     showMessage("loading", "Loading...");
-    axios
-      .post(
-        `${process.env.REACT_APP_BACKEND_URL}/stage/review/delete/${stageId}`,
-        {
-          id: id,
-        },
-        {
-          headers: { Authorization: `Bearer ${user?.token}` },
-        }
-      )
-      .then((res) => {
-        showMessage("success", res.data?.message, 2);
+    stageApi
+      .deleteComment(stageId as string, id)
+      .then((res: any) => {
+        showMessage("success", res?.message, 2);
         setReviewAdded?.((prev) => prev + 1);
       })
       .catch((err) => {
@@ -58,22 +46,12 @@ const Comment: React.FC<IComment> = ({
   //hàm sửa
   const handleEdit = () => {
     const myComment = myCommentRef.current;
-
     if (myComment) {
       showMessage("loading", "Loading...");
-      axios
-        .post(
-          `${process.env.REACT_APP_BACKEND_URL}/stage/review/update/${stageId}`,
-          {
-            review: myComment,
-            id: reviewComment?._id,
-          },
-          {
-            headers: { Authorization: `Bearer ${user?.token}` },
-          }
-        )
-        .then((res) => {
-          showMessage("success", res.data?.message, 2);
+      stageApi
+        .editComment(stageId as string, reviewComment?._id as string, myComment)
+        .then((res: any) => {
+          showMessage("success", res?.message, 2);
           setReviewAdded?.((prev) => prev + 1);
           setOpen(false);
         })
@@ -91,7 +69,7 @@ const Comment: React.FC<IComment> = ({
       <img src={reviewComment?.reviewer?.avatar} alt="" className="img_user" />
       <div className="comment-container">
         <p className="title">
-          {reviewComment?.reviewer?.fullName}{" "}
+          {reviewComment?.reviewer?.fullName}
           <span>
             {moment(reviewComment?.createdAt).format("DD/MM/YYYY hh:mm")}
           </span>
@@ -107,14 +85,16 @@ const Comment: React.FC<IComment> = ({
                 setOpen(true);
               }}
             >
-              Edit
+              {t("base:edit")}
             </span>
           )}
           <Modal
-            title="Edit"
+            title={t("base:edit")}
             open={open}
             onOk={handleEdit}
             onCancel={handleCancel}
+            okText={t("base:ok")}
+            cancelText={t("base:cancel")}
           >
             <TextArea
               defaultValue={reviewComment?.content}
@@ -130,11 +110,11 @@ const Comment: React.FC<IComment> = ({
           <span className="">
             <Popconfirm
               placement="right"
-              title="Delete the comment"
-              description="Are you sure to delete this comment?"
+              title={t("content:titleDeleteComment")}
+              description={t("content:desDeleteComment")}
               onConfirm={() => handleDelete(reviewComment?._id as string)}
-              okText="Yes"
-              cancelText="No"
+              okText={t("base:ok")}
+              cancelText={t("base:cancel")}
             >
               <span className="btn_delete">Delete</span>
             </Popconfirm>

@@ -31,6 +31,7 @@ export interface MemberDataType {
   joinDate: string;
   key?: string;
   fullName?: string;
+  username?: string;
 }
 
 interface PopupPropTypes {

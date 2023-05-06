@@ -1,7 +1,6 @@
 import { message } from "antd";
 import { NoticeType } from "antd/es/message/interface";
-import { useEffect, useId, useRef } from "react";
-import { v4 as uuid } from "uuid";
+import { useEffect, useRef } from "react";
 
 export interface UseMessageApiReturnType {
   showMessage: (type: NoticeType, content: string, duration?: number) => void;

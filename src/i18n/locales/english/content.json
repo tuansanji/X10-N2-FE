@@ -1,0 +1,18 @@
+{
+  "name": "Name",
+  "startDate": "Start date",
+  "endDateExpected": "End Date Expected",
+  "endDateActual": "Actual end date",
+  "action": "Action",
+  "createStage": "Create stage",
+  "editStage": "Edit Stage",
+  "enterStageName": "Enter stage name...",
+  "loading": "Loading",
+  "addReview": "Add review",
+  "review": "Review",
+  "tittleReview": "There are no reviews yet",
+  "titleDeleteComment": "Delete the comment",
+  "desDeleteComment": "Are you sure to delete this comment?",
+  "titleDeleteStage": "Delete the stages",
+  "desDeleteStage": "Are you sure to delete this stages?"
+}
