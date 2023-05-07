@@ -13,6 +13,9 @@ import { useDispatch, useSelector } from "react-redux";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import * as Scroll from "react-scroll";
 import { v4 as uuidv4 } from "uuid";
+import useMessageApi, {
+  UseMessageApiReturnType,
+} from "../../components/support/Message";
 
 import {
   Breadcrumb,
@@ -90,8 +93,28 @@ const initialData = [
 const list = [
   {
     id: uuidv4(),
-    name: "Task A faslkdcmaldkmcalskdmca;sdkcma;skdmc;askdmc",
+    // đúng dữ liệu là title, anh thay name là title đi
+    name: "The first task",
+    type: "assignment",
+    startDate: "2023-06-05T00:00:00.000Z",
+    deadline: "2023-07-05T00:00:00.000Z",
     status: "open",
+    comments: [],
+    _id: "64568285419671e526f45651",
+    createdDate: "2023-05-06T16:38:29.215Z",
+    priority: "high",
+    description: "description",
+    assignee: "644152efd5b452e40abb14d7",
+    createdBy: "644152efd5b452e40abb14d7",
+  },
+  {
+    id: uuidv4(),
+    // đúng dữ liệu là title, anh thay name là title đi
+    name: "The last task",
+    type: "assignment",
+    status: "open",
+    comments: [],
+    _id: "6457f7a6e943f611da933ebf",
   },
   { id: uuidv4(), name: "Task B", status: "open" },
   { id: uuidv4(), name: "Purnima Kevyn", status: "open" },
@@ -152,6 +175,8 @@ const TasksPage = () => {
   const [statusForm, setStatusForm] = useState(false);
   const [openInfo, setOpenInfo] = useState(false);
   const [edit, setEdit] = useState(false);
+  const { showMessage, contextHolder }: UseMessageApiReturnType =
+    useMessageApi();
   // đúng là ITask mà để any để test
   const [taskCurrent, setTaskCurrent] = useState<any>();
   const [breadcrumb, setBreadcrumb] = useState({
@@ -421,21 +446,7 @@ const TasksPage = () => {
       }
     }
   };
-  const fakeData = {
-    title: "tạo trang comment",
-    jobCode: "ABCD123",
-    status: "open",
-    typeOfWork: "mission",
-    priority: "high",
-    creator: "is' me ",
-    executor: "it's you",
-    dateCreated: new Date("2024-12-31T00:00:00.000Z"),
-    startDate: new Date("2024-12-31T00:00:00.000Z"),
-    deadline: new Date("2024-12-31T00:00:00.000Z"),
-    endDateActual: new Date("2024-12-31T00:00:00.000Z"),
-    description: descriptionTest,
-  };
-  //phần lựa chọn trong tab info
+
   const items: TabsProps["items"] = [
     {
       key: "info",
@@ -444,12 +455,14 @@ const TasksPage = () => {
     },
     {
       key: "exchange",
-      label: `Job exchange`,
+      label: `Comments`,
       children: "",
     },
   ];
   return (
     <div className="tasks_page">
+      {contextHolder}
+
       {/* modal create-info-edit */}
       <Modal
         title=""
@@ -462,6 +475,7 @@ const TasksPage = () => {
       >
         {!statusForm && !openInfo && (
           <TaskForm
+            showMessage={showMessage}
             key={statusForm ? "create" : "update"}
             title="Create new task"
             setIsModalOpen={setIsModalOpen}
@@ -488,20 +502,23 @@ const TasksPage = () => {
             </div>
             {statusForm && edit ? (
               <TaskForm
+                showMessage={showMessage}
                 key={statusForm ? "create" : "update"}
                 title="Edit task"
                 setIsModalOpen={setIsModalOpen}
                 statusForm={statusForm}
+                setEdit={setEdit}
                 setStatusForm={setStatusForm}
                 taskInfo={{
                   status: false,
-                  data: fakeData,
+                  data: taskCurrent,
                 }}
                 button="Update"
-                taskDemo={taskCurrent}
+                taskCurrent={taskCurrent}
               />
             ) : (
               <TaskForm
+                showMessage={showMessage}
                 key={statusForm ? "create" : "update"}
                 title=""
                 setIsModalOpen={setIsModalOpen}
@@ -509,9 +526,9 @@ const TasksPage = () => {
                 setStatusForm={setStatusForm}
                 taskInfo={{
                   status: true,
-                  data: fakeData,
+                  data: taskCurrent,
                 }}
-                taskDemo={taskCurrent}
+                taskCurrent={taskCurrent}
               />
             )}
 

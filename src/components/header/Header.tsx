@@ -1,6 +1,6 @@
 import { setLogout } from "../../redux/slice/authSlice";
 import { BellOutlined, DownOutlined } from "@ant-design/icons";
-import { Button, Dropdown, Select, Space } from "antd";
+import { Button, Dropdown, Popover, Select, Space } from "antd";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
@@ -17,11 +17,6 @@ const Header = () => {
 
   // const currentLanguage = locales[i18n.language as keyof typeof locales];
 
-  const handleChange = (lng: string) => {
-    // i18n.changeLanguage(lng);
-    localStorage.setItem("language", JSON.stringify(lng));
-    setLanguage((prev) => prev + 1);
-  };
   useEffect(() => {
     if (localStorage.getItem("language")) {
       i18n.changeLanguage(
@@ -32,7 +27,7 @@ const Header = () => {
   const items = [
     {
       key: "1",
-      label: <Link to="/user/infor">Thông tin tài khoản </Link>,
+      label: <Link to="/user/info">Thông tin tài khoản </Link>,
     },
     {
       key: "4",
@@ -56,20 +51,30 @@ const Header = () => {
         <span>Mindx</span>
       </div>
       <div className="header_auth">
-        <Select
-          value={i18n.language}
-          style={{ width: 200 }}
-          onChange={handleChange}
-          options={[
-            {
-              label: "Languages",
-              options: [
-                { label: "Tiếng việt", value: "vi" },
-                { label: "English", value: "en" },
-              ],
-            },
-          ]}
-        />
+        <div className="language_action">
+          <Popover content={<p>Tiếng việt</p>}>
+            <img
+              className={`${i18n.language === "vi" ? "active" : ""} `}
+              src="https://st.quantrimang.com/photos/image/2021/09/05/Co-Vietnam.png"
+              alt="Tiếng việt"
+              onClick={() => {
+                localStorage.setItem("language", JSON.stringify("vi"));
+                setLanguage((prev) => prev + 1);
+              }}
+            />
+          </Popover>
+          <Popover content={<p>English</p>}>
+            <img
+              className={`${i18n.language === "en" ? "active" : ""} `}
+              src="https://vuongquocanh.com/wp-content/uploads/2018/04/la-co-vuong-quoc-anh.jpg"
+              alt="English"
+              onClick={() => {
+                localStorage.setItem("language", JSON.stringify("en"));
+                setLanguage((prev) => prev + 1);
+              }}
+            />
+          </Popover>
+        </div>
 
         <span className="bell">
           <BellOutlined />
@@ -80,20 +85,22 @@ const Header = () => {
               items,
             }}
           >
-            <Link className="" to="/user/infor">
+            <Link className="" to="/auth/info">
               <Space>
                 {user.userInfo.fullName}
                 <DownOutlined />
               </Space>
             </Link>
           </Dropdown>
-          <img
-            srcSet={`${
-              user.userInfo.avatar ||
-              "https://st.quantrimang.com/photos/image/072015/22/avatar.jpg"
-            } 2x`}
-            alt=""
-          />
+          <div className="header__img">
+            <img
+              srcSet={`${
+                user.userInfo.avatar ||
+                "https://st.quantrimang.com/photos/image/072015/22/avatar.jpg"
+              } 2x`}
+              alt=""
+            />
+          </div>
         </div>
       </div>
     </header>

@@ -80,7 +80,7 @@ const ProjectDetail: React.FC = () => {
   ];
 
   const handleTabChange = (tabLabel: string) => {
-    if (tabLabel === "General Information") {
+    if (tabLabel === t("base:generalInformation")) {
       setSearchParams({ currentTab: tabLabel });
       dispatch(setQuery({ currentTab: tabLabel }));
     } else {

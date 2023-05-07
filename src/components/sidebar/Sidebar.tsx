@@ -74,6 +74,7 @@ const Sidebar = () => {
         setSidebarData(response.data);
       });
   }, [listProject, reloadSidebar]);
+
   const items: MenuProps["items"] = useMemo(() => {
     let newItems =
       sidebarData.projects && sidebarData.projects.length > 0
