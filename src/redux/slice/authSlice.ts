@@ -1,5 +1,5 @@
-import { PayloadAction, createSlice } from "@reduxjs/toolkit";
 import { requestLogin } from "../store";
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 interface UserInfo {
   token: null | string;
@@ -30,10 +30,12 @@ export const authSlice = createSlice({
   reducers: {
     setLogout: (state, action) => {
       for (let key in state.userInfo) {
-        delete (state.userInfo[key])
+        delete state.userInfo[key];
       }
-    }
-    
+    },
+    updateUserInfo: (state, action) => {
+      state.userInfo = { ...state.userInfo, ...action.payload };
+    },
   },
   extraReducers: (builder) => {
     builder.addCase(requestLogin.pending, (state, action) => {
@@ -50,6 +52,6 @@ export const authSlice = createSlice({
   },
 });
 
-export const {setLogout} = authSlice.actions
+export const { setLogout, updateUserInfo } = authSlice.actions;
 
 export default authSlice.reducer;

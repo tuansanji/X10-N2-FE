@@ -14,5 +14,26 @@
   "titleDeleteComment": "Delete the comment",
   "desDeleteComment": "Are you sure to delete this comment?",
   "titleDeleteStage": "Delete the stages",
-  "desDeleteStage": "Are you sure to delete this stages?"
+  "desDeleteStage": "Are you sure to delete this stages?",
+  "profileUser": {
+    "avatar": "Avatar",
+    "choose photo": "Choose photo",
+    "sub avatar": "A profile picture will make your account more interesting and unique.",
+    "fullname": "full name",
+    "gender": "gender",
+    "phone": "phone",
+    "date of birth": "date of birth",
+    "username": "username",
+    "password": "password",
+    "title basic": "Basic information",
+    "sub title basic": "Some information may be visible to other users",
+    "title account": "Account information",
+    "sub title account": "Only visible to you",
+    "edit title form": "Edit information",
+    "current password": "Current password",
+    "male": "Male",
+    "female": "Female",
+    "other": "Other",
+    "new": "New"
+  }
 }
