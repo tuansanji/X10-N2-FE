@@ -1,3 +1,6 @@
+import React, { useEffect } from "react";
+import { useSelector } from "react-redux";
+import { Route, Routes } from "react-router";
 import {
   ListProject,
   NotFoundPage,
@@ -5,9 +8,6 @@ import {
   TasksPage,
   UserDetails,
 } from "../../pages";
-import React from "react";
-import { useSelector } from "react-redux";
-import { Route, Routes } from "react-router";
 
 const Content = () => {
   const statusMenu = useSelector((state: any) => state.menu?.status);
@@ -22,7 +22,7 @@ const Content = () => {
         <Route path="/:projectId" element={<ProjectDetail />} />
         <Route path="/:projectId/:stagesId" element={<TasksPage />} />
         <Route path="/user/info" element={<UserDetails />} />
-        <Route path="*" element={<NotFoundPage />} />
+        <Route path="/notFoundPage" element={<NotFoundPage />} />
       </Routes>
     </main>
   );
