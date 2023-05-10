@@ -2,28 +2,29 @@ import { useAxios } from "../../hooks";
 import { useAppSelector } from "../../redux/hook";
 import { RootState } from "../../redux/store";
 import taskApi from "../../services/api/taskApi";
-import { MemberDataType } from "../Members/MemberList";
-import { LoadingOutlined, UserOutlined } from "@ant-design/icons";
+import { LoadingOutlined } from "@ant-design/icons";
 import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
 import { CKEditor } from "@ckeditor/ckeditor5-react";
+import EN from "antd/es/date-picker/locale/en_US";
+import VN from "antd/es/date-picker/locale/vi_VN";
 import { NoticeType } from "antd/es/message/interface";
 import axios from "axios";
 import dayjs from "dayjs";
 import parse from "html-react-parser";
 import moment from "moment";
+import "moment/locale/vi";
 import { useTranslation } from "react-i18next";
 import { useParams } from "react-router";
 import { v4 as uuidv4 } from "uuid";
+
 import React, {
   Dispatch,
   SetStateAction,
   useEffect,
-  useId,
   useMemo,
   useState,
 } from "react";
 import {
-  Badge,
   Breadcrumb,
   Button,
   DatePicker,
@@ -56,7 +57,10 @@ interface ITaskForm {
     data?: ITask;
   };
   taskCurrent?: any;
+  edit: boolean;
   button?: string;
+
+  handleEditTask: () => void;
   setIsModalOpen: Dispatch<SetStateAction<boolean>>;
   setEdit?: Dispatch<SetStateAction<boolean>>;
   setStatusForm: Dispatch<SetStateAction<boolean>>;
@@ -81,6 +85,8 @@ const TaskForm = (props: ITaskForm) => {
     statusForm,
     setIsModalOpen,
     setStatusForm,
+    handleEditTask,
+    edit,
     setEdit,
     taskInfo,
     button,
@@ -97,10 +103,14 @@ const TaskForm = (props: ITaskForm) => {
     stages: "",
     task: "",
   });
+  const [currentUser, setCurrentUser] = useState<any>();
   const params = useParams();
   const [form] = Form.useForm();
   const user = useAppSelector((state: RootState) => state.auth?.userInfo);
-  const { t } = useTranslation(["content", "base"]);
+
+  const { t, i18n } = useTranslation(["content", "base"]);
+
+  moment.locale(i18n.language);
 
   // search user trong project
   const { responseData, isLoading } = useAxios(
@@ -108,7 +118,20 @@ const TaskForm = (props: ITaskForm) => {
     `/project/members/all/${params.projectId}`,
     []
   );
+  // lấy id của user hiện tại
 
+  useEffect(() => {
+    if (responseData && user) {
+      const currentUserArr = responseData?.members?.filter((member: any) => {
+        return member.data.username === user.username;
+      });
+
+      currentUserArr &&
+        currentUserArr.length > 0 &&
+        setCurrentUser(currentUserArr[0].data);
+    }
+  }, [responseData, user]);
+  console.log(currentUser);
   //lấy thông tin công việc
   useEffect(() => {
     if (taskCurrent) {
@@ -145,7 +168,7 @@ const TaskForm = (props: ITaskForm) => {
         .then((res: any) => {
           showMessage("success", res.message, 2);
           setIsModalOpen(false);
-          form.setFieldsValue(initialValues);
+          setEdit?.(false);
         })
         .catch((err) => {
           showMessage("error", err.response.data?.message, 2);
@@ -160,7 +183,7 @@ const TaskForm = (props: ITaskForm) => {
         status: data.status,
         priority: data.priority,
         description: description,
-        assignee: data.assignee,
+        assignee: data.assignee?.value || data.assignee,
         ...(data.endDateActual && {
           endDateActual: data.endDateActual,
         }),
@@ -171,8 +194,7 @@ const TaskForm = (props: ITaskForm) => {
           showMessage("success", res.message, 2);
           setReloadData((prev) => prev + 1);
           setEdit?.(false);
-          form.setFieldsValue(initialValues);
-          taskInfo.status = true;
+          setStatusForm(false);
         })
         .catch((err) => {
           showMessage("error", err.response.data?.message, 2);
@@ -203,27 +225,26 @@ const TaskForm = (props: ITaskForm) => {
     })();
   }, []);
 
-  const breadcrumbItem = useMemo(
-    () =>
-      statusForm
-        ? [
-            { title: breadcrumb.project },
-            {
-              title: breadcrumb.stages,
-            },
-            {
-              title: taskInfo?.data?.title || "",
-            },
-          ]
-        : [
-            { title: breadcrumb.project },
-            {
-              title: breadcrumb.stages,
-            },
-          ],
-
-    [breadcrumb]
-  );
+  const breadcrumbItem = useMemo(() => {
+    if (statusForm || taskInfo.status) {
+      return [
+        { title: breadcrumb.project },
+        {
+          title: breadcrumb.stages,
+        },
+        {
+          title: taskData?.title || "",
+        },
+      ];
+    } else {
+      return [
+        { title: breadcrumb.project },
+        {
+          title: breadcrumb.stages,
+        },
+      ];
+    }
+  }, [breadcrumb, taskData]);
   const initialValues =
     statusForm && taskData
       ? {
@@ -231,7 +252,10 @@ const TaskForm = (props: ITaskForm) => {
           type: taskData?.type,
           status: taskData?.status,
           priority: taskData?.priority,
-          assignee: taskData?.assignee,
+          assignee: {
+            label: taskData.assignee?.fullName,
+            value: taskData.assignee?._id,
+          },
           startDate: dayjs(taskData?.startDate),
           deadline: dayjs(taskData?.deadline),
           ...(taskData?.endDateActual && {
@@ -240,26 +264,45 @@ const TaskForm = (props: ITaskForm) => {
           description: taskData?.description,
         }
       : {
+          assignee: {
+            label: currentUser?.fullName,
+            value: currentUser?._id,
+          },
           type: "assignment",
           priority: "medium",
         };
+
   return loadingAll ? (
     <Skeleton />
   ) : (
     <div className="form_task" id="form_task">
-      {loading ? (
+      {taskData ? (
+        <div className="action__wrapper">
+          <div className="action__btn">
+            {loading ? (
+              <div className="" style={{ height: "19px" }}></div>
+            ) : (
+              <Breadcrumb items={breadcrumbItem} style={{ fontSize: "12px" }} />
+            )}
+            <Button type="primary" onClick={handleEditTask}>
+              {edit ? t("base:cancel") : t("base:edit")}
+            </Button>
+          </div>
+        </div>
+      ) : loading ? (
         // <Skeleton.Input active={false} size="default" />
         <div className="" style={{ height: "19px" }}></div>
       ) : (
-        <Breadcrumb items={breadcrumbItem} style={{ fontSize: "12px" }} />
+        <Breadcrumb
+          items={breadcrumbItem}
+          style={{ fontSize: "12px", height: "25px" }}
+        />
       )}
-      {/* <Skeleton /> */}
-
       <Form
         initialValues={initialValues}
         size="large"
         layout="vertical"
-        name={uuidv4()}
+        name={params.stagesId}
         form={form}
         onFinish={onFinish}
       >
@@ -278,7 +321,7 @@ const TaskForm = (props: ITaskForm) => {
             width: "35%",
           }}
         >
-          <Descriptions.Item label="Title" span={2}>
+          <Descriptions.Item label={t("content:form.title")} span={2}>
             {!taskInfo.status ? (
               <Form.Item
                 name="title"
@@ -295,81 +338,82 @@ const TaskForm = (props: ITaskForm) => {
               taskData?.title
             )}
           </Descriptions.Item>
-
-          <Descriptions.Item label="Job Code">
-            {/* {!taskInfo.status ? (
-            <Form.Item name="jobCode">
-              <Input placeholder="Job Code..." disabled />
-            </Form.Item>
-          ) : ( */}
+          <Descriptions.Item label={t("content:form.job code")}>
             {taskData?.jobCode || (
               <span style={{ opacity: 0.4 }}>Auto generated</span>
             )}
-            {/* )} */}
           </Descriptions.Item>
-          <Descriptions.Item label="Status">
+          <Descriptions.Item label={t("content:form.status")}>
             {!taskInfo.status ? (
               <Form.Item name="status">
                 <Select
                   disabled={!statusForm}
                   style={{ width: "100%" }}
                   options={[
-                    { value: "open", label: "Open" },
-                    { value: "inProgress", label: "In Progress" },
-                    { value: "reOpen", label: "Re Open" },
-                    { value: "inReview", label: "In Review" },
-                    { value: "done", label: "Done" },
-                    { value: "cancel", label: "Cancel" },
+                    { value: "open", label: t("content:form.open") },
+                    {
+                      value: "inprogress",
+                      label: t("content:form.inprogress"),
+                    },
+                    { value: "reopen", label: t("content:form.reopen") },
+                    { value: "inreview", label: t("content:form.inreview") },
+                    { value: "done", label: t("base:done") },
+                    { value: "cancel", label: t("base:cancel") },
                   ]}
                 />
               </Form.Item>
             ) : (
-              taskData?.status
+              t(`content:form.${taskData?.status}` as keyof typeof t)
             )}
           </Descriptions.Item>
-          <Descriptions.Item label="Type">
+          <Descriptions.Item label={t("content:form.type")}>
             {!taskInfo.status ? (
               <Form.Item name="type">
                 <Select
                   style={{ width: "100%" }}
                   options={[
-                    { value: "assignment", label: "Assignment" },
-                    { value: "issue", label: "Issue" },
+                    {
+                      value: "assignment",
+                      label: t("content:form.assignment"),
+                    },
+                    { value: "issue", label: t("content:form.issue") },
                   ]}
                 />
               </Form.Item>
             ) : (
-              taskData?.type
+              t(`content:form.${taskData?.type}` as keyof typeof t)
             )}
           </Descriptions.Item>
-          <Descriptions.Item label="Priority">
+          <Descriptions.Item label={t("content:form.priority")}>
             {!taskInfo.status ? (
               <Form.Item name="priority">
                 <Select
                   style={{ width: "100%" }}
                   options={[
-                    { value: "highest", label: "Highest" },
-                    { value: "high", label: "High" },
-                    { value: "medium", label: "Medium" },
-                    { value: "low", label: "Low" },
-                    { value: "lowest", label: "Lowest" },
+                    { value: "highest", label: t("content:form.highest") },
+                    { value: "high", label: t("content:form.high") },
+                    { value: "medium", label: t("content:form.medium") },
+                    { value: "low", label: t("content:form.low") },
+                    { value: "lowest", label: t("content:form.lowest") },
                   ]}
                 />
               </Form.Item>
             ) : (
-              taskData?.priority
+              t(`content:form.${taskData?.priority}` as keyof typeof t)
             )}
           </Descriptions.Item>
-          <Descriptions.Item label="Creator">
+          <Descriptions.Item label={t("content:form.creator")}>
             {!taskInfo.status ? (
               <span style={{ opacity: 0.4 }}>
-                {statusForm ? taskData?.createdBy : user.fullName}
+                {statusForm && user
+                  ? taskData?.createdBy.fullName
+                  : user?.fullName}
               </span>
             ) : (
-              taskData?.createdBy
+              taskData?.createdBy?.fullName
             )}
           </Descriptions.Item>
-          <Descriptions.Item label="Assignee">
+          <Descriptions.Item label={t("content:form.assignee")}>
             {!taskInfo.status ? (
               <Form.Item
                 name="assignee"
@@ -404,17 +448,17 @@ const TaskForm = (props: ITaskForm) => {
                     )
                   }
                   options={responseData?.members?.map((item: IUser) => ({
-                    label: `${item.data.fullName}-${item.role}`,
-                    value: item.data._id,
+                    label: `${item.data?.fullName}-${item?.role}`,
+                    value: item.data?._id,
                   }))}
                 />
               </Form.Item>
             ) : (
-              taskData?.assignee
+              taskData?.assignee?.fullName
             )}
           </Descriptions.Item>
 
-          <Descriptions.Item label="Date created">
+          <Descriptions.Item label={t("content:form.date created")}>
             {!taskInfo.status ? (
               <span style={{ opacity: 0.4 }}>
                 {statusForm
@@ -422,10 +466,10 @@ const TaskForm = (props: ITaskForm) => {
                   : moment(Date.now()).format("DD/MM/YYYY ")}
               </span>
             ) : (
-              moment(taskData?.createdDate).format("DD/MM/YYYY hh:mm")
+              moment(taskData?.createdDate).format("DD MMMM, YYYY - hh:mm A")
             )}
           </Descriptions.Item>
-          <Descriptions.Item label="Start date" span={1}>
+          <Descriptions.Item label={t("content:startDate")} span={1}>
             {!taskInfo.status ? (
               <Form.Item
                 name="startDate"
@@ -436,14 +480,19 @@ const TaskForm = (props: ITaskForm) => {
                   },
                 ]}
               >
-                <DatePicker style={{ width: "100%" }} />
+                <DatePicker
+                  locale={i18n.language === "en" ? EN : VN}
+                  style={{ width: "100%" }}
+                  showTime
+                  showSecond={false}
+                />
               </Form.Item>
             ) : (
-              moment(taskData?.startDate).format("DD/MM/YYYY hh:mm ")
+              moment(taskData?.startDate).format("DD MMMM, YYYY - hh:mm A")
             )}
           </Descriptions.Item>
 
-          <Descriptions.Item label="Deadline">
+          <Descriptions.Item label={t("content:form.deadline")}>
             {!taskInfo.status ? (
               <Form.Item
                 name="deadline"
@@ -455,22 +504,29 @@ const TaskForm = (props: ITaskForm) => {
                 ]}
               >
                 <DatePicker
+                  locale={i18n.language === "en" ? EN : VN}
                   style={{ width: "100%" }}
                   showTime
                   showSecond={false}
                 />
               </Form.Item>
             ) : (
-              moment(taskData?.deadline).format("DD/MM/YYYY hh:mm")
+              moment(taskData?.deadline).format("DD MMMM, YYYY - hh:mm A")
             )}
           </Descriptions.Item>
-          <Descriptions.Item label=" End date actual" span={1}>
+          <Descriptions.Item label={t("content:endDateActual")} span={1}>
             {!taskInfo.status ? (
               <Form.Item name="endDateActual">
-                <DatePicker style={{ width: "100%" }} disabled={!statusForm} />
+                <DatePicker
+                  locale={i18n.language === "en" ? EN : VN}
+                  style={{ width: "100%" }}
+                  disabled={!statusForm}
+                  showTime
+                  showSecond={false}
+                />
               </Form.Item>
             ) : taskData?.endDateActual ? (
-              moment(taskData?.endDateActual).format("DD/MM/YYYY hh:mm")
+              moment(taskData?.endDateActual).format("DD MMMM, YYYY - hh:mm A")
             ) : (
               ""
             )}
@@ -479,7 +535,7 @@ const TaskForm = (props: ITaskForm) => {
           <Descriptions.Item
             span={2}
             style={{ textAlign: "start", verticalAlign: "top" }}
-            label="Description"
+            label={t("content:form.description")}
           >
             {!taskInfo.status ? (
               <CKEditor
@@ -509,6 +565,7 @@ const TaskForm = (props: ITaskForm) => {
             )}
           </Descriptions.Item>
         </Descriptions>
+
         {!taskInfo.status && (
           <Form.Item
             style={{
@@ -518,7 +575,6 @@ const TaskForm = (props: ITaskForm) => {
             }}
           >
             <Button type="primary" htmlType="submit">
-              {/* <LoadingOutlined /> */}
               {button}
             </Button>
           </Form.Item>

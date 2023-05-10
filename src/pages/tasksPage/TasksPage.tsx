@@ -18,6 +18,7 @@ import _ from "lodash";
 import moment from "moment";
 import React, { useEffect, useMemo, useState } from "react";
 import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
+import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import * as Scroll from "react-scroll";
@@ -95,6 +96,67 @@ const initialData = [
   },
 ];
 
+<<<<<<< HEAD
+=======
+const list = [
+  {
+    id: uuidv4(),
+    // đúng dữ liệu là title, anh thay name là title đi
+    name: "The first task",
+    type: "assignment",
+    startDate: "2023-06-05T00:00:00.000Z",
+    deadline: "2023-07-05T00:00:00.000Z",
+    status: "open",
+    comments: [],
+    _id: "64568285419671e526f45651",
+    createdDate: "2023-05-06T16:38:29.215Z",
+    priority: "high",
+    description: "description",
+    assignee: "644152efd5b452e40abb14d7",
+    createdBy: "644152efd5b452e40abb14d7",
+  },
+  {
+    id: uuidv4(),
+    // đúng dữ liệu là title, anh thay name là title đi
+    name: "The last task",
+    type: "assignment",
+    status: "open",
+    comments: [],
+    _id: "6457f7a6e943f611da933ebf",
+  },
+  {
+    id: uuidv4(),
+    // đúng dữ liệu là title, anh thay name là title đi
+    name: "test date",
+    type: "assignment",
+    status: "open",
+    comments: [],
+    _id: "64585ba344d8f7d955049b8c",
+  },
+  { id: uuidv4(), name: "Task B", status: "open" },
+  { id: uuidv4(), name: "Purnima Kevyn", status: "open" },
+  { id: uuidv4(), name: "Guido Kisha", status: "open" },
+  { id: uuidv4(), name: "Varinius Hartmann", status: "open" },
+  { id: uuidv4(), name: "Emmet Leonardo", status: "open" },
+  { id: uuidv4(), name: "Thaddaios Vasanti", status: "open" },
+  { id: uuidv4(), name: "Jaiden Re", status: "open" },
+  { id: uuidv4(), name: "Johnie Erastos", status: "open" },
+  { id: uuidv4(), name: "Eliseo Florian", status: "open" },
+  { id: uuidv4(), name: "Ahmad Giselmund", status: "open" },
+  { id: uuidv4(), name: "Marianna Pravina", status: "open" },
+  { id: uuidv4(), name: "Task C", status: "in progress" },
+  { id: uuidv4(), name: "Task D", status: "in progress" },
+  { id: uuidv4(), name: "Task E", status: "in review" },
+  { id: uuidv4(), name: "Task F", status: "in review" },
+  { id: uuidv4(), name: "Task G", status: "in review" },
+  { id: uuidv4(), name: "Task H", status: "re-open" },
+  { id: uuidv4(), name: "Task W", status: "re-open" },
+  { id: uuidv4(), name: "Task Q", status: "done" },
+  { id: uuidv4(), name: "Task S", status: "cancel" },
+  { id: uuidv4(), name: "Task R", status: "cancel" },
+];
+
+>>>>>>> 180ca6b (demo comment task)
 const TaskItem: React.FC<TaskItemProp> = ({ task, handleOpenInfoTask }) => {
   let priority = null;
   switch (task.priority) {
@@ -155,6 +217,7 @@ const TasksPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const queryParams = useSelector((state: any) => state.queryParams);
   const dispatch = useDispatch();
+
   const [tasksColumns, setTasksColumns] = useState<ColumnData[]>([]);
   const [dragLoading, setDragLoading] = useState<boolean>(false);
   const { t, i18n } = useTranslation(["content", "base"]);
@@ -170,13 +233,14 @@ const TasksPage = () => {
   const { showMessage, contextHolder }: UseMessageApiReturnType =
     useMessageApi();
   // đúng là ITask mà để any để test
-  const [taskCurrent, setTaskCurrent] = useState<any>();
+  const [taskCurrent, setTaskCurrent] = useState<any>(null);
+
   const [breadcrumb, setBreadcrumb] = useState({
     project: "",
     stages: "",
   });
   const user = useAppSelector((state: RootState) => state.auth?.userInfo);
-
+  const { t } = useTranslation(["content", "base"]);
   const taskTypeOptions = [
     {
       label: `Type`,
@@ -405,21 +469,25 @@ const TasksPage = () => {
   // chỉnh sửa task
   const handleEditTask = () => {
     setIsModalOpen(true);
-    setStatusForm(true);
+    setStatusForm(!statusForm);
     setEdit(!edit);
   };
   // cancel modal
   const handleCancel = () => {
     setIsModalOpen(false);
+    setStatusForm(false);
     setEdit(false);
     setOpenInfo(false);
+    setTaskCurrent(null);
   };
+
   // mở tab thông tin task
   const handleOpenInfoTask = (task: ITask) => {
     setIsModalOpen(true);
     setOpenInfo(true);
     setTaskCurrent(task);
   };
+
   // cuộn xuống phần tử khi nháy vào( sẽ cố gắng để thay đổi khi cuộn trang luôn)
   const handleTabLick = (tabLabel: string) => {
     if (tabLabel === "info") {
@@ -431,7 +499,7 @@ const TasksPage = () => {
           inline: "nearest",
         });
       }
-    } else if (tabLabel === "exchange") {
+    } else if (tabLabel === "comments") {
       const element = document.getElementById("task_info");
       if (element) {
         element.scrollIntoView({
@@ -446,12 +514,12 @@ const TasksPage = () => {
   const items: TabsProps["items"] = [
     {
       key: "info",
-      label: `Info task`,
+      label: t("content:form.information"),
       children: "",
     },
     {
-      key: "exchange",
-      label: `Comments`,
+      key: "comments",
+      label: t("content:form.comments"),
       children: "",
     },
   ];
@@ -471,16 +539,18 @@ const TasksPage = () => {
       >
         {!statusForm && !openInfo && (
           <TaskForm
+            edit={edit}
+            handleEditTask={handleEditTask}
             showMessage={showMessage}
-            key={statusForm ? "create" : "update"}
-            title="Create new task"
+            key={statusForm ? t("base:create") : t("base:update")}
+            title={t("content:form.create task")}
             setIsModalOpen={setIsModalOpen}
             statusForm={false}
             setStatusForm={setStatusForm}
             taskInfo={{
               status: false,
             }}
-            button="Create"
+            button={t("base:create")}
           />
         )}
 
@@ -491,16 +561,13 @@ const TasksPage = () => {
               items={items}
               onTabClick={handleTabLick}
             />
-            <div className="action__btn">
-              <Button type="primary" onClick={handleEditTask}>
-                {edit ? "Cancel" : "Edit"}
-              </Button>
-            </div>
             {statusForm && edit ? (
               <TaskForm
+                edit={edit}
+                handleEditTask={handleEditTask}
                 showMessage={showMessage}
-                key={statusForm ? "create" : "update"}
-                title="Edit task"
+                key={statusForm ? t("base:create") : t("base:update")}
+                title={t("content:form.edit task")}
                 setIsModalOpen={setIsModalOpen}
                 statusForm={statusForm}
                 setEdit={setEdit}
@@ -509,13 +576,15 @@ const TasksPage = () => {
                   status: false,
                   data: taskCurrent,
                 }}
-                button="Update"
+                button={t("base:update")}
                 taskCurrent={taskCurrent}
               />
             ) : (
               <TaskForm
+                handleEditTask={handleEditTask}
+                edit={edit}
                 showMessage={showMessage}
-                key={statusForm ? "create" : "update"}
+                key={statusForm ? t("base:create") : t("base:update")}
                 title=""
                 setIsModalOpen={setIsModalOpen}
                 statusForm={statusForm}
@@ -536,8 +605,9 @@ const TasksPage = () => {
         <Breadcrumb items={breadcrumItems} />
         <div className="tool_bar">
           <Button size="large" type="primary" onClick={handleCreateTask}>
-            Create Task
+            {t("content:form.create task")}
           </Button>
+
           <Select
             size="large"
             value={`Type: ${

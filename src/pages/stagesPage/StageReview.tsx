@@ -59,7 +59,7 @@ const StageReview = ({ stageId }: IPropsReview) => {
 
   //lấy danh sách tất cả đánh giá
   const { responseData, isLoading } = useAxios(
-    "post",
+    "get",
     `/stage/review/${stageId}`,
     [stageId, reviewAdded]
   );
