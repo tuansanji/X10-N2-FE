@@ -791,6 +791,32 @@ html {
   z-index: 12;
 }
 
+.task_info .task_description {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 8px;
+}
+.task_info .task_description img {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+}
+.task_info .task_description .task_type {
+  display: inline-block;
+  border-radius: 8px;
+  height: 8px;
+  width: 32px;
+  margin-right: auto;
+}
+.task_info .task_deadline {
+  margin-top: 8px;
+}
+.task_info .task_deadline span:last-child {
+  margin-left: 4px;
+}
+
 .stages_page .pagination {
   display: flex;
   justify-content: center;

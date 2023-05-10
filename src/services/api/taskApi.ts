@@ -13,5 +13,9 @@ const taskApi = {
     const url = `/task/update/${taskId}`;
     return axiosClient.post(url, task);
   },
+  getAllTask(stageId: string, params?: any) {
+    const url = `/stage/tasks/${stageId}`;
+    return axiosClient.get(url, { params });
+  },
 };
 export default taskApi;
