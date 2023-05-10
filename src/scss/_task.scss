@@ -189,3 +189,29 @@
     z-index: 12;
   }
 }
+
+.task_info {
+  .task_description {
+    @include flex(row, flex-end, center, null, 8px);
+    img {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+    }
+
+    .task_type {
+      display: inline-block;
+      border-radius: 8px;
+      height: 8px;
+      width: 32px;
+      margin-right: auto;
+    }
+  }
+
+  .task_deadline {
+    margin-top: 8px;
+    span:last-child {
+      margin-left: 4px;
+    }
+  }
+}

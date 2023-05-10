@@ -240,7 +240,7 @@ const TaskForm = (props: ITaskForm) => {
           description: taskData?.description,
         }
       : {
-          type: "mission",
+          type: "assignment",
           priority: "medium",
         };
   return loadingAll ? (
@@ -333,8 +333,8 @@ const TaskForm = (props: ITaskForm) => {
                 <Select
                   style={{ width: "100%" }}
                   options={[
-                    { value: "mission", label: "Mission" },
-                    { value: "Problem", label: "Problem" },
+                    { value: "assignment", label: "Assignment" },
+                    { value: "issue", label: "Issue" },
                   ]}
                 />
               </Form.Item>

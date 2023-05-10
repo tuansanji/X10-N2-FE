@@ -4,15 +4,24 @@ import { descriptionTest } from "../../data/statges";
 import { useAppSelector } from "../../redux/hook";
 import { setQuery } from "../../redux/slice/paramsSlice";
 import { RootState } from "../../redux/store";
-import { EyeOutlined } from "@ant-design/icons";
+import {
+  EyeOutlined,
+  ClockCircleOutlined,
+  DoubleRightOutlined,
+  DownOutlined,
+  UpOutlined,
+  PauseOutlined,
+} from "@ant-design/icons";
 import axios from "axios";
+import taskApi from "../../services/api/taskApi";
 import _ from "lodash";
+import moment from "moment";
 import React, { useEffect, useMemo, useState } from "react";
 import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import * as Scroll from "react-scroll";
-import { v4 as uuidv4 } from "uuid";
+import { useTranslation } from "react-i18next";
 import useMessageApi, {
   UseMessageApiReturnType,
 } from "../../components/support/Message";
@@ -27,6 +36,8 @@ import {
   Space,
   Tabs,
   Typography,
+  Tooltip,
+  message,
 } from "antd";
 import type { TabsProps } from "antd";
 
@@ -35,7 +46,7 @@ const { Search } = Input;
 
 interface ColumnData {
   id: string;
-  name: string;
+
   title: string;
   items: any[];
 }
@@ -48,108 +59,91 @@ interface TaskItemProp {
 const initialData = [
   {
     id: "open",
-    name: "open",
     title: "Open",
     items: [],
     dropAllow: true,
   },
   {
-    id: "in-progress",
+    id: "inprogress",
     title: "In Progress",
     items: [],
-    name: "in progress",
     dropAllow: true,
   },
   {
-    id: "in-review",
+    id: "review",
     title: "In Review",
     items: [],
-    name: "in review",
     dropAllow: true,
   },
   {
-    id: "re-open",
+    id: "reopen",
     title: "Re-Open",
     items: [],
-    name: "re-open",
     dropAllow: true,
   },
   {
     id: "done",
     title: "Done",
     items: [],
-    name: "done",
     dropAllow: true,
   },
   {
     id: "cancel",
     title: "Cancel",
     items: [],
-    name: "cancel",
     dropAllow: true,
   },
 ];
 
-const list = [
-  {
-    id: uuidv4(),
-    // đúng dữ liệu là title, anh thay name là title đi
-    name: "The first task",
-    type: "assignment",
-    startDate: "2023-06-05T00:00:00.000Z",
-    deadline: "2023-07-05T00:00:00.000Z",
-    status: "open",
-    comments: [],
-    _id: "64568285419671e526f45651",
-    createdDate: "2023-05-06T16:38:29.215Z",
-    priority: "high",
-    description: "description",
-    assignee: "644152efd5b452e40abb14d7",
-    createdBy: "644152efd5b452e40abb14d7",
-  },
-  {
-    id: uuidv4(),
-    // đúng dữ liệu là title, anh thay name là title đi
-    name: "The last task",
-    type: "assignment",
-    status: "open",
-    comments: [],
-    _id: "6457f7a6e943f611da933ebf",
-  },
-  { id: uuidv4(), name: "Task B", status: "open" },
-  { id: uuidv4(), name: "Purnima Kevyn", status: "open" },
-  { id: uuidv4(), name: "Guido Kisha", status: "open" },
-  { id: uuidv4(), name: "Varinius Hartmann", status: "open" },
-  { id: uuidv4(), name: "Emmet Leonardo", status: "open" },
-  { id: uuidv4(), name: "Thaddaios Vasanti", status: "open" },
-  { id: uuidv4(), name: "Jaiden Re", status: "open" },
-  { id: uuidv4(), name: "Johnie Erastos", status: "open" },
-  { id: uuidv4(), name: "Eliseo Florian", status: "open" },
-  { id: uuidv4(), name: "Ahmad Giselmund", status: "open" },
-  { id: uuidv4(), name: "Marianna Pravina", status: "open" },
-  { id: uuidv4(), name: "Task C", status: "in progress" },
-  { id: uuidv4(), name: "Task D", status: "in progress" },
-  { id: uuidv4(), name: "Task E", status: "in review" },
-  { id: uuidv4(), name: "Task F", status: "in review" },
-  { id: uuidv4(), name: "Task G", status: "in review" },
-  { id: uuidv4(), name: "Task H", status: "re-open" },
-  { id: uuidv4(), name: "Task W", status: "re-open" },
-  { id: uuidv4(), name: "Task Q", status: "done" },
-  { id: uuidv4(), name: "Task S", status: "cancel" },
-  { id: uuidv4(), name: "Task R", status: "cancel" },
-];
-
 const TaskItem: React.FC<TaskItemProp> = ({ task, handleOpenInfoTask }) => {
+  let priority = null;
+  switch (task.priority) {
+    case "lowest":
+      priority = <DoubleRightOutlined style={{ transform: "rotate(90deg)" }} />;
+      break;
+    case "low":
+      priority = <DownOutlined />;
+      break;
+    case "medium":
+      priority = <PauseOutlined style={{ transform: "rotate(90deg)" }} />;
+      break;
+    case "high":
+      priority = <UpOutlined />;
+      break;
+    case "highest":
+      priority = (
+        <DoubleRightOutlined style={{ transform: "rotate(270deg)" }} />
+      );
+      break;
+  }
   return (
     <>
-      <div>
-        <div> {task.name}</div>
-        <div> {task.status}</div>
-        <div
-          onClick={() => handleOpenInfoTask?.(task)}
-          style={{ color: "red" }}
-        >
-          <EyeOutlined />
+      <div
+        className="task_info"
+        // onClick={() => handleOpenInfoTask?.(task)}
+      >
+        <Title className="task_title" level={5}>
+          {task.title}
+        </Title>
+        <div className="task_description">
+          <Tooltip title={`Type: ${_.capitalize(task.type)}`}>
+            <div
+              className="task_type"
+              style={{
+                backgroundColor: task.type === "issue" ? "#EC2B2B" : "#44CB39",
+              }}
+            ></div>
+          </Tooltip>
+          <Tooltip title={`Priority: ${_.capitalize(task.priority)}`}>
+            <div>{priority}</div>
+          </Tooltip>
+          <Tooltip title={task.assignee.fullName}>
+            <img src={task.assignee.avatar} alt="user-avatar" />
+          </Tooltip>
+        </div>
+        <div className="task_deadline">
+          <ClockCircleOutlined />
+          <span>{moment(task.deadline).format("DD/MM/YYYY")}</span>
         </div>
       </div>
     </>
@@ -162,11 +156,9 @@ const TasksPage = () => {
   const queryParams = useSelector((state: any) => state.queryParams);
   const dispatch = useDispatch();
   const [tasksColumns, setTasksColumns] = useState<ColumnData[]>([]);
-  const breadcrumItems = [
-    { title: <Link to="/">Home</Link> },
-    { title: <Link to={`/${params.projectId}`}>Project Name</Link> },
-    { title: "Stage Name" },
-  ];
+  const [dragLoading, setDragLoading] = useState<boolean>(false);
+  const { t, i18n } = useTranslation(["content", "base"]);
+
   useEffect(() => {
     let query = Object.fromEntries([...searchParams]);
     dispatch(setQuery(query));
@@ -205,32 +197,17 @@ const TasksPage = () => {
       ],
     },
   ];
-  // const breadcrumItems = [
-  //   { title: <Link to="/">Home</Link> },
-  //   { title: <Link to={`/${params.projectId}`}>Project Name</Link> },
-  //   { title: "Stage Name" },
-  // ];
 
-  // const breadcrumItems = useMemo(
-  //   () => [
-  //     { title: <Link to="/">Home</Link> },
-  //     { title: <Link to={`/${params.projectId}`}>{breadcrumb?.project}</Link> },
-  //     {
-  //       title: breadcrumb.stages,
-  //     },
-  //   ],
-  //   [breadcrumb]
-  // );
-  // const breadcrumItems = useMemo(
-  //   () => [
-  //     { title: <Link to="/">Home</Link> },
-  //     { title: <Link to={`/${params.projectId}`}>{breadcrumb?.project}</Link> },
-  //     {
-  //       title: breadcrumb.stages,
-  //     },
-  //   ],
-  //   [breadcrumb]
-  // );
+  const breadcrumItems = useMemo(
+    () => [
+      { title: <Link to="/">Home</Link> },
+      { title: <Link to={`/${params.projectId}`}>{breadcrumb?.project}</Link> },
+      {
+        title: breadcrumb.stages,
+      },
+    ],
+    [breadcrumb]
+  );
 
   useEffect(() => {
     (async () => {
@@ -252,6 +229,22 @@ const TasksPage = () => {
     })();
   }, []);
 
+  useEffect(() => {
+    taskApi
+      .getAllTask(params.stagesId as string)
+      .then((res: any) => {
+        initialData.map((data: any) => {
+          data.items = res.tasks.filter((task: any) => {
+            return task.status === data.id;
+          });
+        });
+        setTasksColumns(initialData);
+      })
+      .catch((err: any) => {
+        console.error(err);
+      });
+  }, []);
+
   const selectTaskTypes = (value: string) => {
     dispatch(setQuery({ ...queryParams, type: value }));
     setSearchParams({ ...queryParams, type: value });
@@ -261,15 +254,6 @@ const TasksPage = () => {
     dispatch(setQuery({ ...queryParams, priority: value }));
     setSearchParams({ ...queryParams, priority: value });
   };
-
-  useEffect(() => {
-    initialData.map((data: any) => {
-      data.items = list.filter((task) => {
-        return task.status === data.name;
-      });
-    });
-    setTasksColumns(initialData);
-  }, []);
 
   const handleDragStart = (result: any) => {
     const startCol = tasksColumns.filter(
@@ -293,9 +277,9 @@ const TasksPage = () => {
       return;
     }
 
-    if (startCol.id === "in-review") {
+    if (startCol.id === "review") {
       const newState = tasksColumns.map((column: any) => {
-        if (column.id !== "open" && column.id !== "in-progress") {
+        if (column.id !== "open" && column.id !== "inprogress") {
           return { ...column, dropAllow: true };
         } else return { ...column, dropAllow: false };
       });
@@ -303,11 +287,11 @@ const TasksPage = () => {
       return;
     }
 
-    if (startCol.id === "re-open") {
+    if (startCol.id === "reopen") {
       const newState = tasksColumns.map((column: any) => {
         if (
-          column.id === "in-progress" ||
-          column.id === "re-open" ||
+          column.id === "inprogress" ||
+          column.id === "reopen" ||
           column.id === "cancel"
         ) {
           return { ...column, dropAllow: true };
@@ -332,7 +316,6 @@ const TasksPage = () => {
 
   const handleDragEnd = (result: any) => {
     const { destination, source } = result;
-    console.log(result);
 
     // Check nếu kéo và không thả vào bảng
     if (!destination) {
@@ -364,6 +347,7 @@ const TasksPage = () => {
     )[0];
 
     // Check nếu kéo và thả trong cùng 1 cột
+
     if (sourceCol.id === desCol.id) {
       const newTasks = Array.from(sourceCol.items);
       const [removedItem] = newTasks.splice(source.index, 1);
@@ -380,24 +364,36 @@ const TasksPage = () => {
     }
     // Check nếu kéo và thả sang các cột khác
     else {
-      const newSourceTasks = Array.from(sourceCol.items); //Lấy task array từ object source column
-      const [removedItem] = newSourceTasks.splice(source.index, 1); // Lấy ra khỏi task array item được drag
-      const newSourceCol = { ...sourceCol, items: newSourceTasks }; // Cập nhật lại source column (đã bị lấy 1 task ra)
+      showMessage("loading", `${t("content:loading")}...`);
+      const newSourceTasks = Array.from(sourceCol.items);
+      const [removedItem] = newSourceTasks.splice(source.index, 1);
       removedItem.status = destination.droppableId;
-      const newDesTasks = Array.from(desCol.items); // Lấy task array từ object đích đến
-      newDesTasks.splice(destination.index, 0, removedItem); //Thêm vào array đó item được remove từ array nguồn
-      const newDesCol = { ...desCol, items: newDesTasks }; //Cập nhật lại column đích
-      //tạo State mới gồm 2 column đã được cập nhật thông tin
-      const newState = tasksColumns.map((column) => {
-        if (column.id === newSourceCol.id) {
-          return { ...newSourceCol, dropAllow: true };
-        } else if (column.id === newDesCol.id) {
-          return { ...newDesCol, dropAllow: true };
-        } else {
-          return { ...column, dropAllow: true };
-        }
-      });
-      setTasksColumns(newState);
+      taskApi
+        .editTask(removedItem._id, { ...removedItem, stageId: params.stagesId })
+        .then((res: any) => {
+          const sourceTasks = Array.from(sourceCol.items);
+          const newSourceTasksTest = sourceTasks.filter((task: any) => {
+            return task._id !== res.task._id;
+          });
+          const newSourceColTest = { ...sourceCol, items: newSourceTasksTest };
+          const newDesTasksTest = Array.from(desCol.items);
+          newDesTasksTest.splice(destination.index, 0, res.task);
+          const newDesColTest = { ...desCol, items: newDesTasksTest };
+          const newState = tasksColumns.map((column) => {
+            if (column.id === newSourceColTest.id) {
+              return { ...newSourceColTest, dropAllow: true };
+            } else if (column.id === newDesColTest.id) {
+              return { ...newDesColTest, dropAllow: true };
+            } else {
+              return { ...column, dropAllow: true };
+            }
+          });
+          setTasksColumns(newState);
+          showMessage("success", res?.message, 2);
+        })
+        .catch((err: any) => {
+          showMessage("error", err.response.data?.message, 2);
+        });
     }
   };
   // tạo task
@@ -595,8 +591,8 @@ const TasksPage = () => {
                           {column.items?.map((task: any, index: number) => {
                             return (
                               <Draggable
-                                key={task.id}
-                                draggableId={task.id}
+                                key={task._id}
+                                draggableId={task._id}
                                 index={index}
                               >
                                 {(provided, snapshot) => {
