@@ -1,5 +1,4 @@
 import Comment, { IComment } from "../../components/comment/Comment";
-import ReactQuillFC from "../../components/comment/ReactQuill";
 import { CameraFilled, CloseOutlined } from "@ant-design/icons";
 import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
 import Image from "@ckeditor/ckeditor5-image/src/image";
@@ -10,7 +9,7 @@ import ImageToolbar from "@ckeditor/ckeditor5-image/src/imagetoolbar";
 import { CKEditor } from "@ckeditor/ckeditor5-react";
 import { Badge, Breadcrumb, Button, Descriptions, message, Upload } from "antd";
 import parse from "html-react-parser";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useId, useRef, useState } from "react";
 // import LinkImage from "@ckeditor/ckeditor5-link/src/linkimage";
 // import Base64UploadAdapter from "@ckeditor/ckeditor5-upload/src/adapters/base64uploadadapter";
 
@@ -21,14 +20,14 @@ const TaskInfo = () => {
   const commentListRef = useRef<HTMLDivElement | null>(null);
   const editorRef = useRef<ClassicEditor | null>(null);
 
-  const handleSendComment = () => {
-    if (comment) {
-      setListComment([...listComment, { content: comment }]);
-      setComment("");
-      setIsComment(false);
-      editorRef.current?.setData("");
-    }
-  };
+  // const handleSendComment = () => {
+  //   if (comment) {
+  //     setListComment([...listComment, { content: comment }]);
+  //     setComment("");
+  //     setIsComment(false);
+  //     editorRef.current?.setData("");
+  //   }
+  // };
 
   // ClassicEditor
   //   .create( document.querySelector( '#editor' ), {
@@ -46,12 +45,12 @@ const TaskInfo = () => {
     <div className="task_info--container" id="task_info">
       <div className="modal modal_task">
         <div className="modal_comment">
-          <h3 className="comment_title">JOB EXCHANGE</h3>
+          <h3 className="comment_title">Comments</h3>
           <div className="comments_container ">
             <div ref={commentListRef} className="comment_list">
-              {listComment?.map((comment, index: number) => (
-                <Comment key={index} content={comment.content} />
-              ))}
+              {/* {listComment?.map((comment, index: number) => (
+                <Comment content={comment.content} />
+              ))} */}
             </div>
             <div
               className="comment_list-chat"
@@ -99,7 +98,7 @@ const TaskInfo = () => {
                 <Button
                   type="primary"
                   style={{ width: "90%", height: "50px" }}
-                  onClick={handleSendComment}
+                  // onClick={handleSendComment}
                 >
                   Send
                 </Button>

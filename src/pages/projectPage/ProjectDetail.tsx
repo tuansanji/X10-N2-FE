@@ -5,6 +5,7 @@ import StagesPage from "../stagesPage/StagesPage";
 import { Breadcrumb, Skeleton, Space, Tabs } from "antd";
 import axios from "axios";
 import React, { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 import {
   useParams,
@@ -25,6 +26,7 @@ export interface ProjectType {
 }
 
 const ProjectDetail: React.FC = () => {
+  const { t } = useTranslation(["content", "base"]);
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const params = useParams();
@@ -65,20 +67,20 @@ const ProjectDetail: React.FC = () => {
 
   const tabItems = [
     {
-      label: "General Information",
+      label: t("base:generalInformation"),
       key: "General Information",
       children: <ProjectInfo projectDetail={projectDetail} />,
     },
     {
-      label: "Stages",
+      label: t("base:stages"),
       key: "Stages",
       children: <StagesPage projectDetail={projectDetail} />,
     },
-    { label: "Members", key: "Members", children: <MemberList /> },
+    { label: t("base:members"), key: "Members", children: <MemberList /> },
   ];
 
   const handleTabChange = (tabLabel: string) => {
-    if (tabLabel === "General Information") {
+    if (tabLabel === t("base:generalInformation")) {
       setSearchParams({ currentTab: tabLabel });
       dispatch(setQuery({ currentTab: tabLabel }));
     } else {

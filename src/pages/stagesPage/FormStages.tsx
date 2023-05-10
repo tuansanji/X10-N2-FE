@@ -1,12 +1,12 @@
 import { IStages } from "./StagesPage";
 import { UseMessageApiReturnType } from "../../components/support/Message";
-import { useAppDispatch, useAppSelector } from "../../redux/hook";
+import stageApi from "../../services/api/stageApi";
 import { ProjectType } from "../projectPage/ProjectDetail";
 import { CloseOutlined, LoadingOutlined } from "@ant-design/icons";
-import axios from "axios";
 import dayjs from "dayjs";
 import "dayjs/locale/zh-cn";
 import { Dispatch, SetStateAction, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useParams } from "react-router";
 
 import {
@@ -23,7 +23,7 @@ import {
 const { TextArea } = Input;
 const { Title } = Typography;
 
-interface IStagesCreate {
+export interface IStagesCreate {
   name: string;
   status: string;
   endDateActual: Date;
@@ -59,56 +59,44 @@ const FormStages: React.FC<IForm> = ({
   setEditStages,
 }: IForm) => {
   const [form] = Form.useForm();
-  // const dispatch = useAppDispatch();
   const params = useParams();
-
   const [loading, setLoading] = useState(false);
+  const { t } = useTranslation(["content", "base"]);
 
-  const token: string = useAppSelector(
-    (state: any) => state.auth.userInfo.token
-  );
   // hàm xử lí form
   const onFinish = (stages: IStagesCreate) => {
     setLoading(true);
     if (!editStages) {
-      axios
-        .post(
-          `${process.env.REACT_APP_BACKEND_URL}/stage/add`,
-          {
-            projectId: params.projectId,
-            name: stages.name,
-            startDate: stages.startDate,
-            endDateExpected: stages.endDateExpected,
-          },
-          { headers: { Authorization: `Bearer ${token}` } }
-        )
-        .then((res) => {
+      //trường hợp thêm
+      stageApi
+        .addStage({
+          projectId: params.projectId as string,
+          name: stages.name,
+          startDate: stages.startDate,
+          endDateExpected: stages.endDateExpected,
+        })
+        .then((res: any) => {
           setLoading(false);
           setCreateStages?.(false);
-
-          showMessage("success", res.data.message, 2);
-          //để gọi lại api(đối số useEffect)
+          showMessage("success", res.message, 2);
+          //để gọi lại api get all(đối số useEffect)
           setFinishCount((prev) => prev + 1);
         })
         .catch((err) => {
           setLoading(false);
-
           showMessage("error", err.response.data?.message, 2);
         });
     } else {
       if ("key" in editStages.stages) {
-        axios
-          .post(
-            `${process.env.REACT_APP_BACKEND_URL}/stage/update/${editStages?.stages?.key}`,
-            {
-              name: stages.name,
-              startDate: stages.startDate,
-              endDateExpected: stages.endDateExpected,
-              endDateActual: stages.endDateActual,
-            },
-            { headers: { Authorization: `Bearer ${token}` } }
-          )
-          .then((res) => {
+        //trường hợp sửa
+        stageApi
+          .editStage(editStages?.stages?.key as string, {
+            name: stages.name,
+            startDate: stages.startDate,
+            endDateExpected: stages.endDateExpected,
+            endDateActual: stages.endDateActual,
+          })
+          .then((res: any) => {
             setLoading(false);
             //để gọi lại api(đối số useEffect)
             setFinishCount((prev) => prev + 1);
@@ -116,7 +104,7 @@ const FormStages: React.FC<IForm> = ({
               status: false,
               stages: {},
             });
-            showMessage("success", res.data.message, 2);
+            showMessage("success", res.message, 2);
           })
           .catch((err) => {
             setLoading(false);
@@ -195,7 +183,7 @@ const FormStages: React.FC<IForm> = ({
             onFinish={onFinish}
           >
             <Form.Item
-              label="Stage Name"
+              label={t("content:name")}
               name="name"
               rules={[
                 {
@@ -210,7 +198,7 @@ const FormStages: React.FC<IForm> = ({
             <Row>
               <Col span={11}>
                 <Form.Item
-                  label="Start Date"
+                  label={t("content:startDate")}
                   name="startDate"
                   rules={[
                     {
@@ -234,7 +222,7 @@ const FormStages: React.FC<IForm> = ({
               </Col>
               <Col span={11} offset={2}>
                 <Form.Item
-                  label="End Date Expected"
+                  label={t("content:endDateExpected")}
                   name="endDateExpected"
                   rules={[
                     {
@@ -258,7 +246,10 @@ const FormStages: React.FC<IForm> = ({
               </Col>
             </Row>
             {endDateActual && (
-              <Form.Item label="Actual End Date" name="endDateActual">
+              <Form.Item
+                label={t("content:endDateActual")}
+                name="endDateActual"
+              >
                 <DatePicker
                   style={{ width: "100%" }}
                   disabledDate={(current) => {

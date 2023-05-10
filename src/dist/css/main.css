@@ -50,6 +50,21 @@ html {
   opacity: 0.5;
 }
 
+.scroll_custom::-webkit-scrollbar-track {
+  -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+  border-radius: 5px;
+  background-color: #f5f5f5;
+}
+.scroll_custom::-webkit-scrollbar {
+  width: 6px;
+  background-color: #f5f5f5;
+}
+.scroll_custom::-webkit-scrollbar-thumb {
+  border-radius: 10px;
+  -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+  background-color: #757171;
+}
+
 .register {
   position: relative;
 }
@@ -210,7 +225,26 @@ html {
   justify-content: flex-end;
   align-items: center;
   gap: 30px;
-  padding-right: 30px;
+  padding-right: 7px;
+}
+.header_auth .language_action {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 15px;
+}
+.header_auth .language_action img {
+  cursor: pointer;
+  width: 25px;
+  height: 17px;
+  border: solid 1px #fff;
+  display: inline-block;
+}
+.header_auth .language_action img.active {
+  box-shadow: rgba(0, 0, 0, 0.4) 0px 0px 5px;
+}
+.header_auth .language_action img:hover {
+  opacity: 0.7;
 }
 .header_auth .bell {
   border-radius: 50%;
@@ -221,19 +255,31 @@ html {
 }
 
 .header_auth-user {
+  max-width: 220px;
   display: flex;
   align-items: center;
   gap: 15px;
 }
 .header_auth-user a {
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+  flex: 1;
   text-decoration: none;
   font-weight: 600;
   color: red;
 }
-.header_auth-user img {
+.header_auth-user .header__img {
+  flex-shrink: 0;
   height: 40px;
   width: 40px;
   border-radius: 50%;
+  overflow: hidden;
+}
+.header_auth-user .header__img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 @media screen and (max-width: 470px) {
@@ -315,6 +361,7 @@ html {
   padding: 10px;
   border-radius: 12px;
   font-size: 14px;
+  min-height: 60px;
   line-height: 18px;
   font-family: sans-serif;
   margin: 0;
@@ -331,18 +378,19 @@ html {
   font-size: 12px;
 }
 .comment-container .action-buttons span:first-child {
-  color: #007bff;
   cursor: pointer;
   font-weight: 600;
+  color: #333;
 }
 .comment-container .action-buttons span:first-child:hover {
   opacity: 0.7;
 }
-.comment-container .action-buttons span:last-child {
+.comment-container .action-buttons span.btn_delete {
   display: flex;
   align-items: center;
   gap: 4px;
-  font-weight: medium;
+  color: #333;
+  font-weight: 600;
   opacity: 0.7;
 }
 
@@ -711,8 +759,22 @@ html {
 }
 .form_task td img {
   object-fit: cover;
-  width: 300px;
-  height: 300px;
+  max-width: 300px;
+  max-height: 300px;
+}
+.form_task td table {
+  border-collapse: collapse;
+  width: 100%;
+}
+.form_task td table th,
+.form_task td table td {
+  border: 1px solid black;
+  padding: 8px;
+  text-align: left;
+}
+.form_task td ul,
+.form_task td ol {
+  list-style-position: inside;
 }
 
 .task__info--container .ant-tabs.ant-tabs-top.css-dev-only-do-not-override-htwhyh {
@@ -758,6 +820,31 @@ html {
   justify-content: center;
   align-items: center;
   box-shadow: rgba(0, 0, 0, 0.4) 0px 0px 10px;
+}
+
+.stage__review {
+  display: flex;
+  gap: 30px;
+  flex-direction: column;
+}
+.stage__review--header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.stage__review--header h2 {
+  padding-right: 12px;
+  flex: 1;
+  text-align: center;
+}
+.stage__review--content {
+  box-shadow: rgba(0, 0, 0, 0.4) 0px -1px 0px;
+}
+.stage__review--content .review__list--comment {
+  padding-top: 30px;
+  width: 100%;
+  height: 500px;
+  overflow-y: auto;
 }
 
 @keyframes opacity {
@@ -902,6 +989,205 @@ html {
 .ck.ck-editor .ck.ck-editor__main .ck.ck-content.ck-editor__editable ul,
 .ck.ck-editor .ck.ck-editor__main .ck.ck-content.ck-editor__editable ol {
   list-style-position: inside;
+}
+
+.user__container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 70%;
+  margin: 20px auto 100px;
+}
+@media only screen and (max-width: 900px) {
+  .user__container {
+    width: 90%;
+  }
+}
+.user__container .title {
+  padding: 24px;
+  height: 100px;
+  padding-bottom: 8px;
+  padding-top: 8px;
+  display: block;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
+}
+.user__container .title h2 {
+  font-family: "Google Sans", Roboto, Arial, sans-serif;
+  line-height: 1.75rem;
+  font-size: 1.375rem;
+  letter-spacing: 0;
+  font-weight: 400;
+  hyphens: auto;
+  word-break: break-word;
+  word-wrap: break-word;
+  color: rgb(32, 33, 36);
+  flex-grow: 0;
+  flex-shrink: 0;
+}
+.user__container .title p {
+  font-size: 14px;
+  font-weight: 400;
+  letter-spacing: 0;
+  line-height: 20px;
+  hyphens: auto;
+  word-break: break-word;
+  word-wrap: break-word;
+  color: rgb(95, 99, 104);
+}
+.user__container .wrapper {
+  border-top: 1px solid rgb(218, 220, 224);
+  min-height: 60px;
+  padding: 8px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  text-decoration: none;
+  text-align: left;
+  cursor: pointer;
+}
+.user__container .wrapper span:nth-child(1) {
+  text-transform: capitalize;
+  width: 180px;
+  flex-shrink: 0;
+  font-family: "Google Sans Text", "Google Sans", Roboto, Arial, sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.1px;
+  line-height: 16px;
+  hyphens: auto;
+  word-break: break-word;
+  word-wrap: break-word;
+  color: rgb(95, 99, 104);
+}
+.user__container .wrapper span:nth-child(2) {
+  padding-right: 25px;
+  flex: 1;
+  font-size: 17px;
+  font-weight: 400;
+  letter-spacing: 0;
+  line-height: 24px;
+  hyphens: auto;
+  word-break: break-word;
+  word-wrap: break-word;
+  color: rgb(32, 33, 36);
+}
+.user__container .wrapper:hover {
+  background-color: rgb(250, 250, 251);
+}
+.user__container .wrapper .avatar {
+  height: 60px;
+  width: 60px;
+  border-radius: 9999px;
+  overflow: hidden;
+  position: relative;
+  box-shadow: rgba(0, 0, 0, 0.4) 0px 0px 5px;
+}
+.user__container .wrapper .avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.user__container .wrapper .avatar .camera {
+  background-color: rgba(32, 33, 36, 0.6);
+  bottom: 0;
+  height: 33%;
+  left: 0;
+  position: absolute;
+  right: 0;
+}
+.user__container .wrapper .avatar .camera__icon {
+  background-image: url(https://www.gstatic.com/images/icons/material/system/2x/photo_camera_white_24dp.png);
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 20px 20px;
+  height: 100%;
+  opacity: 0.8;
+}
+.user__container .info {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  flex-shrink: 1;
+  background-color: #fff;
+  border-radius: 8px;
+  border: 1px solid rgb(218, 220, 224);
+  box-sizing: border-box;
+  overflow: hidden;
+  margin-top: 8px;
+}
+.user__container .info__content {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+.modal__avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 20px;
+}
+.modal__avatar .avatar__img {
+  height: 260px;
+  width: 260px;
+  border-radius: 9999px;
+  border: 1px solid #ccc;
+  overflow: hidden;
+}
+.modal__avatar .avatar__img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.modal__avatar .avatar__upload button {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+}
+.modal__avatar .avatar__upload button label {
+  cursor: pointer;
+}
+.modal__avatar .avatar__upload [type=file] {
+  color: #878787;
+}
+.modal__avatar .avatar__upload [type=file]::-webkit-file-upload-button {
+  background: #fff;
+  border: 1px solid #535353;
+  border-radius: 4px;
+  color: #000;
+  cursor: pointer;
+  font-size: 12px;
+  outline: none;
+  padding: 10px 15px;
+  text-transform: uppercase;
+  transition: all 0.5s ease;
+}
+.modal__avatar .avatar__upload [type=file]::-webkit-file-upload-button:hover {
+  background: #ccc;
+  color: #000;
+}
+
+.form__content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 20px;
+}
+.form__content .form__password {
+  display: flex;
+  width: 100%;
+  gap: 10px;
+  align-items: center;
+}
+.form__content .form__password span {
+  white-space: nowrap;
 }
 
 /*# sourceMappingURL=main.css.map */
