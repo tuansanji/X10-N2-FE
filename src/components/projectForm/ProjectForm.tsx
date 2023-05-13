@@ -1,9 +1,11 @@
 import { LoadingOutlined } from "@ant-design/icons";
+import { addNewProject, editProject } from "../../redux/slice/projectSlice";
 import axios from "axios";
 import dayjs from "dayjs";
 import _ from "lodash";
 import React, { useState } from "react";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
+import useMessageApi, { UseMessageApiReturnType } from "../support/Message";
 import {
   Typography,
   Form,
@@ -30,11 +32,14 @@ interface PropsType {
 
 const ProjectForm: React.FC<PropsType> = (props) => {
   const [form] = Form.useForm();
+  const dispatch = useDispatch();
   const token = useSelector((state: any) => state.auth.userInfo.token);
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [api, contextHolder] = notification.useNotification();
+  const { showMessage, contextHolder }: UseMessageApiReturnType =
+    useMessageApi();
   const [startDate, setStartDate] = useState<string>();
   const [endDate, setEndDate] = useState<string>();
+
   const statusOptions = [
     { label: "Preparing", value: "preparing" },
     { label: "On Going", value: "ongoing" },
@@ -52,6 +57,8 @@ const ProjectForm: React.FC<PropsType> = (props) => {
           { ...data },
           { headers: { Authorization: `Bearer ${token}` } }
         );
+        dispatch(addNewProject(response.data.project));
+        showMessage("success", response.data.message, 2);
         setIsLoading(false);
         if (props.closeModal) {
           props.closeModal(false);
@@ -59,10 +66,7 @@ const ProjectForm: React.FC<PropsType> = (props) => {
         }
       }
     } catch (err: any) {
-      api["error"]({
-        message: "Error",
-        description: err.response.data.message,
-      });
+      showMessage("error", err.response.data?.message, 2);
       setIsLoading(false);
     }
   };
@@ -70,24 +74,22 @@ const ProjectForm: React.FC<PropsType> = (props) => {
   // Gửi Request edit thông tin project
   const handleEdit = async (data: any) => {
     try {
-      console.log("Data sending with Edit Request:", data);
       setIsLoading(true);
       const response = await axios.post(
         `${process.env.REACT_APP_BACKEND_URL}/project/update/${props.projectDetail._id}`,
         { ...data },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      console.log(response);
+      console.log("Response trả về khi edit:", response);
+      dispatch(editProject(response.data.project));
+      showMessage("success", response.data.message, 2);
       setIsLoading(false);
       if (props.closeModal) {
         props.closeModal(false);
         form.resetFields();
       }
     } catch (err: any) {
-      api["error"]({
-        message: "Error",
-        description: err.response.data.message,
-      });
+      showMessage("error", err.response.data?.message, 2);
       setIsLoading(false);
     }
   };
@@ -169,7 +171,9 @@ const ProjectForm: React.FC<PropsType> = (props) => {
               <DatePicker
                 style={{ width: "100%" }}
                 disabledDate={(current) => {
-                  return current && current < dayjs(Date.now());
+                  return endDate && current
+                    ? current < dayjs(Date.now()) || current > dayjs(endDate)
+                    : current < dayjs(Date.now());
                 }}
                 onChange={(date: any, dateString: string) => {
                   setStartDate(dateString);

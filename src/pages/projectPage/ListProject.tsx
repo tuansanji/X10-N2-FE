@@ -102,7 +102,6 @@ const ListProject: React.FC = () => {
         return indexValue === index;
       }
     );
-
     setProjectDetail(projectDetail[0]);
     setOpenEditProject(true);
   };
@@ -226,9 +225,7 @@ const ListProject: React.FC = () => {
               placement="topRight"
               title="Delete the project"
               description="Are you sure to delete this project?"
-              onConfirm={() => confirm(record)}
-              okText="Yes"
-              cancelText="No"
+              onConfirm={() => handleDeleteProject(record)}
             >
               <DeleteFilled style={{ fontSize: "16px", cursor: "pointer" }} />
             </Popconfirm>

@@ -2,7 +2,7 @@ import TaskForm, { ITask } from "./TaskForm";
 import TaskInfo from "./TaskInfo";
 import { descriptionTest } from "../../data/statges";
 import { useAppSelector } from "../../redux/hook";
-import { setQuery } from "../../redux/slice/paramsSlice";
+import { setQuery, deleteQuery } from "../../redux/slice/paramsSlice";
 import { RootState } from "../../redux/store";
 import {
   EyeOutlined,
@@ -46,9 +46,9 @@ const { Search } = Input;
 
 interface ColumnData {
   id: string;
-
   title: string;
   items: any[];
+  dropAllow: boolean;
 }
 
 interface TaskItemProp {
@@ -156,26 +156,25 @@ const TasksPage = () => {
   const queryParams = useSelector((state: any) => state.queryParams);
   const dispatch = useDispatch();
   const [tasksColumns, setTasksColumns] = useState<ColumnData[]>([]);
-  const [dragLoading, setDragLoading] = useState<boolean>(false);
   const { t, i18n } = useTranslation(["content", "base"]);
-
-  useEffect(() => {
-    let query = Object.fromEntries([...searchParams]);
-    dispatch(setQuery(query));
-  }, []);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [statusForm, setStatusForm] = useState(false);
   const [openInfo, setOpenInfo] = useState(false);
   const [edit, setEdit] = useState(false);
   const { showMessage, contextHolder }: UseMessageApiReturnType =
     useMessageApi();
-  // đúng là ITask mà để any để test
-  const [taskCurrent, setTaskCurrent] = useState<any>();
+  const [taskCurrent, setTaskCurrent] = useState<ITask>();
+  const [allTasks, setAllTasks] = useState<ITask[]>([]);
   const [breadcrumb, setBreadcrumb] = useState({
     project: "",
     stages: "",
   });
   const user = useAppSelector((state: RootState) => state.auth?.userInfo);
+
+  useEffect(() => {
+    let query = Object.fromEntries([...searchParams]);
+    dispatch(setQuery(query));
+  }, []);
 
   const taskTypeOptions = [
     {
@@ -183,7 +182,7 @@ const TasksPage = () => {
       options: [
         { label: `All`, value: `all` },
         { label: `Issue`, value: `issue` },
-        { label: `Task`, value: `task` },
+        { label: `Assignment`, value: `assignment` },
       ],
     },
   ];
@@ -238,6 +237,7 @@ const TasksPage = () => {
             return task.status === data.id;
           });
         });
+        setAllTasks(res.tasks);
         setTasksColumns(initialData);
       })
       .catch((err: any) => {
@@ -246,13 +246,83 @@ const TasksPage = () => {
   }, []);
 
   const selectTaskTypes = (value: string) => {
+    const filtered = allTasks.filter((task: any) => task.type === value);
+    if (value === "all") {
+      initialData.map((data: any) => {
+        data.items = allTasks.filter((task: any) => {
+          return task.status === data.id;
+        });
+      });
+      setTasksColumns(initialData);
+    } else {
+      initialData.map((data: any) => {
+        data.items = filtered.filter((task: any) => {
+          return task.status === data.id;
+        });
+      });
+      setTasksColumns(initialData);
+    }
+
     dispatch(setQuery({ ...queryParams, type: value }));
     setSearchParams({ ...queryParams, type: value });
   };
 
   const sortPriority = (value: string) => {
+    const prioList: any = {
+      highest: 5,
+      high: 4,
+      medium: 3,
+      low: 2,
+      lowest: 1,
+    };
+    allTasks.sort((a: ITask, b: ITask) => {
+      return value === "asc"
+        ? prioList[a.priority] - prioList[b.priority]
+        : prioList[b.priority] - prioList[a.priority];
+    });
+    initialData.map((data: any) => {
+      data.items = allTasks.filter((task: ITask) => {
+        return task.status === data.id;
+      });
+    });
+    setTasksColumns(initialData);
     dispatch(setQuery({ ...queryParams, priority: value }));
     setSearchParams({ ...queryParams, priority: value });
+  };
+  console.log("All Tasks:", allTasks);
+
+  const handleInputChange = (event: any) => {
+    let value = event.target.value;
+    if (value === "" && searchParams.has("search")) {
+      let query = searchParams.get("search");
+      if (query) {
+        searchParams.delete("search");
+        const newParams: { [key: string]: string } = {};
+        searchParams.forEach((value: string, key: string) => {
+          newParams[key] = value;
+        });
+        initialData.map((data: any) => {
+          data.items = allTasks.filter((task: any) => {
+            return task.status === data.id;
+          });
+        });
+        setTasksColumns(initialData);
+        setSearchParams(newParams);
+        dispatch(deleteQuery("search"));
+      }
+    } else {
+      const filtered = allTasks.filter((task: any) =>
+        task.title.includes(value)
+      );
+      initialData.map((data: any) => {
+        data.items = filtered.filter((task: any) => {
+          return task.status === data.id;
+        });
+      });
+      setTasksColumns(initialData);
+      dispatch(setQuery({ ...queryParams, search: value }));
+      setSearchParams({ ...queryParams, search: value });
+    }
   };
 
   const handleDragStart = (result: any) => {
@@ -559,7 +629,13 @@ const TasksPage = () => {
             onChange={sortPriority}
           />
           <Select size="large" defaultValue="Filter Member" />
-          <Search size="large" placeholder="Task Name" />
+          <Search
+            size="large"
+            placeholder="Task Name"
+            value={queryParams.search}
+            allowClear
+            onChange={handleInputChange}
+          />
         </div>
         <Divider />
         <div className="tasks_board">

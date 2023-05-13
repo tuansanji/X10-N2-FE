@@ -34,8 +34,22 @@ export const projectSlice = createSlice({
       state.isFetching = false;
       state.error = true;
     },
+    addNewProject: (state, action: PayloadAction<{ projects: IProject }>) => {
+      state.listProject.projects.unshift(action.payload);
+    },
+    editProject: (state, action) => {
+      const index = state.listProject.projects.findIndex(
+        (project: IProject) => project._id === action.payload._id
+      );
+      state.listProject.projects.splice(index, 1, action.payload);
+    },
   },
 });
 
-export const { getAllProjectStart, getAllProjectSuccess, getAllProjectError } =
-  projectSlice.actions;
+export const {
+  getAllProjectStart,
+  getAllProjectSuccess,
+  getAllProjectError,
+  addNewProject,
+  editProject,
+} = projectSlice.actions;

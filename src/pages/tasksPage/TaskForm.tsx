@@ -63,7 +63,7 @@ interface ITaskForm {
   showMessage: (type: NoticeType, content: string, duration?: number) => void;
 }
 
-interface IUser {
+export interface IUser {
   data: {
     _id: string;
     fullName: string;
