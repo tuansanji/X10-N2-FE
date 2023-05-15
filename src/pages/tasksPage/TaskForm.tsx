@@ -62,9 +62,10 @@ interface ITaskForm {
   setEdit?: Dispatch<SetStateAction<boolean>>;
   setStatusForm: Dispatch<SetStateAction<boolean>>;
   showMessage: (type: NoticeType, content: string, duration?: number) => void;
-
   setTasksColumns?: React.Dispatch<React.SetStateAction<ColumnData[]>>;
   tasksColumns?: ColumnData[];
+  allTasks?: ITask[];
+  setAllTasks?: React.Dispatch<React.SetStateAction<ITask[]>>;
 }
 
 export interface IUser {
@@ -90,10 +91,10 @@ const TaskForm = (props: ITaskForm) => {
     button,
     taskCurrent,
     showMessage,
-
     setTasksColumns,
-
     tasksColumns,
+    allTasks,
+    setAllTasks,
   } = props;
   const [description, setDescription] = useState<string>("");
   const [reloadData, setReloadData] = useState<number>(1);
@@ -151,12 +152,13 @@ const TaskForm = (props: ITaskForm) => {
       taskApi
         .addTask(task)
         .then((res: any) => {
-          if (tasksColumns) {
+          if (tasksColumns && allTasks) {
             let newState = tasksColumns.map((task: any) => {
               if (task.id === "open") {
                 return { ...task, items: [res.task, ...task.items] };
               } else return task;
             });
+            setAllTasks?.([...allTasks, res.task]);
             setTasksColumns?.(newState);
           }
           showMessage("success", res.message, 2);

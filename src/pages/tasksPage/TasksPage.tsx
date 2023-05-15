@@ -1,11 +1,10 @@
 import TaskForm, { ITask, IUser } from "./TaskForm";
 import TaskInfo from "./TaskInfo";
-import { descriptionTest } from "../../data/statges";
+
 import { useAppSelector } from "../../redux/hook";
 import { setQuery, deleteQuery } from "../../redux/slice/paramsSlice";
 import { RootState } from "../../redux/store";
 import {
-  EyeOutlined,
   ClockCircleOutlined,
   DoubleRightOutlined,
   DownOutlined,
@@ -18,7 +17,7 @@ import axios from "axios";
 import taskApi from "../../services/api/taskApi";
 import _ from "lodash";
 import moment from "moment";
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useParams, useSearchParams } from "react-router-dom";
@@ -38,12 +37,12 @@ import {
   Tabs,
   Typography,
   Tooltip,
-  message,
 } from "antd";
 import type { TabsProps } from "antd";
 import { useAxios } from "../../hooks";
+import { LabeledValue } from "antd/es/select";
 
-const { Text, Title } = Typography;
+const { Title } = Typography;
 const { Search } = Input;
 
 export interface ColumnData {
@@ -161,7 +160,8 @@ const TasksPage = () => {
   const { t, i18n } = useTranslation(["content", "base"]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [statusForm, setStatusForm] = useState(false);
-  const [sortSelectValue, setSortSelectValue] = useState<string>();
+  const [sortSelectValue, setSortSelectValue] = useState<string>("deadlineAsc");
+
   const [openInfo, setOpenInfo] = useState(false);
   const [edit, setEdit] = useState(false);
   const { showMessage, contextHolder }: UseMessageApiReturnType =
@@ -249,6 +249,11 @@ const TasksPage = () => {
     taskApi
       .getAllTask(params.stagesId as string)
       .then((res: any) => {
+        res.tasks.sort((a: ITask, b: ITask) => {
+          let d1 = Number(new Date(a.deadline));
+          let d2 = Number(new Date(b.deadline));
+          return d1 - d2;
+        });
         initialData.map((data: any) => {
           data.items = res.tasks.filter((task: any) => {
             return task.status === data.id;
@@ -270,6 +275,7 @@ const TasksPage = () => {
         data.items = allTasks.filter((task: any) => {
           return task.status === data.id;
         });
+        return data;
       });
       setTasksColumns(initialData);
     } else {
@@ -277,6 +283,7 @@ const TasksPage = () => {
         data.items = filtered.filter((task: any) => {
           return task.status === data.id;
         });
+        return data;
       });
       setTasksColumns(initialData);
     }
@@ -305,107 +312,67 @@ const TasksPage = () => {
         data.items = allTasks.filter((task: ITask) => {
           return task.status === data.id;
         });
+        return data;
       });
       setTasksColumns(initialData);
     }
     if (value.includes("deadline")) {
       allTasks.sort((a: ITask, b: ITask) => {
-        let d1: any = new Date(a.deadline);
-        let d2: any = new Date(b.deadline);
+        let d1 = Number(new Date(a.deadline));
+        let d2 = Number(new Date(b.deadline));
         return value.includes("Asc") ? d1 - d2 : d2 - d1;
       });
       initialData.map((data: any) => {
         data.items = allTasks.filter((task: ITask) => {
           return task.status === data.id;
         });
+        return data;
       });
       setTasksColumns(initialData);
     }
     dispatch(setQuery({ ...queryParams, sort: value }));
     setSearchParams({ ...queryParams, sort: value });
-    // switch (value) {
-    //   case "prioAsc":
-    //     allTasks.sort((a: ITask, b: ITask) => {
-    //       return prioList[a.priority] - prioList[b.priority];
-    //     });
-    //     initialData.map((data: any) => {
-    //       data.items = allTasks.filter((task: ITask) => {
-    //         return task.status === data.id;
-    //       });
-    //     });
-    //     setTasksColumns(initialData);
-    //     dispatch(setQuery({ ...queryParams, priority: "asc" }));
-    //     setSearchParams({ ...queryParams, priority: "asc" });
-    //     break;
-    //   case "prioDesc":
-    //     allTasks.sort((a: ITask, b: ITask) => {
-    //       return prioList[b.priority] - prioList[a.priority];
-    //     });
-    //     initialData.map((data: any) => {
-    //       data.items = allTasks.filter((task: ITask) => {
-    //         return task.status === data.id;
-    //       });
-    //     });
-    //     setTasksColumns(initialData);
-    //     dispatch(setQuery({ ...queryParams, priority: "desc" }));
-    //     setSearchParams({ ...queryParams, priority: "desc" });
-    //     break;
-    //   case "deadlineAsc":
-    //     allTasks.sort((a: ITask, b: ITask) => {
-    //       let d1: any = new Date(a.deadline);
-    //       let d2: any = new Date(b.deadline);
-    //       return d1 - d2;
-    //     });
-    //     initialData.map((data: any) => {
-    //       data.items = allTasks.filter((task: ITask) => {
-    //         return task.status === data.id;
-    //       });
-    //     });
-    //     setTasksColumns(initialData);
-    //     dispatch(setQuery({ ...queryParams, deadline: "asc" }));
-    //     setSearchParams({ ...queryParams, deadline: "asc" });
-    //     break;
-    //   case "deadlineDesc":
-    //     allTasks.sort((a: ITask, b: ITask) => {
-    //       let d1: any = new Date(a.deadline);
-    //       let d2: any = new Date(b.deadline);
-    //       return d2 - d1;
-    //     });
-    //     initialData.map((data: any) => {
-    //       data.items = allTasks.filter((task: ITask) => {
-    //         return task.status === data.id;
-    //       });
-    //     });
-    //     setTasksColumns(initialData);
-    //     dispatch(setQuery({ ...queryParams, deadline: "desc" }));
-    //     setSearchParams({ ...queryParams, deadline: "desc" });
-    //     break;
-    // }
   };
 
   //Filter công việc theo username của Member
   const handleFilterMember = (values: any) => {
-    let filtered = allTasks.filter((task: any) => {
-      return values.some((value: string) => value === task.assignee.username);
-    });
-    if (filtered && filtered.length > 0) {
-      initialData.map((data: any) => {
-        data.items = filtered.filter((task: ITask) => {
-          return task.status === data.id;
-        });
-      });
-      setTasksColumns(initialData);
-    } else {
+    if (values && values.length === 0) {
       initialData.map((data: any) => {
         data.items = allTasks.filter((task: ITask) => {
           return task.status === data.id;
         });
+        return data;
       });
       setTasksColumns(initialData);
+      dispatch(setQuery({ ...queryParams, member: values }));
+      setSearchParams({ ...queryParams, member: values });
     }
+    if (values.length > 0) {
+      let filtered = allTasks.filter((task: any) => {
+        return values.some((value: string) => value === task.assignee.username);
+      });
 
-    dispatch(setQuery({ ...queryParams, member: values }));
-    setSearchParams({ ...queryParams, member: values });
+      initialData.map((data: any) => {
+        data.items = filtered.filter((task: ITask) => {
+          return task.status === data.id;
+        });
+        return data;
+      });
+      setTasksColumns(initialData);
+      dispatch(setQuery({ ...queryParams, member: values }));
+      setSearchParams({ ...queryParams, member: values });
+    }
+  };
+
+  //Click cancel toàn bộ member đã chọn thì hiển thị lại toàn bộ danh sách tasks
+  const cancelSelect = () => {
+    initialData.map((data: any) => {
+      data.items = allTasks.filter((task: ITask) => {
+        return task.status === data.id;
+      });
+      return data;
+    });
+    setTasksColumns(initialData);
   };
 
   //Xử lý filter theo tên công việc
@@ -423,6 +390,7 @@ const TasksPage = () => {
           data.items = allTasks.filter((task: any) => {
             return task.status === data.id;
           });
+          return data;
         });
         setTasksColumns(initialData);
         setSearchParams(newParams);
@@ -436,6 +404,7 @@ const TasksPage = () => {
         data.items = filtered.filter((task: any) => {
           return task.status === data.id;
         });
+        return data;
       });
       setTasksColumns(initialData);
       dispatch(setQuery({ ...queryParams, search: value }));
@@ -673,6 +642,8 @@ const TasksPage = () => {
       >
         {!statusForm && !openInfo && (
           <TaskForm
+            allTasks={allTasks}
+            setAllTasks={setAllTasks}
             setTasksColumns={setTasksColumns}
             tasksColumns={tasksColumns}
             showMessage={showMessage}
@@ -757,12 +728,12 @@ const TasksPage = () => {
             value={
               sortSelectValue?.includes("prio")
                 ? `Priority: ${
-                    queryParams.sort.replace("prio", "") ||
+                    queryParams.sort?.replace("prio", "") ||
                     priorityOptions[0].options[0].label
                   }`
                 : `Deadline: ${
-                    queryParams.sort.replace("deadline", "") ||
-                    priorityOptions[0].options[0].label
+                    queryParams.sort?.replace("deadline", "") ||
+                    priorityOptions[1].options[0].label
                   }`
             }
             dropdownMatchSelectWidth={false}
@@ -770,6 +741,7 @@ const TasksPage = () => {
             onChange={sortPriority}
           />
           <Select
+            allowClear
             mode="multiple"
             style={{ width: "300px" }}
             maxTagCount="responsive"
@@ -783,6 +755,7 @@ const TasksPage = () => {
               option.label.toLowerCase().includes(input.toLowerCase())
             }
             onChange={handleFilterMember}
+            onClear={cancelSelect}
             dropdownRender={(menu) =>
               isLoading ? (
                 <div
