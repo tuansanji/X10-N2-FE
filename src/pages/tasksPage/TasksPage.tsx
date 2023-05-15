@@ -1,4 +1,4 @@
-import TaskForm, { ITask } from "./TaskForm";
+import TaskForm, { ITask, IUser } from "./TaskForm";
 import TaskInfo from "./TaskInfo";
 import { descriptionTest } from "../../data/statges";
 import { useAppSelector } from "../../redux/hook";
@@ -11,12 +11,14 @@ import {
   DownOutlined,
   UpOutlined,
   PauseOutlined,
+  LoadingOutlined,
+  SearchOutlined,
 } from "@ant-design/icons";
 import axios from "axios";
 import taskApi from "../../services/api/taskApi";
 import _ from "lodash";
 import moment from "moment";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useParams, useSearchParams } from "react-router-dom";
@@ -25,7 +27,6 @@ import { useTranslation } from "react-i18next";
 import useMessageApi, {
   UseMessageApiReturnType,
 } from "../../components/support/Message";
-
 import {
   Breadcrumb,
   Button,
@@ -40,11 +41,12 @@ import {
   message,
 } from "antd";
 import type { TabsProps } from "antd";
+import { useAxios } from "../../hooks";
 
 const { Text, Title } = Typography;
 const { Search } = Input;
 
-interface ColumnData {
+export interface ColumnData {
   id: string;
   title: string;
   items: any[];
@@ -56,7 +58,7 @@ interface TaskItemProp {
   handleOpenInfoTask?: (task: ITask) => void;
 }
 
-const initialData = [
+const initialData: ColumnData[] = [
   {
     id: "open",
     title: "Open",
@@ -159,6 +161,7 @@ const TasksPage = () => {
   const { t, i18n } = useTranslation(["content", "base"]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [statusForm, setStatusForm] = useState(false);
+  const [sortSelectValue, setSortSelectValue] = useState<string>();
   const [openInfo, setOpenInfo] = useState(false);
   const [edit, setEdit] = useState(false);
   const { showMessage, contextHolder }: UseMessageApiReturnType =
@@ -170,6 +173,12 @@ const TasksPage = () => {
     stages: "",
   });
   const user = useAppSelector((state: RootState) => state.auth?.userInfo);
+
+  const { responseData, isLoading } = useAxios(
+    "get",
+    `/project/members/all/${params.projectId}`,
+    []
+  );
 
   useEffect(() => {
     let query = Object.fromEntries([...searchParams]);
@@ -191,8 +200,15 @@ const TasksPage = () => {
     {
       label: `Priority`,
       options: [
-        { label: `Asc`, value: `asc` },
-        { label: `Desc`, value: `desc` },
+        { label: `Asc`, value: `prioAsc` },
+        { label: `Desc`, value: `prioDesc` },
+      ],
+    },
+    {
+      label: `Deadline`,
+      options: [
+        { label: `Asc`, value: `deadlineAsc` },
+        { label: `Desc`, value: `deadlineDesc` },
       ],
     },
   ];
@@ -228,6 +244,7 @@ const TasksPage = () => {
     })();
   }, []);
 
+  //Gọi API Lấy danh sách tasks => set vào các column
   useEffect(() => {
     taskApi
       .getAllTask(params.stagesId as string)
@@ -245,6 +262,7 @@ const TasksPage = () => {
       });
   }, []);
 
+  //Xử lý Filter theo loại công việc
   const selectTaskTypes = (value: string) => {
     const filtered = allTasks.filter((task: any) => task.type === value);
     if (value === "all") {
@@ -267,7 +285,9 @@ const TasksPage = () => {
     setSearchParams({ ...queryParams, type: value });
   };
 
+  //Xử lý sort theo thứ tự công việc và deadline
   const sortPriority = (value: string) => {
+    setSortSelectValue(value);
     const prioList: any = {
       highest: 5,
       high: 4,
@@ -275,22 +295,120 @@ const TasksPage = () => {
       low: 2,
       lowest: 1,
     };
-    allTasks.sort((a: ITask, b: ITask) => {
-      return value === "asc"
-        ? prioList[a.priority] - prioList[b.priority]
-        : prioList[b.priority] - prioList[a.priority];
-    });
-    initialData.map((data: any) => {
-      data.items = allTasks.filter((task: ITask) => {
-        return task.status === data.id;
+    if (value.includes("prio")) {
+      allTasks.sort((a: ITask, b: ITask) => {
+        return value.includes("Asc")
+          ? prioList[a.priority] - prioList[b.priority]
+          : prioList[b.priority] - prioList[a.priority];
       });
-    });
-    setTasksColumns(initialData);
-    dispatch(setQuery({ ...queryParams, priority: value }));
-    setSearchParams({ ...queryParams, priority: value });
+      initialData.map((data: any) => {
+        data.items = allTasks.filter((task: ITask) => {
+          return task.status === data.id;
+        });
+      });
+      setTasksColumns(initialData);
+    }
+    if (value.includes("deadline")) {
+      allTasks.sort((a: ITask, b: ITask) => {
+        let d1: any = new Date(a.deadline);
+        let d2: any = new Date(b.deadline);
+        return value.includes("Asc") ? d1 - d2 : d2 - d1;
+      });
+      initialData.map((data: any) => {
+        data.items = allTasks.filter((task: ITask) => {
+          return task.status === data.id;
+        });
+      });
+      setTasksColumns(initialData);
+    }
+    dispatch(setQuery({ ...queryParams, sort: value }));
+    setSearchParams({ ...queryParams, sort: value });
+    // switch (value) {
+    //   case "prioAsc":
+    //     allTasks.sort((a: ITask, b: ITask) => {
+    //       return prioList[a.priority] - prioList[b.priority];
+    //     });
+    //     initialData.map((data: any) => {
+    //       data.items = allTasks.filter((task: ITask) => {
+    //         return task.status === data.id;
+    //       });
+    //     });
+    //     setTasksColumns(initialData);
+    //     dispatch(setQuery({ ...queryParams, priority: "asc" }));
+    //     setSearchParams({ ...queryParams, priority: "asc" });
+    //     break;
+    //   case "prioDesc":
+    //     allTasks.sort((a: ITask, b: ITask) => {
+    //       return prioList[b.priority] - prioList[a.priority];
+    //     });
+    //     initialData.map((data: any) => {
+    //       data.items = allTasks.filter((task: ITask) => {
+    //         return task.status === data.id;
+    //       });
+    //     });
+    //     setTasksColumns(initialData);
+    //     dispatch(setQuery({ ...queryParams, priority: "desc" }));
+    //     setSearchParams({ ...queryParams, priority: "desc" });
+    //     break;
+    //   case "deadlineAsc":
+    //     allTasks.sort((a: ITask, b: ITask) => {
+    //       let d1: any = new Date(a.deadline);
+    //       let d2: any = new Date(b.deadline);
+    //       return d1 - d2;
+    //     });
+    //     initialData.map((data: any) => {
+    //       data.items = allTasks.filter((task: ITask) => {
+    //         return task.status === data.id;
+    //       });
+    //     });
+    //     setTasksColumns(initialData);
+    //     dispatch(setQuery({ ...queryParams, deadline: "asc" }));
+    //     setSearchParams({ ...queryParams, deadline: "asc" });
+    //     break;
+    //   case "deadlineDesc":
+    //     allTasks.sort((a: ITask, b: ITask) => {
+    //       let d1: any = new Date(a.deadline);
+    //       let d2: any = new Date(b.deadline);
+    //       return d2 - d1;
+    //     });
+    //     initialData.map((data: any) => {
+    //       data.items = allTasks.filter((task: ITask) => {
+    //         return task.status === data.id;
+    //       });
+    //     });
+    //     setTasksColumns(initialData);
+    //     dispatch(setQuery({ ...queryParams, deadline: "desc" }));
+    //     setSearchParams({ ...queryParams, deadline: "desc" });
+    //     break;
+    // }
   };
-  console.log("All Tasks:", allTasks);
 
+  //Filter công việc theo username của Member
+  const handleFilterMember = (values: any) => {
+    let filtered = allTasks.filter((task: any) => {
+      return values.some((value: string) => value === task.assignee.username);
+    });
+    if (filtered && filtered.length > 0) {
+      initialData.map((data: any) => {
+        data.items = filtered.filter((task: ITask) => {
+          return task.status === data.id;
+        });
+      });
+      setTasksColumns(initialData);
+    } else {
+      initialData.map((data: any) => {
+        data.items = allTasks.filter((task: ITask) => {
+          return task.status === data.id;
+        });
+      });
+      setTasksColumns(initialData);
+    }
+
+    dispatch(setQuery({ ...queryParams, member: values }));
+    setSearchParams({ ...queryParams, member: values });
+  };
+
+  //Xử lý filter theo tên công việc
   const handleInputChange = (event: any) => {
     let value = event.target.value;
     if (value === "" && searchParams.has("search")) {
@@ -312,7 +430,7 @@ const TasksPage = () => {
       }
     } else {
       const filtered = allTasks.filter((task: any) =>
-        task.title.includes(value)
+        task.title.toLowerCase().includes(value)
       );
       initialData.map((data: any) => {
         data.items = filtered.filter((task: any) => {
@@ -324,6 +442,8 @@ const TasksPage = () => {
       setSearchParams({ ...queryParams, search: value });
     }
   };
+
+  //Thay đổi trạng thái các column khi bắt đầu drag
 
   const handleDragStart = (result: any) => {
     const startCol = tasksColumns.filter(
@@ -384,6 +504,7 @@ const TasksPage = () => {
     setTasksColumns(newState);
   };
 
+  //Cập nhật giao diện khi thả item
   const handleDragEnd = (result: any) => {
     const { destination, source } = result;
 
@@ -438,30 +559,41 @@ const TasksPage = () => {
       const newSourceTasks = Array.from(sourceCol.items);
       const [removedItem] = newSourceTasks.splice(source.index, 1);
       removedItem.status = destination.droppableId;
+      const newSourceCol = { ...sourceCol, items: newSourceTasks };
+      const newDesTasks = Array.from(desCol.items);
+      newDesTasks.splice(destination.index, 0, removedItem);
+      const newDesCol = { ...desCol, items: newDesTasks };
+      const newState = tasksColumns.map((column) => {
+        if (column.id === newSourceCol.id) {
+          return { ...newSourceCol, dropAllow: true };
+        } else if (column.id === newDesCol.id) {
+          return { ...newDesCol, dropAllow: true };
+        } else {
+          return { ...column, dropAllow: true };
+        }
+      });
+      setTasksColumns(newState);
       taskApi
         .editTask(removedItem._id, { ...removedItem, stageId: params.stagesId })
         .then((res: any) => {
-          const sourceTasks = Array.from(sourceCol.items);
-          const newSourceTasksTest = sourceTasks.filter((task: any) => {
-            return task._id !== res.task._id;
-          });
-          const newSourceColTest = { ...sourceCol, items: newSourceTasksTest };
-          const newDesTasksTest = Array.from(desCol.items);
-          newDesTasksTest.splice(destination.index, 0, res.task);
-          const newDesColTest = { ...desCol, items: newDesTasksTest };
+          showMessage("success", res?.message, 2);
+        })
+        .catch((err: any) => {
+          removedItem.status = source.droppableId;
+          newDesTasks.splice(destination.index, 1);
+          const newDesCol = { ...desCol, items: newDesTasks };
+          newSourceTasks.splice(source.index, 0, removedItem);
+          const newSourceCol = { ...sourceCol, items: newSourceTasks };
           const newState = tasksColumns.map((column) => {
-            if (column.id === newSourceColTest.id) {
-              return { ...newSourceColTest, dropAllow: true };
-            } else if (column.id === newDesColTest.id) {
-              return { ...newDesColTest, dropAllow: true };
+            if (column.id === newSourceCol.id) {
+              return { ...newSourceCol, dropAllow: true };
+            } else if (column.id === newDesCol.id) {
+              return { ...newDesCol, dropAllow: true };
             } else {
               return { ...column, dropAllow: true };
             }
           });
           setTasksColumns(newState);
-          showMessage("success", res?.message, 2);
-        })
-        .catch((err: any) => {
           showMessage("error", err.response.data?.message, 2);
         });
     }
@@ -541,6 +673,8 @@ const TasksPage = () => {
       >
         {!statusForm && !openInfo && (
           <TaskForm
+            setTasksColumns={setTasksColumns}
+            tasksColumns={tasksColumns}
             showMessage={showMessage}
             key={statusForm ? "create" : "update"}
             title="Create new task"
@@ -620,15 +754,55 @@ const TasksPage = () => {
           />
           <Select
             size="large"
-            value={`Priority: ${
-              _.capitalize(queryParams.priority) ||
-              priorityOptions[0].options[0].label
-            }`}
+            value={
+              sortSelectValue?.includes("prio")
+                ? `Priority: ${
+                    queryParams.sort.replace("prio", "") ||
+                    priorityOptions[0].options[0].label
+                  }`
+                : `Deadline: ${
+                    queryParams.sort.replace("deadline", "") ||
+                    priorityOptions[0].options[0].label
+                  }`
+            }
             dropdownMatchSelectWidth={false}
             options={priorityOptions}
             onChange={sortPriority}
           />
-          <Select size="large" defaultValue="Filter Member" />
+          <Select
+            mode="multiple"
+            style={{ width: "300px" }}
+            maxTagCount="responsive"
+            showSearch
+            size="large"
+            suffixIcon={<SearchOutlined />}
+            placeholder="Search Member"
+            optionFilterProp="children"
+            filterOption={(input, option) =>
+              typeof option?.label === "string" &&
+              option.label.toLowerCase().includes(input.toLowerCase())
+            }
+            onChange={handleFilterMember}
+            dropdownRender={(menu) =>
+              isLoading ? (
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "center",
+                    padding: "10px 0",
+                  }}
+                >
+                  <LoadingOutlined />
+                </div>
+              ) : (
+                menu
+              )
+            }
+            options={responseData?.members?.map((item: IUser) => ({
+              label: `${item.data.fullName}`,
+              value: item.data.username,
+            }))}
+          />
           <Search
             size="large"
             placeholder="Task Name"

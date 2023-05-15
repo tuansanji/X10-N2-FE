@@ -33,6 +33,7 @@ import {
   Select,
   Skeleton,
 } from "antd";
+import { ColumnData } from "./TasksPage";
 
 export interface ITask {
   title: string;
@@ -61,6 +62,9 @@ interface ITaskForm {
   setEdit?: Dispatch<SetStateAction<boolean>>;
   setStatusForm: Dispatch<SetStateAction<boolean>>;
   showMessage: (type: NoticeType, content: string, duration?: number) => void;
+
+  setTasksColumns?: React.Dispatch<React.SetStateAction<ColumnData[]>>;
+  tasksColumns?: ColumnData[];
 }
 
 export interface IUser {
@@ -86,6 +90,10 @@ const TaskForm = (props: ITaskForm) => {
     button,
     taskCurrent,
     showMessage,
+
+    setTasksColumns,
+
+    tasksColumns,
   } = props;
   const [description, setDescription] = useState<string>("");
   const [reloadData, setReloadData] = useState<number>(1);
@@ -143,6 +151,14 @@ const TaskForm = (props: ITaskForm) => {
       taskApi
         .addTask(task)
         .then((res: any) => {
+          if (tasksColumns) {
+            let newState = tasksColumns.map((task: any) => {
+              if (task.id === "open") {
+                return { ...task, items: [res.task, ...task.items] };
+              } else return task;
+            });
+            setTasksColumns?.(newState);
+          }
           showMessage("success", res.message, 2);
           setIsModalOpen(false);
           form.setFieldsValue(initialValues);
