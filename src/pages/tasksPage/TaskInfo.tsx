@@ -1,137 +1,161 @@
-import Comment from '../../components/comment/Comment';
-import '../../css/comment.css';
-import { CameraFilled, CloseOutlined } from '@ant-design/icons';
-import {
-  Badge,
-  Button,
-  Descriptions,
-  message,
-  Upload
-  } from 'antd';
-import React from 'react';
-import type { UploadProps } from "antd";
-const TaskInfo = () => {
-  const props: UploadProps = {
-    name: "file",
-    action: "https://www.mocky.io/v2/5cc8019d300000980a055e76",
-    headers: {
-      authorization: "authorization-text",
-    },
-    onChange(info) {
-      if (info.file.status !== "uploading") {
-        console.log(info.file, info.fileList);
-      }
-      if (info.file.status === "done") {
-        message.success(`${info.file.name} file uploaded successfully`);
-      } else if (info.file.status === "error") {
-        message.error(`${info.file.name} file upload failed.`);
-      }
-    },
+import TaskComment from "./TaskComment";
+import { ITask } from "./TaskForm";
+import { useAppSelector } from "../../redux/hook";
+import { RootState } from "../../redux/store";
+import imageApi from "../../services/api/imageApi";
+import taskApi from "../../services/api/taskApi";
+import { Editor } from "@tinymce/tinymce-react";
+import { Button } from "antd";
+import { NoticeType } from "antd/es/message/interface";
+import axios from "axios";
+import React, { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { Editor as TinyMCEEditor } from "tinymce";
+import { v4 as uuid } from "uuid";
+
+interface ITaskComments {
+  taskCurrent: ITask | null;
+  showMessage: (type: NoticeType, content: string, duration?: number) => void;
+}
+
+export interface ICommentTask {
+  commenter: {
+    avatar: string;
+    email: string;
+    fullName: string;
+    username: string;
+    _id: string;
   };
+  content: string;
+  createdDate: Date;
+  _id: string;
+}
+
+const TaskInfo = ({ taskCurrent, showMessage }: ITaskComments) => {
+  const [listComment, setListComment] = useState<ICommentTask[]>([]);
+
+  const commentListRef = useRef<HTMLDivElement | null>(null);
+  const [countReloadComments, setCountReloadComments] = useState<number>(1);
+  const [content, setContent] = useState("");
+
+  const user = useAppSelector((state: RootState) => state.auth?.userInfo);
+  const { t } = useTranslation(["content", "base"]);
+  const tinyRef = useRef<TinyMCEEditor | null>(null);
+  function handleEditorChange(content: any, editor: any) {
+    setContent(content);
+  }
+  // gửi comment
+  const handleSendComment = () => {
+    if (content && taskCurrent) {
+      showMessage("loading", `${t("content:loading")}...`);
+      taskApi
+        .addComment(taskCurrent._id, content)
+        .then((res: any) => {
+          showMessage("success", res.message, 2);
+          setCountReloadComments((prev) => prev + 1);
+          commentListRef?.current?.scrollIntoView({
+            behavior: "smooth",
+            block: "start",
+          });
+          if (tinyRef.current) {
+            tinyRef.current.setContent("");
+          }
+        })
+        .catch((err: any) => {
+          showMessage("error", err.response.data?.message, 2);
+        });
+    }
+  };
+  // lấy danh sách comment và đảo ngược lại
+  useEffect(() => {
+    if (taskCurrent) {
+      taskApi
+        .getAllComment(taskCurrent?._id)
+        .then((res: any) => setListComment(res.comments.reverse()))
+        .catch((err) => {
+          console.log(err);
+        });
+    }
+  }, [taskCurrent, countReloadComments]);
+
   return (
-    <div className="task_info">
-      <div className="task_info--container">
-        <div className="btn_close">
-          <CloseOutlined style={{ fontSize: "25px" }} />
-        </div>
-        <div className="modal modal_task">
-          <div className="modal_table">
-            <Descriptions title="JOB DETAILS" bordered column={2}>
-              <Descriptions.Item label="Job Code">
-                mã công việc
-              </Descriptions.Item>
-              <Descriptions.Item label="Title">
-                tiêu đề công việc
-              </Descriptions.Item>
-              <Descriptions.Item label="Type of work">
-                loại công việc
-              </Descriptions.Item>
-              <Descriptions.Item label="Priority">độ ưu tiên</Descriptions.Item>
-              <Descriptions.Item label="Creator">người tạo</Descriptions.Item>
-              <Descriptions.Item label="Executor">
-                người thi hành
-              </Descriptions.Item>
+    <div className="task_info--container" id="task_info">
+      <div className="modal modal_task">
+        <div className="modal_comment">
+          <h3 className="comment_title">{t("content:form.comments")}</h3>
+          <div className="comments_container ">
+            <div ref={commentListRef} className="comment_list">
+              {listComment?.map((comment) => (
+                <TaskComment
+                  key={uuid()}
+                  taskCurrentId={taskCurrent?._id || ""}
+                  comment={comment}
+                  showMessage={showMessage}
+                  setCountReloadComments={setCountReloadComments}
+                />
+              ))}
+            </div>
+            <div
+              className="comment_list-chat"
+              style={{ height: content ? "400px" : "150px" }}
+            >
+              <div className="comment_action ">
+                <img
+                  src={user.avatar}
+                  alt={user?.fullName || ""}
+                  className="img_user"
+                />
+                <Editor
+                  onInit={(evt, editor) => {
+                    tinyRef.current = editor;
+                  }}
+                  apiKey={process.env.REACT_APP_TINYMCE_KEY}
+                  init={{
+                    height: "100%",
+                    width: "100%",
+                    menubar: false,
+                    statusbar: false,
+                    plugins: ["image"],
 
-              <Descriptions.Item label="Status" span={3}>
-                <Badge status="processing" text="Running" />
-              </Descriptions.Item>
-
-              <Descriptions.Item label="Date created">
-                ngày tạo
-              </Descriptions.Item>
-              <Descriptions.Item label="Start date" span={2}>
-                ngày bắt đầu
-              </Descriptions.Item>
-
-              <Descriptions.Item label="Deadline">hạn chót</Descriptions.Item>
-              <Descriptions.Item label="Actual end date" span={2}>
-                ngày kết thúc thực tế
-              </Descriptions.Item>
-
-              <Descriptions.Item label="Descriptions">
-                Data disk type: MongoDB
-                <br />
-                Database version: 3.4
-                <br />
-                Package: dds.mongo.mid
-                <br />
-                Storage space: 10 GB
-                <br />
-                Replication factor: 3
-                <br />
-                Region: East China 1
-                <br />
-              </Descriptions.Item>
-            </Descriptions>
-          </div>
-          <div className="modal_comment">
-            <h3 className="comment_title">JOB EXCHANGE</h3>
-            <div className="comments_container ">
-              <div className="comment_list">
-                <Comment />
-                <Comment />
-                <Comment />
-                <Comment /> <Comment />
-                <Comment />
-                <Comment />
-                <Comment />
+                    toolbar: `
+                        undo redo | formatselect | bold italic |  image | backcolor | \
+                    alignleft aligncenter alignright alignjustify | \
+                    bullist numlist outdent indent | removeformat 
+                        `,
+                    file_picker_types: "file image media",
+                    // image_dimensions: false,
+                    image_class_list: [
+                      { title: "Responsive", value: "img-tiny" },
+                    ],
+                    images_upload_handler: async (blobInfo) => {
+                      return new Promise((resolve, reject) => {
+                        let imageFile = new FormData();
+                        imageFile.append("image", blobInfo.blob());
+                        imageApi
+                          .uploadImg(imageFile)
+                          .then((data: any) => {
+                            const url = data.image;
+                            resolve(url);
+                          })
+                          .catch((e) => {
+                            reject(e);
+                          });
+                      });
+                    },
+                  }}
+                  value={content}
+                  onEditorChange={handleEditorChange}
+                />
               </div>
-              <div className="comment_list-chat">
-                <div className="comment_action ">
-                  <img
-                    src={
-                      "https://symbols.vn/wp-content/uploads/2022/02/Hinh-Sanji-Dep-an-tuong.jpg"
-                    }
-                    alt=""
-                    className=""
-                  />
-                  <input
-                    type="text"
-                    placeholder="What's on your mind?"
-                    className=""
-                  />
-                  <div className="icon_img">
-                    <Upload {...props}>
-                      <Button
-                        icon={
-                          <CameraFilled
-                            style={{
-                              fontSize: "20px",
-                            }}
-                          />
-                        }
-                      ></Button>
-                    </Upload>
-                  </div>
-                </div>
-                <div className="btn_action">
-                  <Button
-                    type="primary"
-                    style={{ width: "90%", height: "55%" }}
-                  >
-                    Send
-                  </Button>
-                </div>
+
+              <div className="btn_action">
+                <Button
+                  type="primary"
+                  style={{ width: "90%", height: "50px" }}
+                  onClick={handleSendComment}
+                >
+                  Send
+                </Button>
               </div>
             </div>
           </div>

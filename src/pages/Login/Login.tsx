@@ -1,5 +1,4 @@
-import React from "react";
-import axios from "axios";
+import React, { useEffect } from "react";
 import {
   Form,
   Button,
@@ -9,11 +8,11 @@ import {
   Checkbox,
   notification,
 } from "antd";
+import { LoadingOutlined, GoogleOutlined } from "@ant-design/icons";
 import { Link, useNavigate } from "react-router-dom";
-import { requestLogin } from "../../redux/apiRequest";
-import { useDispatch } from "react-redux";
-import { GoogleOutlined } from "@ant-design/icons";
+import { useAppDispatch, useAppSelector } from "../../redux/hook";
 import { images } from "../../assets/images/index";
+import { requestLogin } from "../../redux/store";
 
 const { Title, Paragraph } = Typography;
 
@@ -21,11 +20,25 @@ const Login: React.FC = () => {
   const navigate = useNavigate();
   const [form] = Form.useForm();
   const [api, contextHolder] = notification.useNotification();
-  const dispatch = useDispatch();
+  const { isLoading } = useAppSelector((state) => {
+    return state.auth;
+  });
+  const dispatch = useAppDispatch();
 
   const onFinish = async (requestBody: any) => {
-    requestLogin(requestBody, dispatch, api, navigate);
+    dispatch(requestLogin(requestBody))
+      .unwrap()
+      .then(() => {
+        navigate("/");
+      })
+      .catch((error) => {
+        api["error"]({
+          message: "Error",
+          description: error.message,
+        });
+      });
   };
+
   return (
     <div className="login">
       {contextHolder}
@@ -85,7 +98,7 @@ const Login: React.FC = () => {
           {/* Submit Button */}
           <Form.Item>
             <Button type="primary" htmlType="submit">
-              Login
+              {isLoading && <LoadingOutlined />}Login
             </Button>
           </Form.Item>
         </Form>
