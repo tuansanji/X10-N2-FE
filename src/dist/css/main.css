@@ -586,7 +586,7 @@ html {
   font-size: 12px;
 }
 
-.project-name {
+.project_name {
   cursor: pointer;
   color: #1677ff;
 }
@@ -890,6 +890,11 @@ html {
   position: absolute;
   top: 10px;
   left: 20px;
+}
+
+.stage_name {
+  cursor: pointer;
+  color: #1677ff;
 }
 
 .project-detail {

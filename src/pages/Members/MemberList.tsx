@@ -169,7 +169,7 @@ const MemberList: React.FC = () => {
     useState<boolean>(false);
   const [showAddMemberModal, setShowAddMemberModal] = useState<boolean>(false);
   const [searchInput, setSearchInput] = useState<string>("");
-  const [searchResult, setSearchResult] = useState<any>([]);
+  const [searchResult, setSearchResult] = useState<any[]>([]);
   const [pagination, setPagination] = useState<any>({
     pageIndex: 1,
     total: null,
@@ -237,13 +237,13 @@ const MemberList: React.FC = () => {
             },
             headers: { Authorization: `Bearer ${token}` },
           });
-          let result = memberData.filter((member: any) =>
-            response.data.users.some(
-              (user: any) => user._id === member.data._id
-            )
-          );
-          setSearchResult(result);
 
+          setSearchResult(response.data.members);
+          setPagination({
+            ...pagination,
+            total: response.data.total,
+            pageIndex: response.data.currentPage,
+          });
           setIsLoading(false);
         } catch (err) {
           console.error(err);
@@ -251,7 +251,7 @@ const MemberList: React.FC = () => {
         }
       }
     };
-    timeOutRef.current = setTimeout(searchUsers, 1500);
+    timeOutRef.current = setTimeout(searchUsers, 500);
     return () => {
       clearTimeout(timeOutRef.current);
     };
@@ -301,6 +301,7 @@ const MemberList: React.FC = () => {
         searchParams.forEach((value: string, key: string) => {
           newParams[key] = value;
         });
+        setSearchResult([]);
         setSearchParams(newParams);
         dispatch(deleteQuery("search"));
       }
@@ -375,14 +376,24 @@ const MemberList: React.FC = () => {
     },
   ];
 
-  const data: MemberDataType[] = memberData.map((data) => {
-    return {
-      key: data.data._id,
-      name: data.data.fullName,
-      role: data.role,
-      joinDate: moment(data.joiningDate).format("DD/MM/YYYY"),
-    };
-  });
+  const data: MemberDataType[] =
+    searchResult && searchResult.length > 0
+      ? searchResult.map((data) => {
+          return {
+            key: data.data._id,
+            name: data.data.fullName,
+            role: data.role,
+            joinDate: moment(data.joiningDate).format("DD/MM/YYYY"),
+          };
+        })
+      : memberData.map((data) => {
+          return {
+            key: data.data._id,
+            name: data.data.fullName,
+            role: data.role,
+            joinDate: moment(data.joiningDate).format("DD/MM/YYYY"),
+          };
+        });
 
   //Kết thúc setup table
 

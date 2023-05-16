@@ -96,6 +96,14 @@ const initialData: ColumnData[] = [
   },
 ];
 
+const prioList: any = {
+  highest: 5,
+  high: 4,
+  medium: 3,
+  low: 2,
+  lowest: 1,
+};
+
 const TaskItem: React.FC<TaskItemProp> = ({ task, handleOpenInfoTask }) => {
   let priority = null;
   switch (task.priority) {
@@ -168,6 +176,7 @@ const TasksPage = () => {
     useMessageApi();
   const [taskCurrent, setTaskCurrent] = useState<ITask>();
   const [allTasks, setAllTasks] = useState<ITask[]>([]);
+  const [filteredTasks, setFilteredTasks] = useState<ITask[]>();
   const [breadcrumb, setBreadcrumb] = useState({
     project: "",
     stages: "",
@@ -180,9 +189,81 @@ const TasksPage = () => {
     []
   );
 
+  //Gọi API Lấy danh sách tasks => set vào các column
   useEffect(() => {
     let query = Object.fromEntries([...searchParams]);
-    dispatch(setQuery(query));
+    const queryMembers = searchParams.getAll("member");
+    dispatch(setQuery({ ...query, member: queryMembers }));
+
+    taskApi
+      .getAllTask(params.stagesId as string)
+      .then((res: any) => {
+        setAllTasks(res.tasks);
+        if (query.type) {
+          if (query.type === "all") {
+            res.tasks = res.tasks.filter((task: ITask) => {
+              return task;
+            });
+          } else {
+            res.tasks = res.tasks.filter(
+              (task: ITask) => task.type === query.type
+            );
+          }
+        }
+        if (query.sort) {
+          if (query.sort.includes("prio")) {
+            res.tasks.sort((a: ITask, b: ITask) => {
+              return query.sort.includes("Asc")
+                ? prioList[a.priority] - prioList[b.priority]
+                : prioList[b.priority] - prioList[a.priority];
+            });
+          }
+          if (query.sort.includes("deadline")) {
+            res.tasks.sort((a: ITask, b: ITask) => {
+              let d1 = Number(new Date(a.deadline));
+              let d2 = Number(new Date(b.deadline));
+              return query.sort.includes("Asc") ? d1 - d2 : d2 - d1;
+            });
+          }
+        } else {
+          res.tasks.sort((a: ITask, b: ITask) => {
+            let d1 = Number(new Date(a.deadline));
+            let d2 = Number(new Date(b.deadline));
+            return d1 - d2;
+          });
+        }
+
+        if (queryMembers && queryMembers.length === 0) {
+          res.tasks = res.tasks.filter((task: any) => {
+            return task;
+          });
+        }
+
+        if (queryMembers && queryMembers.length > 0) {
+          res.tasks = res.tasks.filter((task: any) => {
+            return queryMembers.some(
+              (memberName: any) => memberName === task.assignee.username
+            );
+          });
+        }
+
+        if (query.search) {
+          res.tasks = res.tasks.filter((task: any) => {
+            return task.title.toLowerCase().includes(query.search);
+          });
+        }
+
+        let newState = initialData.map((data: any) => {
+          data.items = res.tasks.filter((task: any) => {
+            return task.status === data.id;
+          });
+          return data;
+        });
+        setTasksColumns(newState);
+      })
+      .catch((err: any) => {
+        showMessage("error", err.response.data?.message, 2);
+      });
   }, []);
 
   const taskTypeOptions = [
@@ -244,50 +325,68 @@ const TasksPage = () => {
     })();
   }, []);
 
-  //Gọi API Lấy danh sách tasks => set vào các column
   useEffect(() => {
-    taskApi
-      .getAllTask(params.stagesId as string)
-      .then((res: any) => {
-        res.tasks.sort((a: ITask, b: ITask) => {
+    const { type, sort, member, search } = queryParams;
+    let filteredTasks = allTasks;
+
+    if (search) {
+      filteredTasks = filteredTasks.filter((task: any) => {
+        return task.title.toLowerCase().includes(search);
+      });
+    }
+
+    if (sort) {
+      if (sort.includes("prio")) {
+        filteredTasks.sort((a: ITask, b: ITask) => {
+          return sort.includes("Asc")
+            ? prioList[a.priority] - prioList[b.priority]
+            : prioList[b.priority] - prioList[a.priority];
+        });
+      }
+      if (sort.includes("deadline")) {
+        filteredTasks.sort((a: ITask, b: ITask) => {
           let d1 = Number(new Date(a.deadline));
           let d2 = Number(new Date(b.deadline));
-          return d1 - d2;
+          return sort.includes("Asc") ? d1 - d2 : d2 - d1;
         });
-        initialData.map((data: any) => {
-          data.items = res.tasks.filter((task: any) => {
-            return task.status === data.id;
-          });
-        });
-        setAllTasks(res.tasks);
-        setTasksColumns(initialData);
-      })
-      .catch((err: any) => {
-        console.error(err);
+      }
+    }
+
+    if (member && member.length === 0) {
+      filteredTasks = filteredTasks.filter((task: any) => {
+        return task;
       });
-  }, []);
+    }
+
+    if (member && member.length > 0) {
+      filteredTasks = filteredTasks.filter((task: any) => {
+        return member.some(
+          (memberName: any) => memberName === task.assignee.username
+        );
+      });
+    }
+
+    if (type === "all") {
+      filteredTasks = filteredTasks.filter((task: any) => {
+        return task;
+      });
+    }
+    if (type !== "all") {
+      filteredTasks = filteredTasks.filter((task: any) => {
+        return task.type === type;
+      });
+    }
+    let newState = initialData.map((data: any) => {
+      data.items = filteredTasks.filter((task: any) => {
+        return task.status === data.id;
+      });
+      return data;
+    });
+    setTasksColumns(newState);
+  }, [queryParams]);
 
   //Xử lý Filter theo loại công việc
   const selectTaskTypes = (value: string) => {
-    const filtered = allTasks.filter((task: any) => task.type === value);
-    if (value === "all") {
-      initialData.map((data: any) => {
-        data.items = allTasks.filter((task: any) => {
-          return task.status === data.id;
-        });
-        return data;
-      });
-      setTasksColumns(initialData);
-    } else {
-      initialData.map((data: any) => {
-        data.items = filtered.filter((task: any) => {
-          return task.status === data.id;
-        });
-        return data;
-      });
-      setTasksColumns(initialData);
-    }
-
     dispatch(setQuery({ ...queryParams, type: value }));
     setSearchParams({ ...queryParams, type: value });
   };
@@ -295,73 +394,14 @@ const TasksPage = () => {
   //Xử lý sort theo thứ tự công việc và deadline
   const sortPriority = (value: string) => {
     setSortSelectValue(value);
-    const prioList: any = {
-      highest: 5,
-      high: 4,
-      medium: 3,
-      low: 2,
-      lowest: 1,
-    };
-    if (value.includes("prio")) {
-      allTasks.sort((a: ITask, b: ITask) => {
-        return value.includes("Asc")
-          ? prioList[a.priority] - prioList[b.priority]
-          : prioList[b.priority] - prioList[a.priority];
-      });
-      initialData.map((data: any) => {
-        data.items = allTasks.filter((task: ITask) => {
-          return task.status === data.id;
-        });
-        return data;
-      });
-      setTasksColumns(initialData);
-    }
-    if (value.includes("deadline")) {
-      allTasks.sort((a: ITask, b: ITask) => {
-        let d1 = Number(new Date(a.deadline));
-        let d2 = Number(new Date(b.deadline));
-        return value.includes("Asc") ? d1 - d2 : d2 - d1;
-      });
-      initialData.map((data: any) => {
-        data.items = allTasks.filter((task: ITask) => {
-          return task.status === data.id;
-        });
-        return data;
-      });
-      setTasksColumns(initialData);
-    }
     dispatch(setQuery({ ...queryParams, sort: value }));
     setSearchParams({ ...queryParams, sort: value });
   };
 
   //Filter công việc theo username của Member
   const handleFilterMember = (values: any) => {
-    if (values && values.length === 0) {
-      initialData.map((data: any) => {
-        data.items = allTasks.filter((task: ITask) => {
-          return task.status === data.id;
-        });
-        return data;
-      });
-      setTasksColumns(initialData);
-      dispatch(setQuery({ ...queryParams, member: values }));
-      setSearchParams({ ...queryParams, member: values });
-    }
-    if (values.length > 0) {
-      let filtered = allTasks.filter((task: any) => {
-        return values.some((value: string) => value === task.assignee.username);
-      });
-
-      initialData.map((data: any) => {
-        data.items = filtered.filter((task: ITask) => {
-          return task.status === data.id;
-        });
-        return data;
-      });
-      setTasksColumns(initialData);
-      dispatch(setQuery({ ...queryParams, member: values }));
-      setSearchParams({ ...queryParams, member: values });
-    }
+    dispatch(setQuery({ ...queryParams, member: values }));
+    setSearchParams({ ...queryParams, member: values });
   };
 
   //Click cancel toàn bộ member đã chọn thì hiển thị lại toàn bộ danh sách tasks
@@ -386,27 +426,10 @@ const TasksPage = () => {
         searchParams.forEach((value: string, key: string) => {
           newParams[key] = value;
         });
-        initialData.map((data: any) => {
-          data.items = allTasks.filter((task: any) => {
-            return task.status === data.id;
-          });
-          return data;
-        });
-        setTasksColumns(initialData);
         setSearchParams(newParams);
         dispatch(deleteQuery("search"));
       }
     } else {
-      const filtered = allTasks.filter((task: any) =>
-        task.title.toLowerCase().includes(value)
-      );
-      initialData.map((data: any) => {
-        data.items = filtered.filter((task: any) => {
-          return task.status === data.id;
-        });
-        return data;
-      });
-      setTasksColumns(initialData);
       dispatch(setQuery({ ...queryParams, search: value }));
       setSearchParams({ ...queryParams, search: value });
     }
@@ -726,7 +749,8 @@ const TasksPage = () => {
           <Select
             size="large"
             value={
-              sortSelectValue?.includes("prio")
+              sortSelectValue?.includes("prio") ||
+              queryParams.sort?.includes("prio")
                 ? `Priority: ${
                     queryParams.sort?.replace("prio", "") ||
                     priorityOptions[0].options[0].label
@@ -748,6 +772,7 @@ const TasksPage = () => {
             showSearch
             size="large"
             suffixIcon={<SearchOutlined />}
+            value={queryParams.member}
             placeholder="Search Member"
             optionFilterProp="children"
             filterOption={(input, option) =>

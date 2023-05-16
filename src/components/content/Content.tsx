@@ -7,7 +7,8 @@ import {
 } from "../../pages";
 import React from "react";
 import { useSelector } from "react-redux";
-import { Route, Routes } from "react-router";
+import { Outlet, Route, Routes } from "react-router";
+import Sidebar from "../sidebar/Sidebar";
 
 const Content = () => {
   const statusMenu = useSelector((state: any) => state.menu?.status);
@@ -24,6 +25,8 @@ const Content = () => {
         <Route path="/user/info" element={<UserDetails />} />
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
+      {/* <Sidebar />
+      <Outlet /> */}
     </main>
   );
 };
