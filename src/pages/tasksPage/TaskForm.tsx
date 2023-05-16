@@ -152,7 +152,7 @@ const TaskForm = (props: ITaskForm) => {
         setCurrentUser(currentUserArr[0].data);
     }
   }, [responseData, user]);
-  console.log(currentUser);
+
   //lấy thông tin công việc
   useEffect(() => {
     if (taskCurrent) {
@@ -170,16 +170,17 @@ const TaskForm = (props: ITaskForm) => {
   }, [taskCurrent, reloadData]);
   //hàm xóa taks
   const handleDelete = () => {
-    // showMessage("loading", `${t("content:loading")}...`);
-    // taskApi
-    //   .deleteTask(taskInfo.data?._id as string)
-    //   .then((res: any) => {
-    //     showMessage("success", res.message, 2);
-    //     setIsModalOpen(false);
-    //   })
-    //   .catch((err: any) => {
-    //     showMessage("error", err.response.data?.message, 2);
-    //   });
+    showMessage("loading", `${t("content:loading")}...`);
+    taskApi
+      .deleteTask(taskInfo.data?._id as string)
+      .then((res: any) => {
+        showMessage("success", res.message, 2);
+        setCountReloadTasks((prev) => prev + 1);
+        setIsModalOpen(false);
+      })
+      .catch((err: any) => {
+        showMessage("error", err.response.data?.message, 2);
+      });
   };
 
   // hàm submit form
@@ -327,7 +328,7 @@ const TaskForm = (props: ITaskForm) => {
               //	Người thực hiện công việc chỉ được phép cập nhật trạng thái công việc.
               (isBoss ||
                 // currentUser?.data._id === taskData?.assignee?._id ||
-                currentUser?.data.username ===
+                currentUser?.data?.username ===
                   taskData?.createdBy?.username) && (
                 <div className="task__action--form">
                   <Button type="primary" onClick={handleEditTask}>

@@ -275,7 +275,7 @@ const ListProject: React.FC = () => {
   };
   return (
     <div className="content_project-page">
-      {loading && <Loading />}
+      {/* {loading && <Loading />} */}
       <div className="project_page-header">
         {/* Create New Project Modal */}
         <Modal
