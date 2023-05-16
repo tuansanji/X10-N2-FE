@@ -1,15 +1,21 @@
-import Comment from "../../components/comment/Comment";
-import { useAxios } from "../../hooks";
-import { useAppSelector } from "../../redux/hook";
-import { RootState } from "../../redux/store";
-import projectApi from "../../services/api/projectApi";
-import stageApi from "../../services/api/stageApi";
-import { MemberDataType } from "../Members/MemberList";
-import { Button, Input, Modal, Skeleton } from "antd";
-import { useEffect, useRef, useState } from "react";
-import { useTranslation } from "react-i18next";
-import { useParams } from "react-router";
-import { v4 as uuid } from "uuid";
+import Comment from '../../components/comment/Comment';
+import { useAxios } from '../../hooks';
+import useIsBoss from '../../hooks/useIsBoss';
+import { useAppSelector } from '../../redux/hook';
+import { RootState } from '../../redux/store';
+import projectApi from '../../services/api/projectApi';
+import stageApi from '../../services/api/stageApi';
+import { MemberDataType } from '../Members/MemberList';
+import {
+  Button,
+  Input,
+  Modal,
+  Skeleton
+  } from 'antd';
+import { useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { useParams } from 'react-router';
+import { v4 as uuid } from 'uuid';
 
 import useMessageApi, {
   UseMessageApiReturnType,
@@ -21,7 +27,7 @@ export interface IUserComment {
   fullName: string;
   avatar: string;
   email: string;
-  userName: string;
+  username: string;
 }
 interface IResponseMemberList {
   projectId: string;
@@ -47,33 +53,32 @@ const StageReview = ({ stageId }: IPropsReview) => {
   const [myReview, setMyReview] = useState<string>("");
   const [open, setOpen] = useState(false);
   const [reviewAdded, setReviewAdded] = useState<number>(1);
-  const [isBoss, setIsBoss] = useState(false);
-  const params = useParams();
+  // const [isBoss, setIsBoss] = useState(false);
+  const [listComment, setListComment] = useState<any>([]);
+  const [numberPage, setNumberPage] = useState<number>(1);
+  const [loading, setLoading] = useState(false);
 
   const commentListRef = useRef<HTMLDivElement>(null);
   const { showMessage, contextHolder }: UseMessageApiReturnType =
     useMessageApi();
 
-  const user = useAppSelector((state: RootState) => state.auth.userInfo);
+  const { isBoss } = useIsBoss([], 2);
+
   const { t } = useTranslation(["content", "base"]);
 
   //lấy danh sách tất cả đánh giá
   const { responseData, isLoading } = useAxios(
-    "post",
-    `/stage/review/${stageId}`,
-    [stageId, reviewAdded]
+    "get",
+    `/stage/review/${stageId}?page=1`,
+    [stageId, open, reviewAdded]
   );
 
-  // test cuộn comment
   useEffect(() => {
-    if (commentListRef.current) {
-      commentListRef.current.lastElementChild?.scrollIntoView({
-        behavior: "smooth",
-        block: "nearest",
-        inline: "start",
-      });
-    }
-  }, []);
+    setListComment(responseData.review);
+    return () => {
+      setNumberPage(1);
+    };
+  }, [responseData]);
 
   // thêm đánh giá
   const handleAddComment = () => {
@@ -86,58 +91,63 @@ const StageReview = ({ stageId }: IPropsReview) => {
           setReviewAdded((prev) => prev + 1);
           setOpen(false);
           setMyReview("");
-          // setTimeout(() => {
-          //   // Scroll to the last comment
-          //   if (commentListRef.current) {
-          //     commentListRef.current.lastElementChild?.scrollIntoView({
-          //       behavior: "smooth",
-          //       block: "nearest",
-          //       inline: "start",
-          //     });
-          //   }
-          // }, 1000);
         })
         .catch((err) => {
           showMessage("error", err.response.data?.message, 2);
         });
     }
   };
+  // load thêm dữ liệu
+  // chờ backend trả về sớm nhất trước mới đúng
+  const handleLoadMore = () => {
+    const params = {
+      page: numberPage + 1,
+    };
+    setLoading(true);
+    stageApi.getAllCommentPagination(stageId, params).then((res: any) => {
+      listComment && setListComment((prev: any) => [...prev, ...res.review]);
+      setNumberPage((prev) => prev + 1);
+      setLoading(false);
+    });
+  };
 
   // Lấy List member thuộc project
-  useEffect(() => {
-    (async () => {
-      try {
-        const response: any = await projectApi.getAllMember(
-          params.projectId as string
-        );
-        response?.members?.forEach(
-          (userP: {
-            data: MemberDataType;
-            joiningDate: Date;
-            role: string;
-          }) => {
-            if (
-              userP.role === "manager" ||
-              userP.role === "leader" ||
-              userP.role === "supervisor"
-            ) {
-              if (userP.data.username === user.username) {
-                setIsBoss(true);
-                return;
-              }
-            }
-          }
-        );
-      } catch (err) {
-        console.error(err);
-      }
-    })();
-  }, []);
+  // useEffect(() => {
+  //   (async () => {
+  //     try {
+  //       const response: any = await projectApi.getAllMember(
+  //         params.projectId as string
+  //       );
+  //       response?.members?.forEach(
+  //         (userP: {
+  //           data: MemberDataType;
+  //           joiningDate: Date;
+  //           role: string;
+  //         }) => {
+  //           if (
+  //             userP.role === "manager" ||
+  //             userP.role === "leader" ||
+  //             userP.role === "supervisor"
+  //           ) {
+  //             if (userP.data.username === user.username) {
+  //               setIsBoss(true);
+  //               return;
+  //             }
+  //           }
+  //         }
+  //       );
+  //     } catch (err) {
+  //       console.error(err);
+  //     }
+  //   })();
+  // }, []);
   const showModal = () => {
     setOpen(true);
   };
   const handleCancel = () => {
     setOpen(false);
+    setNumberPage(1);
+    setLoading(false);
   };
   return (
     <div className="stage__review">
@@ -171,7 +181,9 @@ const StageReview = ({ stageId }: IPropsReview) => {
       </div>
       <div className="stage__review--content">
         {isLoading ? (
-          <Skeleton active avatar />
+          <div style={{ paddingTop: "20px" }}>
+            <Skeleton active avatar />
+          </div>
         ) : (
           <div
             className="review__list--comment scroll_custom "
@@ -180,7 +192,7 @@ const StageReview = ({ stageId }: IPropsReview) => {
             {responseData?.review?.length === 0 ? (
               <strong>{t("content:tittleReview")}</strong>
             ) : (
-              responseData?.review?.map((comment: IReview) => (
+              listComment?.map((comment: IReview) => (
                 <Comment
                   key={uuid()}
                   showMessage={showMessage}
@@ -189,6 +201,16 @@ const StageReview = ({ stageId }: IPropsReview) => {
                   stageId={stageId}
                 />
               ))
+            )}
+            {responseData.totalPages > numberPage && (
+              <span className="load__more" onClick={handleLoadMore}>
+                {t("base:loadMore")}
+              </span>
+            )}
+            {loading && (
+              <div style={{ paddingTop: "20px" }}>
+                <Skeleton avatar />
+              </div>
             )}
           </div>
         )}

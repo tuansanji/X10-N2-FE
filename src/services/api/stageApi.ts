@@ -36,6 +36,12 @@ const stageApi = {
     return axiosClient.post(url, { stageId });
   },
   //phần liên quan đến đánh giá bình luận
+  getAllCommentPagination(stageId: string, params: any) {
+    const url = `stage/review/${stageId}`;
+    return axiosClient.get(url, {
+      params,
+    });
+  },
   addComment(stageId: string, comment: string) {
     const url = `/stage/review/add/${stageId}`;
     return axiosClient.post(url, {

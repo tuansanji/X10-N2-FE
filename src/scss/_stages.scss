@@ -35,10 +35,18 @@
 }
 //css phaafn trang danh gia
 .stage__review {
+  cursor: pointer;
   display: flex;
   gap: 30px;
   flex-direction: column;
-
+  .load__more {
+    font-weight: 600;
+    color: rgb(62, 62, 218);
+    text-decoration: underline;
+    &:hover {
+      opacity: 0.6;
+    }
+  }
   &--header {
     display: flex;
     justify-content: space-between;

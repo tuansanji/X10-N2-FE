@@ -1,10 +1,11 @@
+import InputFile from "./InputFile";
+import InputPassword, { InputPasswordTextArea } from "./InputPassword";
 import { useAxios } from "../../hooks";
 import { updateUserInfo } from "../../redux/slice/authSlice";
-import { requestLogin } from "../../redux/store";
 import userApi from "../../services/api/userApi";
-import { DatePicker, Input, Select, Space } from "antd";
-import { Button, Modal, Skeleton } from "antd";
-import TextArea from "antd/es/input/TextArea";
+import { RightOutlined } from "@ant-design/icons";
+import { DatePicker, Select, Space } from "antd";
+import { Modal, Skeleton } from "antd";
 import dayjs from "dayjs";
 import moment from "moment";
 import "moment/locale/vi";
@@ -12,18 +13,12 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch } from "react-redux";
 
-import {
-  EyeInvisibleOutlined,
-  EyeTwoTone,
-  RightOutlined,
-  UploadOutlined,
-} from "@ant-design/icons";
 import type { DatePickerProps } from "antd";
 import useMessageApi, {
   UseMessageApiReturnType,
 } from "../../components/support/Message";
 
-interface IUser {
+export interface IUser {
   avatar: string;
   dob: Date;
   email: string;
@@ -33,7 +28,7 @@ interface IUser {
   userType: string;
   username: string;
 }
-interface IDataEdit {
+export interface IDataEdit {
   field: string;
   data: any;
   requirePassword?: boolean;
@@ -59,6 +54,7 @@ const UserDetails = () => {
     useMessageApi();
   const { t, i18n } = useTranslation(["content", "base"]);
   const dispatch = useDispatch();
+
   const userInfo: IUser = useMemo(() => {
     return responseData ? responseData?.user : null;
   }, [responseData]);
@@ -95,14 +91,23 @@ const UserDetails = () => {
       setDataImage(formData);
     }
   };
+  // xóa preview ảnh khi thay đổi tránh rò rỉ bộ nhớ
+  useEffect(() => {
+    return () => {
+      imagePreview &&
+        imagePreview.preview &&
+        URL.revokeObjectURL(imagePreview.preview);
+    };
+  }, [userInfo]);
+
   //edit các field text thường
   const handleEditUser = () => {
     // không yêu cầu mật khẩu -- các field thường
     if (fieldUserEdit.data && !fieldUserEdit.requirePassword) {
       if (fieldUserEdit.field === "phone") {
         fieldUserEdit.data = fieldUserEdit.data.trim();
-        if (!/^(0\d{9})$/.test(fieldUserEdit.data)) {
-          showMessage("error", "Vui lòng nhập đúng định dạng số điện thoại", 2);
+        if (!/^(0\d{10})$/.test(fieldUserEdit.data)) {
+          showMessage("error", t("content:profileUser.message phone"), 1.5);
           return;
         }
       }
@@ -157,6 +162,7 @@ const UserDetails = () => {
         showMessage("success", res.message, 2);
         setModalImage(false);
         setCountReload((prev) => prev + 1);
+        URL.revokeObjectURL(imagePreview.preview);
       })
       .catch((err: any) => {
         showMessage("error", err.response.data?.message, 2);
@@ -176,6 +182,20 @@ const UserDetails = () => {
       data: "",
       requirePassword: false,
     });
+  };
+  // thay đổi ở nơi yes or no yêu cầu xác minh mật khẩu
+  const handleChangeFieldUserEdit = (field: string, require?: boolean) => {
+    showModal();
+    !require
+      ? setFieldUserEdit({
+          field: field,
+          data: userInfo?.[field as keyof typeof userInfo],
+        })
+      : setFieldUserEdit({
+          field: field,
+          data: userInfo?.[field as keyof typeof userInfo],
+          requirePassword: true,
+        });
   };
 
   return isLoading && !userInfo ? (
@@ -205,45 +225,29 @@ const UserDetails = () => {
           <div
             className=" wrapper "
             onClick={() => {
-              showModal();
-              setFieldUserEdit({
-                field: "fullName",
-                data: userInfo?.fullName,
-              });
+              handleChangeFieldUserEdit("fullName");
             }}
           >
-            <span>{t("content:profileUser.fullname")}</span>
+            <span>{t("content:profileUser.fullName")}</span>
             <span>{userInfo?.fullName}</span>
             <RightOutlined />
           </div>
           <div
             className=" wrapper"
             onClick={() => {
-              showModal();
-              setFieldUserEdit({
-                field: "gender",
-                data: userInfo?.gender,
-              });
+              handleChangeFieldUserEdit("gender");
             }}
           >
             <span>{t("content:profileUser.gender")}</span>
             <span>
-              {userInfo?.gender === "male"
-                ? t("content:profileUser.male")
-                : userInfo?.gender === "female"
-                ? t("content:profileUser.female")
-                : t("content:profileUser.other")}
+              {t(`content:profileUser.${userInfo?.gender}` as keyof typeof t)}
             </span>
             <RightOutlined />
           </div>
           <div
             className=" wrapper"
             onClick={() => {
-              showModal();
-              setFieldUserEdit({
-                field: "phone",
-                data: userInfo?.phone,
-              });
+              handleChangeFieldUserEdit("phone");
             }}
           >
             <span>{t("content:profileUser.phone")}</span>
@@ -253,11 +257,7 @@ const UserDetails = () => {
           <div
             className=" wrapper"
             onClick={() => {
-              showModal();
-              setFieldUserEdit({
-                field: "dob",
-                data: userInfo?.dob,
-              });
+              handleChangeFieldUserEdit("dob");
             }}
           >
             <span>{t("content:profileUser.date of birth")}</span>
@@ -270,18 +270,17 @@ const UserDetails = () => {
         <div className="info__content">
           <div className="title">
             <h2>{t("content:profileUser.title account")}</h2>
-            <p>{t("content:profileUser.title account")}</p>
+            <p>{t("content:profileUser.sub title account")}</p>
           </div>
+        </div>
+        <div className=" wrapper">
+          <span>{t("content:profileUser.username")}</span>
+          <span>{userInfo?.username}</span>
         </div>
         <div
           className=" wrapper"
           onClick={() => {
-            showModal();
-            setFieldUserEdit({
-              field: "email",
-              data: userInfo?.email,
-              requirePassword: true,
-            });
+            handleChangeFieldUserEdit("email", true);
           }}
         >
           <span>Email</span>
@@ -291,27 +290,7 @@ const UserDetails = () => {
         <div
           className=" wrapper"
           onClick={() => {
-            showModal();
-            setFieldUserEdit({
-              field: "username",
-              data: userInfo?.username,
-              requirePassword: true,
-            });
-          }}
-        >
-          <span>{t("content:profileUser.username")}</span>
-          <span>{userInfo?.username}</span>
-          <RightOutlined />
-        </div>
-        <div
-          className=" wrapper"
-          onClick={() => {
-            showModal();
-            setFieldUserEdit({
-              field: "newPassword",
-              data: "",
-              requirePassword: true,
-            });
+            handleChangeFieldUserEdit("newPassword", true);
           }}
         >
           <span>{t("content:profileUser.password")}</span>
@@ -347,57 +326,26 @@ const UserDetails = () => {
               <div className="form__content">
                 {fieldUserEdit.requirePassword && (
                   <div className="form__password">
-                    <span>{t("content:profileUser.current password")}</span>
-                    <Input.Password
-                      value={currentPassword}
-                      onChange={(e) => {
-                        const value = e.target.value;
-                        if (
-                          !value.startsWith(" ") &&
-                          !value.endsWith(" ") &&
-                          /^.{0,18}$/.test(value)
-                        ) {
-                          setCurrentPassword(e.target.value);
-                        }
-                      }}
-                      placeholder={t("content:profileUser.current password")}
-                      iconRender={(visible) =>
-                        visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />
-                      }
+                    <span style={{ width: "150px" }}>
+                      {t("content:profileUser.current password")}
+                    </span>
+                    <InputPassword
+                      currentPassword={currentPassword}
+                      setCurrentPassword={setCurrentPassword}
                     />
                   </div>
                 )}
-                <TextArea
-                  value={fieldUserEdit.data}
-                  placeholder={
-                    fieldUserEdit?.field === "newPassword"
-                      ? `${t("content:profileUser.new")} ${t(
-                          "content:profileUser.password"
-                        )}...`
-                      : `${t("content:profileUser.new")} ${
-                          fieldUserEdit?.field
-                        }...`
-                  }
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    if (
-                      !value.startsWith(" ") &&
-                      !value.endsWith("  ") &&
-                      /^.{0,18}$/.test(value)
-                    ) {
-                      setFieldUserEdit({
-                        ...fieldUserEdit,
-                        data: e.target.value,
-                      });
-                    }
-                  }}
-                  onKeyDown={(event) => {
-                    if (event.key === "Enter") {
-                      event.preventDefault();
-                    }
-                  }}
-                  rows={4}
-                />
+                <div className="form__password">
+                  <span style={{ width: "150px" }}>
+                    {t(
+                      `content:profileUser.${fieldUserEdit.field}` as keyof typeof t
+                    )}
+                  </span>
+                  <InputPasswordTextArea
+                    fieldUserEdit={fieldUserEdit}
+                    setFieldUserEdit={setFieldUserEdit}
+                  />
+                </div>
               </div>
             )}
           {fieldUserEdit.field === "gender" && (
@@ -434,18 +382,7 @@ const UserDetails = () => {
           </div>
           <div>
             <div className="avatar__upload">
-              <Button icon={<UploadOutlined />}>
-                <label htmlFor="imageUpload" className="">
-                  {t("content:profileUser.choose photo")}
-                </label>
-              </Button>
-              <input
-                style={{ display: "none" }}
-                id="imageUpload"
-                type="file"
-                accept="image/*"
-                onChange={handleImagePreview}
-              />
+              <InputFile handleImagePreview={handleImagePreview} />
             </div>
           </div>
         </div>
