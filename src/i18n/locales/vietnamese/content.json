@@ -66,10 +66,11 @@
     "assignment": "Nhiệm vụ",
     "issue": "Vấn đề",
     "cancel": "Hủy bỏ",
-    "done": "Đã hoàn thành"
-  },
-  "task": {
-    "includes": "Nhiệm vụ không tồn tại",
-    "activity": "Hoạt động"
+
+    "done": "Đã hoàn thành",
+    "task": {
+      "includes": "Nhiệm vụ không tồn tại",
+      "activity": "Hoạt động"
+    }
   }
 }

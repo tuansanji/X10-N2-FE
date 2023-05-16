@@ -141,6 +141,18 @@ const TaskForm = (props: ITaskForm) => {
     }
   }, [responseData, user]);
 
+  useEffect(() => {
+    if (responseData && user) {
+      const currentUserArr = responseData?.members?.filter((member: any) => {
+        return member.data.username === user.username;
+      });
+
+      currentUserArr &&
+        currentUserArr.length > 0 &&
+        setCurrentUser(currentUserArr[0].data);
+    }
+  }, [responseData, user]);
+  console.log(currentUser);
   //lấy thông tin công việc
   useEffect(() => {
     if (taskCurrent) {

@@ -186,7 +186,6 @@ const UserDetails = () => {
   // thay đổi ở nơi yes or no yêu cầu xác minh mật khẩu
   const handleChangeFieldUserEdit = (field: string, require?: boolean) => {
     showModal();
-
     !require
       ? setFieldUserEdit({
           field: field,
