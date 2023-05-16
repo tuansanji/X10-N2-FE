@@ -1,4 +1,4 @@
-import axiosClient from '../axiosClient';
+import axiosClient from "../axiosClient";
 
 const taskApi = {
   addTask(task: any) {
@@ -6,7 +6,7 @@ const taskApi = {
     return axiosClient.post(url, task);
   },
   deleteTask(id: string) {
-    const url = `/activity/delete/${id}`;
+    const url = `/task/delete/${id}`;
     return axiosClient.post(url);
   },
   getTask(taskId: string) {

@@ -1,20 +1,20 @@
-import TaskForm, { ITask } from './TaskForm';
-import TaskHistory from './TaskHistory';
-import TaskInfo from './TaskInfo';
-import { descriptionTest } from '../../data/statges';
-import { useAppSelector } from '../../redux/hook';
-import { setQuery } from '../../redux/slice/paramsSlice';
-import { RootState } from '../../redux/store';
-import taskApi from '../../services/api/taskApi';
-import axios from 'axios';
-import _ from 'lodash';
-import moment from 'moment';
-import React, { useEffect, useMemo, useState } from 'react';
-import { DragDropContext, Draggable, Droppable } from 'react-beautiful-dnd';
-import { useTranslation } from 'react-i18next';
-import { useDispatch, useSelector } from 'react-redux';
-import { Link, useParams, useSearchParams } from 'react-router-dom';
-import * as Scroll from 'react-scroll';
+import TaskForm, { ITask } from "./TaskForm";
+import TaskHistory from "./TaskHistory";
+import TaskInfo from "./TaskInfo";
+import { descriptionTest } from "../../data/statges";
+import { useAppSelector } from "../../redux/hook";
+import { setQuery } from "../../redux/slice/paramsSlice";
+import { RootState } from "../../redux/store";
+import taskApi from "../../services/api/taskApi";
+import axios from "axios";
+import _ from "lodash";
+import moment from "moment";
+import React, { useEffect, useMemo, useState } from "react";
+import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
+import { useTranslation } from "react-i18next";
+import { useDispatch, useSelector } from "react-redux";
+import { Link, useParams, useSearchParams } from "react-router-dom";
+import * as Scroll from "react-scroll";
 import {
   EyeOutlined,
   ClockCircleOutlined,
@@ -57,45 +57,6 @@ interface TaskItemProp {
   task: any;
   handleOpenInfoTask?: (task: ITask) => void;
 }
-
-const initialData = [
-  {
-    id: "open",
-    title: "Open",
-    items: [],
-    dropAllow: true,
-  },
-  {
-    id: "inprogress",
-    title: "In Progress",
-    items: [],
-    dropAllow: true,
-  },
-  {
-    id: "review",
-    title: "In Review",
-    items: [],
-    dropAllow: true,
-  },
-  {
-    id: "reopen",
-    title: "Re-Open",
-    items: [],
-    dropAllow: true,
-  },
-  {
-    id: "done",
-    title: "Done",
-    items: [],
-    dropAllow: true,
-  },
-  {
-    id: "cancel",
-    title: "Cancel",
-    items: [],
-    dropAllow: true,
-  },
-];
 
 const TaskItem: React.FC<TaskItemProp> = ({ task, handleOpenInfoTask }) => {
   let priority = null;
@@ -233,6 +194,45 @@ const TasksPage = () => {
       } catch (error) {}
     })();
   }, []);
+
+  const initialData = [
+    {
+      id: "open",
+      title: "Open",
+      items: [],
+      dropAllow: true,
+    },
+    {
+      id: "inprogress",
+      title: "In Progress",
+      items: [],
+      dropAllow: true,
+    },
+    {
+      id: "review",
+      title: "In Review",
+      items: [],
+      dropAllow: true,
+    },
+    {
+      id: "reopen",
+      title: "Re-Open",
+      items: [],
+      dropAllow: true,
+    },
+    {
+      id: "done",
+      title: "Done",
+      items: [],
+      dropAllow: true,
+    },
+    {
+      id: "cancel",
+      title: "Cancel",
+      items: [],
+      dropAllow: true,
+    },
+  ];
 
   useEffect(() => {
     taskApi
@@ -456,7 +456,7 @@ const TasksPage = () => {
       setHistoryOrForm(true);
     }
   };
-
+  // phần tùy chọn modal task
   const items: TabsProps["items"] = [
     {
       key: "info",

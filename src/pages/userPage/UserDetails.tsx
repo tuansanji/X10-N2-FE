@@ -106,7 +106,7 @@ const UserDetails = () => {
     if (fieldUserEdit.data && !fieldUserEdit.requirePassword) {
       if (fieldUserEdit.field === "phone") {
         fieldUserEdit.data = fieldUserEdit.data.trim();
-        if (!/^(0\d{10})$/.test(fieldUserEdit.data)) {
+        if (!/^(0\d{9})$/.test(fieldUserEdit.data)) {
           showMessage("error", t("content:profileUser.message phone"), 1.5);
           return;
         }
