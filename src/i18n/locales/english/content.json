@@ -58,13 +58,19 @@
     "open": "Open",
     "inprogress": "In Progress",
     "reopen": "Re Open",
-    "inreview": "In Review",
+    "review": "In Review",
     "highest": "Highest",
     "high": "High",
     "medium": "Medium",
     "low": "Low",
     "lowest": "Lowest",
     "assignment": "Assignment",
-    "issue": "Issue"
+    "issue": "Issue",
+    "cancel": "Cancel",
+    "done": "Done"
+  },
+  "task": {
+    "includes": "No task found",
+    "activity": "Activities"
   }
 }

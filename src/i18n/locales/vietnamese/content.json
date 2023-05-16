@@ -57,13 +57,19 @@
     "open": "Đang chờ được thực hiện",
     "inprogress": "Đang thực hiện",
     "reopen": "Thực hiện lại",
-    "inreview": "Đang chờ xem xét",
+    "review": "Đang chờ xem xét",
     "highest": "Cao nhất",
     "high": "Cao",
     "medium": "Trung bình",
     "low": "Thấp",
     "lowest": "Thấp nhất",
     "assignment": "Nhiệm vụ",
-    "issue": "Vấn đề"
+    "issue": "Vấn đề",
+    "cancel": "Hủy bỏ",
+    "done": "Đã hoàn thành"
+  },
+  "task": {
+    "includes": "Nhiệm vụ không tồn tại",
+    "activity": "Hoạt động"
   }
 }

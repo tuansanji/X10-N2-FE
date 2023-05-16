@@ -1,3 +1,4 @@
+import TaskHistory from "./pages/tasksPage/TaskHistory";
 import LandingPage from "./routes/LandingPage";
 import MainLayout from "./routes/MainLayout";
 import React from "react";

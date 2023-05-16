@@ -54,6 +54,7 @@ const UserDetails = () => {
     useMessageApi();
   const { t, i18n } = useTranslation(["content", "base"]);
   const dispatch = useDispatch();
+
   const userInfo: IUser = useMemo(() => {
     return responseData ? responseData?.user : null;
   }, [responseData]);
@@ -90,6 +91,15 @@ const UserDetails = () => {
       setDataImage(formData);
     }
   };
+  // xóa preview ảnh khi thay đổi tránh rò rỉ bộ nhớ
+  useEffect(() => {
+    return () => {
+      imagePreview &&
+        imagePreview.preview &&
+        URL.revokeObjectURL(imagePreview.preview);
+    };
+  }, [userInfo]);
+
   //edit các field text thường
   const handleEditUser = () => {
     // không yêu cầu mật khẩu -- các field thường
@@ -152,6 +162,7 @@ const UserDetails = () => {
         showMessage("success", res.message, 2);
         setModalImage(false);
         setCountReload((prev) => prev + 1);
+        URL.revokeObjectURL(imagePreview.preview);
       })
       .catch((err: any) => {
         showMessage("error", err.response.data?.message, 2);
@@ -188,7 +199,6 @@ const UserDetails = () => {
         });
   };
 
-  console.log(fieldUserEdit);
   return isLoading && !userInfo ? (
     <Skeleton />
   ) : (

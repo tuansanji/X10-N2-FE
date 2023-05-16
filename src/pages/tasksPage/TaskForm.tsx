@@ -1,21 +1,22 @@
-import { useAxios } from "../../hooks";
-import { useAppSelector } from "../../redux/hook";
-import { RootState } from "../../redux/store";
-import taskApi from "../../services/api/taskApi";
-import { LoadingOutlined } from "@ant-design/icons";
-import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
-import { CKEditor } from "@ckeditor/ckeditor5-react";
-import EN from "antd/es/date-picker/locale/en_US";
-import VN from "antd/es/date-picker/locale/vi_VN";
-import { NoticeType } from "antd/es/message/interface";
-import axios from "axios";
-import dayjs from "dayjs";
-import parse from "html-react-parser";
-import moment from "moment";
-import "moment/locale/vi";
-import { useTranslation } from "react-i18next";
-import { useParams } from "react-router";
-import { v4 as uuidv4 } from "uuid";
+import TinyMce from '../../components/tinyMce/TinyMce';
+import { useAxios } from '../../hooks';
+import useIsBoss from '../../hooks/useIsBoss';
+import { useAppSelector } from '../../redux/hook';
+import { RootState } from '../../redux/store';
+import taskApi from '../../services/api/taskApi';
+import { disableStatus } from '../../utils/disableStatus';
+import { LoadingOutlined } from '@ant-design/icons';
+import EN from 'antd/es/date-picker/locale/en_US';
+import VN from 'antd/es/date-picker/locale/vi_VN';
+import { NoticeType } from 'antd/es/message/interface';
+import axios from 'axios';
+import dayjs from 'dayjs';
+import parse from 'html-react-parser';
+import moment from 'moment';
+import 'moment/locale/vi';
+import { useTranslation } from 'react-i18next';
+import { useParams } from 'react-router';
+import { v4 as uuidv4 } from 'uuid';
 
 import React, {
   Dispatch,
@@ -31,18 +32,23 @@ import {
   Descriptions,
   Form,
   Input,
+  Popconfirm,
   Select,
   Skeleton,
+  Tooltip,
 } from "antd";
 
 export interface ITask {
+  _id: string;
   title: string;
   jobCode?: string;
+  code?: string;
   status: string;
   type: string;
   priority: string;
-  creator: string;
-  assignee: string;
+  creator: any;
+  createdBy: any;
+  assignee: any;
   createdDate?: Date;
   startDate: Date;
   deadline: Date;
@@ -62,19 +68,20 @@ interface ITaskForm {
 
   handleEditTask: () => void;
   setIsModalOpen: Dispatch<SetStateAction<boolean>>;
+  setCountReloadTasks: Dispatch<SetStateAction<number>>;
   setEdit?: Dispatch<SetStateAction<boolean>>;
   setStatusForm: Dispatch<SetStateAction<boolean>>;
   showMessage: (type: NoticeType, content: string, duration?: number) => void;
 }
-
-interface IUser {
-  data: {
-    _id: string;
-    fullName: string;
-    avatar: string;
-    email: string;
-    username: string;
-  };
+export interface IUserBase {
+  _id: string;
+  fullName: string;
+  avatar: string;
+  email: string;
+  username: string;
+}
+export interface IUser {
+  data: IUserBase;
   role: string;
   joiningDate: Date;
 }
@@ -92,34 +99,36 @@ const TaskForm = (props: ITaskForm) => {
     button,
     taskCurrent,
     showMessage,
+    setCountReloadTasks,
   } = props;
   const [description, setDescription] = useState<string>("");
   const [reloadData, setReloadData] = useState<number>(1);
-  const [loading, setLoading] = useState(true);
-  const [loadingAll, setLoadingAll] = useState(false);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [loadingAll, setLoadingAll] = useState<boolean>(false);
   const [taskData, setTaskData] = useState<any>(null);
+  const [currentUser, setCurrentUser] = useState<any>();
   const [breadcrumb, setBreadcrumb] = useState({
     project: "",
     stages: "",
     task: "",
   });
-  const [currentUser, setCurrentUser] = useState<any>();
+
   const params = useParams();
   const [form] = Form.useForm();
   const user = useAppSelector((state: RootState) => state.auth?.userInfo);
+  const { isBoss } = useIsBoss([], 2);
 
   const { t, i18n } = useTranslation(["content", "base"]);
 
   moment.locale(i18n.language);
 
-  // search user trong project
+  // lấy all user trong project
   const { responseData, isLoading } = useAxios(
     "get",
     `/project/members/all/${params.projectId}`,
     []
   );
-  // lấy id của user hiện tại
-
+  // lấy  của user hiện tại
   useEffect(() => {
     if (responseData && user) {
       const currentUserArr = responseData?.members?.filter((member: any) => {
@@ -128,10 +137,10 @@ const TaskForm = (props: ITaskForm) => {
 
       currentUserArr &&
         currentUserArr.length > 0 &&
-        setCurrentUser(currentUserArr[0].data);
+        setCurrentUser(currentUserArr[0]);
     }
   }, [responseData, user]);
-  console.log(currentUser);
+
   //lấy thông tin công việc
   useEffect(() => {
     if (taskCurrent) {
@@ -147,6 +156,19 @@ const TaskForm = (props: ITaskForm) => {
         });
     }
   }, [taskCurrent, reloadData]);
+  //hàm xóa taks
+  const handleDelete = () => {
+    // showMessage("loading", `${t("content:loading")}...`);
+    // taskApi
+    //   .deleteTask(taskInfo.data?._id as string)
+    //   .then((res: any) => {
+    //     showMessage("success", res.message, 2);
+    //     setIsModalOpen(false);
+    //   })
+    //   .catch((err: any) => {
+    //     showMessage("error", err.response.data?.message, 2);
+    //   });
+  };
 
   // hàm submit form
   //statusForm false là tạo mới ,true là chỉnh sửa
@@ -169,6 +191,7 @@ const TaskForm = (props: ITaskForm) => {
           showMessage("success", res.message, 2);
           setIsModalOpen(false);
           setEdit?.(false);
+          setCountReloadTasks((prev) => prev + 1);
         })
         .catch((err) => {
           showMessage("error", err.response.data?.message, 2);
@@ -195,6 +218,7 @@ const TaskForm = (props: ITaskForm) => {
           setReloadData((prev) => prev + 1);
           setEdit?.(false);
           setStatusForm(false);
+          setCountReloadTasks((prev) => prev + 1);
         })
         .catch((err) => {
           showMessage("error", err.response.data?.message, 2);
@@ -245,17 +269,14 @@ const TaskForm = (props: ITaskForm) => {
       ];
     }
   }, [breadcrumb, taskData]);
-  const initialValues =
-    statusForm && taskData
+  const initialValues = useMemo(() => {
+    return statusForm && taskData
       ? {
           title: taskData?.title,
           type: taskData?.type,
           status: taskData?.status,
           priority: taskData?.priority,
-          assignee: {
-            label: taskData.assignee?.fullName,
-            value: taskData.assignee?._id,
-          },
+          assignee: taskData.assignee?._id,
           startDate: dayjs(taskData?.startDate),
           deadline: dayjs(taskData?.deadline),
           ...(taskData?.endDateActual && {
@@ -264,16 +285,20 @@ const TaskForm = (props: ITaskForm) => {
           description: taskData?.description,
         }
       : {
-          assignee: {
-            label: currentUser?.fullName,
-            value: currentUser?._id,
-          },
+          assignee: currentUser?.data?._id,
           type: "assignment",
           priority: "medium",
         };
+  }, [statusForm, taskData, currentUser]);
+
+  useEffect(() => {
+    if (currentUser) {
+      form.setFieldsValue(initialValues);
+    }
+  }, [initialValues, currentUser]);
 
   return loadingAll ? (
-    <Skeleton />
+    <Skeleton active />
   ) : (
     <div className="form_task" id="form_task">
       {taskData ? (
@@ -284,13 +309,35 @@ const TaskForm = (props: ITaskForm) => {
             ) : (
               <Breadcrumb items={breadcrumbItem} style={{ fontSize: "12px" }} />
             )}
-            <Button type="primary" onClick={handleEditTask}>
-              {edit ? t("base:cancel") : t("base:edit")}
-            </Button>
+
+            {currentUser &&
+              // Chủ dự án, quản lý dự án, người tạo công việc có thể sửa tất cả thông tin của công việc đã tạo.
+              //	Người thực hiện công việc chỉ được phép cập nhật trạng thái công việc.
+              (isBoss ||
+                // currentUser?.data._id === taskData?.assignee?._id ||
+                currentUser?.data.username ===
+                  taskData?.createdBy?.username) && (
+                <div className="task__action--form">
+                  <Button type="primary" onClick={handleEditTask}>
+                    {edit ? t("base:cancel") : t("base:edit")}
+                  </Button>
+                  <Popconfirm
+                    placement="right"
+                    title={t("content:titleDeleteComment")}
+                    description={t("content:desDeleteComment")}
+                    onConfirm={() => handleDelete()}
+                    okText={t("base:ok")}
+                    cancelText={t("base:cancel")}
+                  >
+                    <Button type="primary" danger>
+                      {t("base:delete")}
+                    </Button>
+                  </Popconfirm>
+                </div>
+              )}
           </div>
         </div>
       ) : loading ? (
-        // <Skeleton.Input active={false} size="default" />
         <div className="" style={{ height: "19px" }}></div>
       ) : (
         <Breadcrumb
@@ -339,7 +386,7 @@ const TaskForm = (props: ITaskForm) => {
             )}
           </Descriptions.Item>
           <Descriptions.Item label={t("content:form.job code")}>
-            {taskData?.jobCode || (
+            {taskData?.code || (
               <span style={{ opacity: 0.4 }}>Auto generated</span>
             )}
           </Descriptions.Item>
@@ -350,15 +397,36 @@ const TaskForm = (props: ITaskForm) => {
                   disabled={!statusForm}
                   style={{ width: "100%" }}
                   options={[
-                    { value: "open", label: t("content:form.open") },
+                    {
+                      value: "open",
+                      label: t("content:form.open"),
+                      disabled: disableStatus("open", taskData?.status),
+                    },
                     {
                       value: "inprogress",
                       label: t("content:form.inprogress"),
+                      disabled: disableStatus("inprogress", taskData?.status),
                     },
-                    { value: "reopen", label: t("content:form.reopen") },
-                    { value: "inreview", label: t("content:form.inreview") },
-                    { value: "done", label: t("base:done") },
-                    { value: "cancel", label: t("base:cancel") },
+                    {
+                      value: "reopen",
+                      label: t("content:form.reopen"),
+                      disabled: disableStatus("reopen", taskData?.status),
+                    },
+                    {
+                      value: "review",
+                      label: t("content:form.review"),
+                      disabled: disableStatus("review", taskData?.status),
+                    },
+                    {
+                      value: "done",
+                      label: t("base:done"),
+                      disabled: disableStatus("done", taskData?.status),
+                    },
+                    {
+                      value: "cancel",
+                      label: t("base:cancel"),
+                      disabled: disableStatus("cancel", taskData?.status),
+                    },
                   ]}
                 />
               </Form.Item>
@@ -381,7 +449,16 @@ const TaskForm = (props: ITaskForm) => {
                 />
               </Form.Item>
             ) : (
-              t(`content:form.${taskData?.type}` as keyof typeof t)
+              <div className="task__type--main">
+                {t(`content:form.${taskData?.type}` as keyof typeof t)}
+                <div
+                  className="task_type"
+                  style={{
+                    backgroundColor:
+                      taskData?.type === "issue" ? "#EC2B2B" : "#44CB39",
+                  }}
+                ></div>
+              </div>
             )}
           </Descriptions.Item>
           <Descriptions.Item label={t("content:form.priority")}>
@@ -481,6 +558,13 @@ const TaskForm = (props: ITaskForm) => {
                 ]}
               >
                 <DatePicker
+                  disabledDate={(current) => {
+                    const endDateExpected = form.getFieldValue("deadline");
+                    return endDateExpected && current
+                      ? current < dayjs(Date.now()) ||
+                          current > dayjs(endDateExpected)
+                      : current < dayjs(Date.now());
+                  }}
                   locale={i18n.language === "en" ? EN : VN}
                   style={{ width: "100%" }}
                   showTime
@@ -504,6 +588,14 @@ const TaskForm = (props: ITaskForm) => {
                 ]}
               >
                 <DatePicker
+                  disabledDate={(current) => {
+                    const startDate = form.getFieldValue("startDate");
+                    return (
+                      current &&
+                      (current < dayjs(Date.now()) ||
+                        current <= dayjs(startDate))
+                    );
+                  }}
                   locale={i18n.language === "en" ? EN : VN}
                   style={{ width: "100%" }}
                   showTime
@@ -518,6 +610,10 @@ const TaskForm = (props: ITaskForm) => {
             {!taskInfo.status ? (
               <Form.Item name="endDateActual">
                 <DatePicker
+                  disabledDate={(current) => {
+                    const startDate = form.getFieldValue("startDate");
+                    return current && current < dayjs(startDate);
+                  }}
                   locale={i18n.language === "en" ? EN : VN}
                   style={{ width: "100%" }}
                   disabled={!statusForm}
@@ -538,27 +634,10 @@ const TaskForm = (props: ITaskForm) => {
             label={t("content:form.description")}
           >
             {!taskInfo.status ? (
-              <CKEditor
-                // config={{
-                //   image: {
-                //     toolbar: ["toggleImageCaption", "imageTextAlternative"],
-                //   },
-                // }}
-                editor={ClassicEditor}
-                data=""
-                onReady={(editor) => {
-                  editor.setData(taskData?.description || "");
-                }}
-                onChange={(event, editor) => {
-                  const data = editor.getData();
-                  setDescription(data);
-                }}
-                // onBlur={(event, editor) => {
-                //   // console.log("es.", event);
-                // }}
-                // onFocus={(event, editor) => {
-                //   // console.log("Focus.", editor);
-                // }}
+              <TinyMce
+                description={description}
+                setContentMce={setDescription}
+                defaultValue={taskData?.description || ""}
               />
             ) : (
               parse(taskData?.description || "")
