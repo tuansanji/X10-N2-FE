@@ -1,20 +1,20 @@
-import TaskForm, { ITask } from "./TaskForm";
-import TaskHistory from "./TaskHistory";
-import TaskInfo from "./TaskInfo";
-import { descriptionTest } from "../../data/statges";
-import { useAppSelector } from "../../redux/hook";
-import { setQuery } from "../../redux/slice/paramsSlice";
-import { RootState } from "../../redux/store";
-import taskApi from "../../services/api/taskApi";
-import axios from "axios";
-import _ from "lodash";
-import moment from "moment";
-import React, { useEffect, useMemo, useState } from "react";
-import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
-import { useTranslation } from "react-i18next";
-import { useDispatch, useSelector } from "react-redux";
-import { Link, useParams, useSearchParams } from "react-router-dom";
-import * as Scroll from "react-scroll";
+import TaskForm, { ITask } from './TaskForm';
+import TaskHistory from './TaskHistory';
+import TaskInfo from './TaskInfo';
+import { descriptionTest } from '../../data/statges';
+import { useAppSelector } from '../../redux/hook';
+import { setQuery } from '../../redux/slice/paramsSlice';
+import { RootState } from '../../redux/store';
+import taskApi from '../../services/api/taskApi';
+import axios from 'axios';
+import _ from 'lodash';
+import moment from 'moment';
+import React, { useEffect, useMemo, useState } from 'react';
+import { DragDropContext, Draggable, Droppable } from 'react-beautiful-dnd';
+import { useTranslation } from 'react-i18next';
+import { useDispatch, useSelector } from 'react-redux';
+import { Link, useParams, useSearchParams } from 'react-router-dom';
+import * as Scroll from 'react-scroll';
 import {
   EyeOutlined,
   ClockCircleOutlined,

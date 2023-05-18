@@ -43,6 +43,8 @@
     "create task": "Tạo mới công việc",
     "edit task": "Chỉnh sửa công việc",
     "comments": "Bình luận",
+    "comment": "Bình luận",
+
     "information": "Thông tin",
     "title": "Tiêu đề",
     "job code": "Mã công việc",
@@ -71,6 +73,12 @@
   },
   "task": {
     "includes": "Nhiệm vụ không tồn tại",
-    "activity": "Hoạt động"
+    "activity": "Hoạt động",
+    "update": "cập nhật",
+    "task": "công việc",
+    "comment": "bình luận",
+    "complete": "hoàn thành",
+    "create": "tạo",
+    "cancel": "hủy bỏ"
   }
 }

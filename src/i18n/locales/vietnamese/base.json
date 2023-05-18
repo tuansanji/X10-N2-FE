@@ -12,5 +12,8 @@
   "stages": "Giai đoạn",
   "members": "Thành viên",
   "home": "Trang chủ",
-  "loadMore": "Xem thêm"
+  "loadMore": "Xem thêm",
+  "detail": "Xem chi tiết",
+  "before": "Trước",
+  "after": "Sau"
 }

@@ -11,5 +11,8 @@
   "stages": "Stages",
   "members": "Members",
   "home": "Home",
-  "loadMore": "Load More"
+  "loadMore": "Load More",
+  "detail": "Details",
+  "before": "Before",
+  "after": "After"
 }

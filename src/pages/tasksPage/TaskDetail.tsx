@@ -1,33 +1,29 @@
-import { ITask, IUser } from './TaskForm';
-import TaskHistory from './TaskHistory';
-import TaskInfo from './TaskInfo';
-import Loading from '../../components/support/Loading';
-import TinyMce from '../../components/tinyMce/TinyMce';
-import { useAxios } from '../../hooks';
-import useIsBoss from '../../hooks/useIsBoss';
-import { useAppSelector } from '../../redux/hook';
-import { RootState } from '../../redux/store';
-import taskApi from '../../services/api/taskApi';
-import { disableStatus } from '../../utils/disableStatus';
-import { ProjectType } from '../projectPage/ProjectDetail';
-import { CloseOutlined, LoadingOutlined } from '@ant-design/icons';
-import EN from 'antd/es/date-picker/locale/en_US';
-import VN from 'antd/es/date-picker/locale/vi_VN';
-import axios from 'axios';
-import dayjs from 'dayjs';
-import 'dayjs/locale/zh-cn';
-import parse from 'html-react-parser';
-import moment from 'moment';
-import 'moment/locale/vi';
-import {
-    Dispatch,
-    SetStateAction,
-    useEffect,
-    useMemo,
-    useState
-    } from 'react';
-import { useTranslation } from 'react-i18next';
-import { useParams } from 'react-router';
+import { ITask, IUser } from "./TaskForm";
+import TaskHistory from "./TaskHistory";
+import TaskInfo from "./TaskInfo";
+import Loading from "../../components/support/Loading";
+import TinyMce from "../../components/tinyMce/TinyMce";
+import { useAxios } from "../../hooks";
+import useIsBoss from "../../hooks/useIsBoss";
+import { useAppDispatch, useAppSelector } from "../../redux/hook";
+import { reloadSidebar, setTaskIdCurrent } from "../../redux/slice/menuSlice";
+import { RootState } from "../../redux/store";
+import taskApi from "../../services/api/taskApi";
+import { disableStatus } from "../../utils/disableStatus";
+import { ProjectType } from "../projectPage/ProjectDetail";
+import { CloseOutlined, LoadingOutlined } from "@ant-design/icons";
+import EN from "antd/es/date-picker/locale/en_US";
+import VN from "antd/es/date-picker/locale/vi_VN";
+import axios from "axios";
+import dayjs from "dayjs";
+import "dayjs/locale/zh-cn";
+import parse from "html-react-parser";
+import moment from "moment";
+import "moment/locale/vi";
+import { Dispatch, SetStateAction, useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { useParams } from "react-router";
+import { Link } from "react-router-dom";
 import useMessageApi, {
   UseMessageApiReturnType,
 } from "../../components/support/Message";
@@ -35,30 +31,21 @@ import useMessageApi, {
 import {
   Breadcrumb,
   Button,
-  Divider,
   Input,
-  Modal,
   Select,
-  Space,
   Tabs,
   Typography,
-  Tooltip,
-  message,
-  Col,
   DatePicker,
   Form,
-  Row,
   Popconfirm,
   Descriptions,
 } from "antd";
 import type { TabsProps } from "antd";
 
-const { TextArea } = Input;
-const { Title } = Typography;
-
 const TaskDetail: React.FC = () => {
   const [form] = Form.useForm();
   const params = useParams();
+  const dispatch = useAppDispatch();
 
   const [loading, setLoading] = useState<boolean>(false);
   const [taskCurrent, setTaskCurrent] = useState<ITask | null>(null);
@@ -94,7 +81,14 @@ const TaskDetail: React.FC = () => {
       setTaskCurrent(res?.task);
       setLoading(false);
     });
-  }, [reloadCurrentTask]);
+  }, [reloadCurrentTask, params]);
+
+  useEffect(() => {
+    dispatch(setTaskIdCurrent(params.taskId as string));
+    return () => {
+      dispatch(setTaskIdCurrent(""));
+    };
+  }, [params]);
 
   const items: TabsProps["items"] = [
     {
@@ -177,6 +171,8 @@ const TaskDetail: React.FC = () => {
         .then((res: any) => {
           showMessage("success", res.message, 2);
           setIsEdit?.(false);
+          dispatch(reloadSidebar());
+
           setReloadCurrentTask((prev) => prev + 1);
         })
         .catch((err) => {
@@ -221,13 +217,18 @@ const TaskDetail: React.FC = () => {
         setLoading(false);
       } catch (error) {}
     })();
-  }, []);
+  }, [params]);
 
   const breadcrumbItem = useMemo(() => {
     return [
-      { title: breadcrumb.project },
+      { title: <Link to="/">Home</Link> },
+      { title: <Link to={`/${params.projectId}`}>{breadcrumb?.project}</Link> },
       {
-        title: breadcrumb.stages,
+        title: (
+          <Link to={`/${params.projectId}/${params.stagesId}`}>
+            {breadcrumb?.stages}
+          </Link>
+        ),
       },
       {
         title: taskCurrent?.title || "",
@@ -244,7 +245,7 @@ const TaskDetail: React.FC = () => {
 
   return (
     <>
-      {loading && !taskCurrent ? (
+      {loading || !taskCurrent ? (
         <Loading />
       ) : (
         <div className="task__Detail--page">
@@ -646,7 +647,9 @@ const TaskDetail: React.FC = () => {
                             defaultValue={taskCurrent?.description || ""}
                           />
                         ) : (
-                          parse(taskCurrent?.description || "")
+                          <div className="task__form--description">
+                            {parse(taskCurrent?.description || "")}
+                          </div>
                         )}
                       </Descriptions.Item>
                     </Descriptions>

@@ -1,11 +1,15 @@
-import { IUser, IUserBase } from "./TaskForm";
+import ActivityForm from "./ActivityForm";
+import { IUserBase } from "./TaskForm";
 import Loading from "../../components/support/Loading";
 import taskApi from "../../services/api/taskApi";
-import { Button, List, Modal, Popover, Skeleton, Steps } from "antd";
+import { Button, Col, Modal, Row, Steps } from "antd";
+import parse from "html-react-parser";
 import moment from "moment";
+import "moment/locale/vi";
 import React, { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useParams } from "react-router";
-import type { StepsProps } from "antd";
+import { v4 as uuid } from "uuid";
 
 interface IActivities {
   _id: string;
@@ -21,25 +25,18 @@ interface IActivities {
 interface IProps {
   taskCurrentId?: string;
 }
-interface IDataTableActivity {
-  from: string[];
-  to: string[];
-  field: string[];
-}
 
 const TaskHistory: React.FC<IProps> = ({ taskCurrentId }) => {
   const [activities, setActivities] = useState<IActivities[] | any>(null);
   const [loading, setLoading] = useState(true);
   const [modalDetail, setModalDetail] = useState<boolean>(false);
   const [activityDetail, setActivityDetail] = useState<IActivities | any>(null);
-  const [DataTableActivity, setDataTableActivity] =
-    useState<IDataTableActivity>({
-      from: [],
-      to: [],
-      field: [],
-    });
-  const params = useParams();
 
+  const params = useParams();
+  const { t, i18n } = useTranslation(["content", "base"]);
+  moment.locale(i18n.language);
+
+  // lấy all hoạt động
   useEffect(() => {
     taskApi
       .getActivities(taskCurrentId || (params.taskId as string))
@@ -59,7 +56,7 @@ const TaskHistory: React.FC<IProps> = ({ taskCurrentId }) => {
       case "update":
         return "#007aff ";
       case "comment":
-        return "#5856d6 ";
+        return "#AAAAAA ";
       case "complete":
         return "#ff9500 ";
       case "cancel":
@@ -69,16 +66,6 @@ const TaskHistory: React.FC<IProps> = ({ taskCurrentId }) => {
     }
   };
 
-  useEffect(() => {
-    if (activityDetail) {
-      setDataTableActivity({
-        from: Object.values(activityDetail.action.from),
-        to: Object.values(activityDetail.action.to),
-        field: Object.keys(activityDetail.action.from),
-      });
-    }
-  }, [activityDetail]);
-  console.log(activityDetail);
   const stepItem = (listStep: IActivities[]) => {
     const newListStep =
       activities &&
@@ -87,9 +74,13 @@ const TaskHistory: React.FC<IProps> = ({ taskCurrentId }) => {
           title: (
             <p
               className="title"
-              style={{ color: colorTitle(step.action.actionType) }}
+              style={{
+                color: colorTitle(step.action.actionType),
+                textTransform: "capitalize",
+              }}
             >
-              {step.action.actionType} task
+              {t(`content:task.${step.action.actionType}` as keyof typeof t)}{" "}
+              {t("content:task.task")}
             </p>
           ),
           description: (
@@ -97,33 +88,37 @@ const TaskHistory: React.FC<IProps> = ({ taskCurrentId }) => {
               <div className="history__user">
                 <p>{step?.userId?.fullName}</p>
                 <time>
-                  {moment(step?.timestamp).format("DD/MM/YYYY hh:mm")}
+                  {moment(step?.timestamp).format("DD MMMM, YYYY - hh:mm A")}
                 </time>
               </div>
-              <div className="history__status">
-                {/* {step.comment ? (
-                <p className="comment">{step.comment}</p>
-              ) : (
-                <>
-                  <span>{step.actionFrom}</span>
-                  <div className="arrow__wrapper">
-                    <div className="arrow-1"></div>
+              {step.action.actionType !== "create" &&
+                step.action.actionType !== "complete" &&
+                step.action.actionType !== "delete" && (
+                  <div className="history__status">
+                    <div className="fields__change">
+                      {Object.keys(step?.action?.to)
+                        .filter((item) => item !== "assignee")
+                        .map((activity, index) => (
+                          <span key={index}>
+                            {index !== 0 && ", "}
+                            {t(`content:form.${activity}` as keyof typeof t)}
+                          </span>
+                        ))}
+                    </div>
+
+                    <div className="arrow__wrapper">
+                      <div className="arrow-1"></div>
+                    </div>
+                    <Button
+                      onClick={() => {
+                        setActivityDetail(step);
+                        setModalDetail(true);
+                      }}
+                    >
+                      {t("base:detail")}
+                    </Button>
                   </div>
-                  <span>{step.actionTo}</span>
-                </>
-              )} */}
-                <div className="arrow__wrapper">
-                  <div className="arrow-1"></div>
-                </div>
-                <Button
-                  onClick={() => {
-                    setActivityDetail(step);
-                    setModalDetail(true);
-                  }}
-                >
-                  Xem chi tiết
-                </Button>
-              </div>
+                )}
             </div>
           ),
         };
@@ -134,60 +129,82 @@ const TaskHistory: React.FC<IProps> = ({ taskCurrentId }) => {
   const handleCancel = () => {
     setModalDetail(false);
   };
-
+  console.log(activityDetail);
   return (
     <div className="task__history">
       <Modal
         title=""
-        width="80%"
+        width={
+          activityDetail && activityDetail?.action?.actionType === "comment"
+            ? "60%"
+            : "90%"
+        }
         open={modalDetail}
         onCancel={handleCancel}
         maskClosable={false}
-        style={{ top: "50px" }}
+        style={{ top: "50px", minHeight: "500px" }}
         footer={[]}
       >
-        {/* {activityDetail && JSON.stringify(activityDetail.action)} */}
-
-        {activityDetail && DataTableActivity && (
+        {activityDetail && (
           <>
-            <div className="activity__Detail">
-              <div className="activity__Detail--item">
-                <List
-                  size="small"
-                  bordered
-                  dataSource={DataTableActivity?.from}
-                  renderItem={(item) => <List.Item>{item}</List.Item>}
+            {activityDetail?.action?.actionType !== "comment" ? (
+              <>
+                <Row key={uuid()}>
+                  <Col span={11}>
+                    <strong className="title__activity">
+                      {t("base:before")}
+                    </strong>
+                    <ActivityForm activity={activityDetail?.action?.from} />
+                  </Col>
+                  <Col span={1}>
+                    <div className="arrow__wrapper--2">
+                      <div className="arrow-1"></div>
+                    </div>
+                  </Col>
+                  <Col span={11}>
+                    <strong className="title__activity">
+                      {t("base:after")}
+                    </strong>
+                    <ActivityForm activity={activityDetail?.action?.to} />
+                  </Col>
+                </Row>
+              </>
+            ) : (
+              <div className="comment_content">
+                <img
+                  src={activityDetail?.userId?.avatar || ""}
+                  alt=""
+                  className="img_user"
                 />
+                <div className="comment-container">
+                  <p className="title">
+                    {activityDetail?.userId?.fullName}
+                    <span>
+                      {moment(
+                        activityDetail?.action?.to?.comment?.createdDate
+                      ).format("DD/MM/YYYY hh:mm")}
+                    </span>
+                  </p>
+                  <div className="content">
+                    {parse(activityDetail?.action?.to?.comment?.content)}
+                  </div>
+                </div>
               </div>
-              <div className="wide">
-                <List
-                  size="small"
-                  bordered
-                  dataSource={DataTableActivity?.field}
-                  renderItem={(item) => <List.Item>{item}</List.Item>}
-                />
-              </div>
-              <div className="activity__Detail--item">
-                <List
-                  size="small"
-                  bordered
-                  dataSource={DataTableActivity?.to}
-                  renderItem={(item) => <List.Item>{item}</List.Item>}
-                />
-              </div>
-            </div>
+            )}
           </>
         )}
       </Modal>
       {loading ? (
         <Loading />
       ) : (
-        <Steps
-          current={-1}
-          progressDot
-          direction="vertical"
-          items={stepItem(activities)}
-        />
+        <div className="task__history--main scroll_custom">
+          <Steps
+            current={-1}
+            progressDot
+            direction="vertical"
+            items={stepItem(activities)}
+          />
+        </div>
       )}
     </div>
   );
