@@ -1,6 +1,5 @@
 import TaskForm, { ITask, IUser } from "./TaskForm";
 import TaskInfo from "./TaskInfo";
-
 import { useAppSelector } from "../../redux/hook";
 import { setQuery, deleteQuery } from "../../redux/slice/paramsSlice";
 import { RootState } from "../../redux/store";
@@ -40,7 +39,6 @@ import {
 } from "antd";
 import type { TabsProps } from "antd";
 import { useAxios } from "../../hooks";
-import { LabeledValue } from "antd/es/select";
 
 const { Title } = Typography;
 const { Search } = Input;
@@ -169,14 +167,12 @@ const TasksPage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [statusForm, setStatusForm] = useState(false);
   const [sortSelectValue, setSortSelectValue] = useState<string>("deadlineAsc");
-
   const [openInfo, setOpenInfo] = useState(false);
   const [edit, setEdit] = useState(false);
   const { showMessage, contextHolder }: UseMessageApiReturnType =
     useMessageApi();
   const [taskCurrent, setTaskCurrent] = useState<ITask>();
   const [allTasks, setAllTasks] = useState<ITask[]>([]);
-  const [filteredTasks, setFilteredTasks] = useState<ITask[]>();
   const [breadcrumb, setBreadcrumb] = useState({
     project: "",
     stages: "",
@@ -190,6 +186,7 @@ const TasksPage = () => {
   );
 
   //Gọi API Lấy danh sách tasks => set vào các column
+  //Lấy thông tin từ url để hiển thị tasks theo bộ lọc
   useEffect(() => {
     let query = Object.fromEntries([...searchParams]);
     const queryMembers = searchParams.getAll("member");
@@ -293,11 +290,15 @@ const TasksPage = () => {
       ],
     },
   ];
-
+  console.log("Params:", params);
   const breadcrumItems = useMemo(
     () => [
       { title: <Link to="/">Home</Link> },
-      { title: <Link to={`/${params.projectId}`}>{breadcrumb?.project}</Link> },
+      {
+        title: (
+          <Link to={`/project/${params.projectId}`}>{breadcrumb?.project}</Link>
+        ),
+      },
       {
         title: breadcrumb.stages,
       },
@@ -325,6 +326,7 @@ const TasksPage = () => {
     })();
   }, []);
 
+  //Filter và sort các tasks theo thao tác người dùng
   useEffect(() => {
     const { type, sort, member, search } = queryParams;
     let filteredTasks = allTasks;

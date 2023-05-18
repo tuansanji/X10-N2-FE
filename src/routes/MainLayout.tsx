@@ -17,17 +17,15 @@ const MainLayout: React.FC = () => {
     <div className="main-layout">
       <Header />
       <div className="container">
-        {/* <Routes>
-          <Route path="dashboard" element={<Dashboard />} />
-          <Route path="/" element={<Content />}>
+        <Routes>
+          <Route path="/" element={<Dashboard />} />
+          <Route path="/project" element={<Content />}>
             <Route path=":projectId" element={<ProjectDetail />} />
             <Route path=":projectId/:stagesId" element={<TasksPage />} />
-            <Route path="user/info" element={<UserDetails />} />
           </Route>
+          <Route path="user/info" element={<UserDetails />} />
           <Route path="*" element={<NotFoundPage />} />
-        </Routes> */}
-        <Sidebar />
-        <Content />
+        </Routes>
       </div>
     </div>
   );

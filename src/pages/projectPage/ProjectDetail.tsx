@@ -23,6 +23,7 @@ export interface ProjectType {
   estimatedEndDate: Date;
   status: string;
   code: string;
+  _id: string;
 }
 
 const ProjectDetail: React.FC = () => {

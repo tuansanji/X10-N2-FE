@@ -1,0 +1,33 @@
+.dashboard {
+  width: 100%;
+  padding: 0 30px;
+
+  .btn_status {
+    padding: 0;
+  }
+
+  .ant-divider {
+    height: 100%;
+    margin: 0;
+  }
+
+  .projects_list {
+    .projects_list_header {
+      padding: 16px 0;
+      @include flex(row, null, center, null, 16px);
+      .ant-typography {
+        margin: 0;
+      }
+    }
+    .projects_list_item {
+      padding: 8px 0;
+    }
+  }
+
+  .tasks_list {
+    .tasks_list_item {
+      border: 1px solid black;
+      padding: 8px 16px;
+    }
+  }
+}

@@ -942,6 +942,15 @@ html {
   max-width: 992px;
   margin-top: 1rem;
 }
+.project-info .description_title {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 16px;
+}
+.project-info .description_title .ant-typography {
+  margin-bottom: 0.3em;
+}
 
 .add-member-container {
   margin: 2rem 0;
@@ -1223,6 +1232,35 @@ html {
 }
 .form__content .form__password span {
   white-space: nowrap;
+}
+
+.dashboard {
+  width: 100%;
+  padding: 0 30px;
+}
+.dashboard .btn_status {
+  padding: 0;
+}
+.dashboard .ant-divider {
+  height: 100%;
+  margin: 0;
+}
+.dashboard .projects_list .projects_list_header {
+  padding: 16px 0;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 16px;
+}
+.dashboard .projects_list .projects_list_header .ant-typography {
+  margin: 0;
+}
+.dashboard .projects_list .projects_list_item {
+  padding: 8px 0;
+}
+.dashboard .tasks_list .tasks_list_item {
+  border: 1px solid black;
+  padding: 8px 16px;
 }
 
 /*# sourceMappingURL=main.css.map */

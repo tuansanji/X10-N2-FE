@@ -211,7 +211,7 @@ const StagesPage: React.FC<PropTypes> = (props: PropTypes) => {
 
   const navigateTasks = (record: any) => {
     navigate({
-      pathname: `/${params.projectId}/${record.key}`,
+      pathname: `${record.key}`,
       search: `${createSearchParams({ type: "all" })}`,
     });
   };
