@@ -1,6 +1,11 @@
 import axiosClient from "../axiosClient";
 
 const taskApi = {
+  // get all task của user
+  getTasks() {
+    const url = `/task/all`;
+    return axiosClient.get(url);
+  },
   addTask(task: any) {
     const url = `/task/new`;
     return axiosClient.post(url, task);
@@ -17,6 +22,7 @@ const taskApi = {
     const url = `/task/update/${taskId}`;
     return axiosClient.post(url, task);
   },
+  // trong 1 project củ thể
   getAllTask(stageId: string, params?: any) {
     const url = `/stage/tasks/${stageId}`;
     return axiosClient.get(url, { params });

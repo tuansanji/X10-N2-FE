@@ -1,6 +1,6 @@
 {
   "name": "Name",
-  "startDate": "Start date",
+  "startDate": "Date time",
   "endDateExpected": "End Date Expected",
   "endDateActual": "Actual end date",
   "action": "Action",
@@ -42,6 +42,7 @@
   },
   "form": {
     "comments": "Comments",
+    "comment": "Comment",
     "create task": "Create task",
     "edit task": "Edit task",
     "information": "Information",
@@ -71,6 +72,13 @@
   },
   "task": {
     "includes": "No task found",
-    "activity": "Activities"
+    "activity": "Activities",
+    "task": "task",
+    "update": "update",
+    "comment": "comment",
+
+    "complete": "complete",
+    "create": "create",
+    "cancel": "cancel"
   }
 }

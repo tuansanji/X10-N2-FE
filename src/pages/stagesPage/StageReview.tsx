@@ -1,21 +1,16 @@
-import Comment from '../../components/comment/Comment';
-import { useAxios } from '../../hooks';
-import useIsBoss from '../../hooks/useIsBoss';
-import { useAppSelector } from '../../redux/hook';
-import { RootState } from '../../redux/store';
-import projectApi from '../../services/api/projectApi';
-import stageApi from '../../services/api/stageApi';
-import { MemberDataType } from '../Members/MemberList';
-import {
-  Button,
-  Input,
-  Modal,
-  Skeleton
-  } from 'antd';
-import { useEffect, useRef, useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { useParams } from 'react-router';
-import { v4 as uuid } from 'uuid';
+import Comment from "../../components/comment/Comment";
+import { useAxios } from "../../hooks";
+import useIsBoss from "../../hooks/useIsBoss";
+import { useAppSelector } from "../../redux/hook";
+import { RootState } from "../../redux/store";
+import projectApi from "../../services/api/projectApi";
+import stageApi from "../../services/api/stageApi";
+import { MemberDataType } from "../Members/MemberList";
+import { Button, Input, Modal, Skeleton } from "antd";
+import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { useParams } from "react-router";
+import { v4 as uuid } from "uuid";
 
 import useMessageApi, {
   UseMessageApiReturnType,
@@ -53,7 +48,7 @@ const StageReview = ({ stageId }: IPropsReview) => {
   const [myReview, setMyReview] = useState<string>("");
   const [open, setOpen] = useState(false);
   const [reviewAdded, setReviewAdded] = useState<number>(1);
-  // const [isBoss, setIsBoss] = useState(false);
+
   const [listComment, setListComment] = useState<any>([]);
   const [numberPage, setNumberPage] = useState<number>(1);
   const [loading, setLoading] = useState(false);

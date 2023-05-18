@@ -1,22 +1,23 @@
-import TinyMce from '../../components/tinyMce/TinyMce';
-import { useAxios } from '../../hooks';
-import useIsBoss from '../../hooks/useIsBoss';
-import { useAppSelector } from '../../redux/hook';
-import { RootState } from '../../redux/store';
-import taskApi from '../../services/api/taskApi';
-import { disableStatus } from '../../utils/disableStatus';
-import { LoadingOutlined } from '@ant-design/icons';
-import EN from 'antd/es/date-picker/locale/en_US';
-import VN from 'antd/es/date-picker/locale/vi_VN';
-import { NoticeType } from 'antd/es/message/interface';
-import axios from 'axios';
-import dayjs from 'dayjs';
-import parse from 'html-react-parser';
-import moment from 'moment';
-import 'moment/locale/vi';
-import { useTranslation } from 'react-i18next';
-import { useParams } from 'react-router';
-import { v4 as uuidv4 } from 'uuid';
+import TinyMce from "../../components/tinyMce/TinyMce";
+import { useAxios } from "../../hooks";
+import useIsBoss from "../../hooks/useIsBoss";
+import { useAppDispatch, useAppSelector } from "../../redux/hook";
+import { reloadSidebar } from "../../redux/slice/menuSlice";
+import { RootState } from "../../redux/store";
+import taskApi from "../../services/api/taskApi";
+import { disableStatus } from "../../utils/disableStatus";
+import { LoadingOutlined } from "@ant-design/icons";
+import EN from "antd/es/date-picker/locale/en_US";
+import VN from "antd/es/date-picker/locale/vi_VN";
+import { NoticeType } from "antd/es/message/interface";
+import axios from "axios";
+import dayjs from "dayjs";
+import parse from "html-react-parser";
+import moment from "moment";
+import "moment/locale/vi";
+import { useTranslation } from "react-i18next";
+import { useDispatch } from "react-redux";
+import { useParams } from "react-router";
 
 import React, {
   Dispatch,
@@ -35,7 +36,6 @@ import {
   Popconfirm,
   Select,
   Skeleton,
-  Tooltip,
 } from "antd";
 
 export interface ITask {
@@ -116,6 +116,7 @@ const TaskForm = (props: ITaskForm) => {
   const params = useParams();
   const [form] = Form.useForm();
   const user = useAppSelector((state: RootState) => state.auth?.userInfo);
+  const dispatch = useDispatch();
   const { isBoss } = useIsBoss([], 2);
 
   const { t, i18n } = useTranslation(["content", "base"]);
@@ -177,6 +178,7 @@ const TaskForm = (props: ITaskForm) => {
         showMessage("success", res.message, 2);
         setCountReloadTasks((prev) => prev + 1);
         setIsModalOpen(false);
+        dispatch(reloadSidebar());
       })
       .catch((err: any) => {
         showMessage("error", err.response.data?.message, 2);
@@ -202,6 +204,7 @@ const TaskForm = (props: ITaskForm) => {
         .addTask(task)
         .then((res: any) => {
           showMessage("success", res.message, 2);
+          dispatch(reloadSidebar());
           setIsModalOpen(false);
           setEdit?.(false);
           setCountReloadTasks((prev) => prev + 1);
@@ -228,6 +231,8 @@ const TaskForm = (props: ITaskForm) => {
         .editTask(taskCurrent._id, task)
         .then((res: any) => {
           showMessage("success", res.message, 2);
+
+          dispatch(reloadSidebar());
           setReloadData((prev) => prev + 1);
           setEdit?.(false);
           setStatusForm(false);
@@ -455,9 +460,32 @@ const TaskForm = (props: ITaskForm) => {
                   options={[
                     {
                       value: "assignment",
-                      label: t("content:form.assignment"),
+                      label: (
+                        <div className="task__type--main">
+                          {t("content:form.assignment")}{" "}
+                          <div
+                            className="task_type"
+                            style={{
+                              backgroundColor: "#44CB39",
+                            }}
+                          ></div>
+                        </div>
+                      ),
                     },
-                    { value: "issue", label: t("content:form.issue") },
+                    {
+                      value: "issue",
+                      label: (
+                        <div className="task__type--main">
+                          {t("content:form.issue")}{" "}
+                          <div
+                            className="task_type"
+                            style={{
+                              backgroundColor: "#EC2B2B",
+                            }}
+                          ></div>
+                        </div>
+                      ),
+                    },
                   ]}
                 />
               </Form.Item>
@@ -653,7 +681,9 @@ const TaskForm = (props: ITaskForm) => {
                 defaultValue={taskData?.description || ""}
               />
             ) : (
-              parse(taskData?.description || "")
+              <div className="task__form--description">
+                {parse(taskData?.description || "")}
+              </div>
             )}
           </Descriptions.Item>
         </Descriptions>

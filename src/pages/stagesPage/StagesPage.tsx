@@ -1,20 +1,17 @@
 import FormStages from "./FormStages";
 import StageReview from "./StageReview";
 import Loading from "../../components/support/Loading";
-import { listStages } from "../../data/statges";
-import { useAxios } from "../../hooks";
 import useIsBoss from "../../hooks/useIsBoss";
 import { useAppDispatch, useAppSelector } from "../../redux/hook";
-import { reloadSidebar } from "../../redux/slice/menuSlice";
 import stageApi from "../../services/api/stageApi";
 import { ProjectType } from "../projectPage/ProjectDetail";
 import { DeleteFilled, EditFilled, EyeFilled } from "@ant-design/icons";
 import Search from "antd/es/input/Search";
-import axios from "axios";
 import moment from "moment";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useParams, useSearchParams } from "react-router-dom";
+
 import {
   Button,
   message,
@@ -80,7 +77,7 @@ const StagesPage: React.FC<PropTypes> = (props: PropTypes) => {
   const [searchParams, setSearchParams] = useSearchParams();
   const searchRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const params = useParams();
-  const dispatch = useAppDispatch();
+
   const { showMessage, contextHolder }: UseMessageApiReturnType =
     useMessageApi();
   const token: string = useAppSelector(
@@ -100,7 +97,6 @@ const StagesPage: React.FC<PropTypes> = (props: PropTypes) => {
       .then((res: any) => {
         setStagesData(res);
         setLoading(false);
-        dispatch(reloadSidebar());
       })
       .catch((err: any) => {
         setLoading(false);
