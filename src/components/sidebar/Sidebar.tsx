@@ -239,10 +239,10 @@ const Sidebar = () => {
             onChange={handleChangeProject}
             options={[
               {
-                label: "Project list",
+                label: t("sidebar:projectList"),
                 options: [
                   {
-                    label: "Project - All",
+                    label: t("sidebar:projectAll"),
                     value: "all",
                   },
                   ...listProject,
@@ -259,10 +259,10 @@ const Sidebar = () => {
             }}
             options={[
               {
-                label: "Type",
+                label: t("sidebar:type"),
                 options: [
                   {
-                    label: "Type - All",
+                    label: t("sidebar:typeAll"),
                     value: "allType",
                   },
                   {

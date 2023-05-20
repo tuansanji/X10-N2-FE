@@ -9,9 +9,9 @@ import { useAppDispatch, useAppSelector } from "../../redux/hook";
 import { reloadSidebar, setTaskIdCurrent } from "../../redux/slice/menuSlice";
 import { RootState } from "../../redux/store";
 import taskApi from "../../services/api/taskApi";
+import { changeMsgLanguage } from "../../utils/changeMsgLanguage";
 import { disableStatus } from "../../utils/disableStatus";
-import { ProjectType } from "../projectPage/ProjectDetail";
-import { CloseOutlined, LoadingOutlined } from "@ant-design/icons";
+import { LoadingOutlined } from "@ant-design/icons";
 import EN from "antd/es/date-picker/locale/en_US";
 import VN from "antd/es/date-picker/locale/vi_VN";
 import axios from "axios";
@@ -20,10 +20,11 @@ import "dayjs/locale/zh-cn";
 import parse from "html-react-parser";
 import moment from "moment";
 import "moment/locale/vi";
-import { Dispatch, SetStateAction, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useParams } from "react-router";
+import { useNavigate, useParams } from "react-router";
 import { Link } from "react-router-dom";
+
 import useMessageApi, {
   UseMessageApiReturnType,
 } from "../../components/support/Message";
@@ -34,7 +35,6 @@ import {
   Input,
   Select,
   Tabs,
-  Typography,
   DatePicker,
   Form,
   Popconfirm,
@@ -64,7 +64,7 @@ const TaskDetail: React.FC = () => {
     useMessageApi();
   const user = useAppSelector((state: RootState) => state.auth?.userInfo);
   const { t, i18n } = useTranslation(["content", "base"]);
-
+  const navigate = useNavigate();
   const { isBoss } = useIsBoss([], 2);
 
   // lấy all user trong project
@@ -77,18 +77,23 @@ const TaskDetail: React.FC = () => {
   // lấy thông tin task hiệnt tại
   useEffect(() => {
     setLoading(true);
-    taskApi.getTask(params.taskId as string).then((res: any) => {
+    taskApi.getTask(params?.taskId as string).then((res: any) => {
       setTaskCurrent(res?.task);
       setLoading(false);
     });
   }, [reloadCurrentTask, params]);
 
+  // xác định id task hiện tại dựa theo params
   useEffect(() => {
     dispatch(setTaskIdCurrent(params.taskId as string));
     return () => {
       dispatch(setTaskIdCurrent(""));
     };
   }, [params]);
+
+  useEffect(() => {
+    setHistoryTab(false);
+  }, [taskCurrent, params?.taskId]);
 
   const items: TabsProps["items"] = [
     {
@@ -122,7 +127,6 @@ const TaskDetail: React.FC = () => {
       }
     } else if (tabLabel === "comments") {
       setHistoryTab(false);
-
       const element = document.getElementById("task_info");
       if (element) {
         element.scrollIntoView({
@@ -144,7 +148,7 @@ const TaskDetail: React.FC = () => {
       });
       currentUserArr &&
         currentUserArr.length > 0 &&
-        setCurrentUser(currentUserArr[0]);
+        setCurrentUser(currentUserArr[0]?.data);
     }
   }, [responseData, user]);
 
@@ -169,14 +173,21 @@ const TaskDetail: React.FC = () => {
       taskApi
         .editTask(taskCurrent._id, task)
         .then((res: any) => {
-          showMessage("success", res.message, 2);
+          showMessage(
+            "success",
+            changeMsgLanguage(res?.message, "Thay đổi thành công"),
+            2
+          );
           setIsEdit?.(false);
           dispatch(reloadSidebar());
-
           setReloadCurrentTask((prev) => prev + 1);
         })
         .catch((err) => {
-          showMessage("error", err.response.data?.message, 2);
+          showMessage(
+            "error",
+            changeMsgLanguage(err.response?.data?.message, "Thay đổi thất bại"),
+            2
+          );
         });
   };
   const initialValues = useMemo(() => {
@@ -221,7 +232,7 @@ const TaskDetail: React.FC = () => {
 
   const breadcrumbItem = useMemo(() => {
     return [
-      { title: <Link to="/">Home</Link> },
+      { title: <Link to="/">{t("base:home")}</Link> },
       { title: <Link to={`/${params.projectId}`}>{breadcrumb?.project}</Link> },
       {
         title: (
@@ -234,17 +245,39 @@ const TaskDetail: React.FC = () => {
         title: taskCurrent?.title || "",
       },
     ];
-  }, [breadcrumb, taskCurrent]);
+  }, [breadcrumb, taskCurrent, i18n.language]);
   useEffect(() => {
     if (taskCurrent) {
       form.setFieldsValue(initialValues);
     }
   }, [initialValues, taskCurrent]);
 
-  const handleDelete = () => {};
+  //hàm xóa tasks
+  const handleDelete = () => {
+    showMessage("loading", `${t("content:loading")}...`);
+    taskApi
+      .deleteTask(taskCurrent?._id as string)
+      .then((res: any) => {
+        showMessage(
+          "success",
+          changeMsgLanguage(res?.message, "Xóa thành công"),
+          2
+        );
+        navigate("/");
+        dispatch(reloadSidebar());
+      })
+      .catch((err: any) => {
+        showMessage(
+          "error",
+          changeMsgLanguage(err.response?.data?.message, "Xóa thất bại"),
+          2
+        );
+      });
+  };
 
   return (
     <>
+      {contextHolder}
       {loading || !taskCurrent ? (
         <Loading />
       ) : (
@@ -272,9 +305,10 @@ const TaskDetail: React.FC = () => {
                           // Chủ dự án, quản lý dự án, người tạo công việc có thể sửa tất cả thông tin của công việc đã tạo.
                           //	Người thực hiện công việc chỉ được phép cập nhật trạng thái công việc.
                           (isBoss ||
-                            // currentUser?.data._id === taskCurrent?.assignee?._id ||
-                            currentUser?.data.username ===
-                              taskCurrent?.createdBy?.username) && (
+                            currentUser?._id === taskCurrent?.assignee?._id ||
+                            currentUser?._id === taskCurrent?.createdBy?._id ||
+                            currentUser?.username ===
+                              taskCurrent?.assignee?.username) && (
                             <div className="task__action--form">
                               <Button
                                 type="primary"
@@ -350,7 +384,9 @@ const TaskDetail: React.FC = () => {
                       </Descriptions.Item>
                       <Descriptions.Item label={t("content:form.job code")}>
                         {taskCurrent?.code || (
-                          <span style={{ opacity: 0.4 }}>Auto generated</span>
+                          <span style={{ opacity: 0.4 }}>
+                            {t("content:task.jobCode")}
+                          </span>
                         )}
                       </Descriptions.Item>
                       <Descriptions.Item label={t("content:form.status")}>
@@ -677,8 +713,6 @@ const TaskDetail: React.FC = () => {
               )}
             </>
           )}
-
-          {contextHolder}
         </div>
       )}
     </>

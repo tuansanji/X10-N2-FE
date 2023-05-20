@@ -1,6 +1,7 @@
 import { IStages } from "./StagesPage";
 import { UseMessageApiReturnType } from "../../components/support/Message";
 import stageApi from "../../services/api/stageApi";
+import { changeMsgLanguage } from "../../utils/changeMsgLanguage";
 import { ProjectType } from "../projectPage/ProjectDetail";
 import { CloseOutlined, LoadingOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
@@ -78,13 +79,21 @@ const FormStages: React.FC<IForm> = ({
         .then((res: any) => {
           setLoading(false);
           setCreateStages?.(false);
-          showMessage("success", res.message, 2);
+          showMessage(
+            "success",
+            changeMsgLanguage(res?.message, "Tạo mới thành công"),
+            2
+          );
           //để gọi lại api get all(đối số useEffect)
           setFinishCount((prev) => prev + 1);
         })
         .catch((err) => {
           setLoading(false);
-          showMessage("error", err.response.data?.message, 2);
+          showMessage(
+            "error",
+            changeMsgLanguage(err.response.data?.message, "Tạo mới thất bại"),
+            2
+          );
         });
     } else {
       if ("key" in editStages.stages) {
@@ -104,11 +113,22 @@ const FormStages: React.FC<IForm> = ({
               status: false,
               stages: {},
             });
-            showMessage("success", res.message, 2);
+            showMessage(
+              "success",
+              changeMsgLanguage(res?.message, "Chỉnh sửa thành công"),
+              2
+            );
           })
           .catch((err) => {
             setLoading(false);
-            showMessage("error", err.response.data?.message, 2);
+            showMessage(
+              "error",
+              changeMsgLanguage(
+                err.response.data?.message,
+                "Chỉnh sửa thất bại"
+              ),
+              2
+            );
           });
       }
     }

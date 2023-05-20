@@ -129,7 +129,7 @@ const TaskHistory: React.FC<IProps> = ({ taskCurrentId }) => {
   const handleCancel = () => {
     setModalDetail(false);
   };
-  console.log(activityDetail);
+
   return (
     <div className="task__history">
       <Modal

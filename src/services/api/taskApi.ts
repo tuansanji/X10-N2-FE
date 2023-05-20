@@ -46,6 +46,12 @@ const taskApi = {
     const url = `/task/${taskId}/deletecomment/${commentId}`;
     return axiosClient.delete(url);
   },
+  editComment(taskId: string, commentId: string, comment: string) {
+    const url = `/task/${taskId}/updatecomment/${commentId}`;
+    return axiosClient.put(url, {
+      content: comment,
+    });
+  },
   // phần lịch sử hoạt động của task
   getActivities(taskId: string) {
     const url = `/task/activities/${taskId}`;

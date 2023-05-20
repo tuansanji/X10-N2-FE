@@ -1,5 +1,9 @@
 {
   "title": "Your Task List",
   "contact": "Contact",
-  "placeholder": "Enter task name..."
+  "placeholder": "Enter task name or task code...",
+  "typeAll": "Type - All",
+  "projectAll": "Project - All",
+  "type": "Type of work",
+  "projectList": "Project list"
 }

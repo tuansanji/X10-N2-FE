@@ -6,8 +6,8 @@
   "delete": "Xóa",
   "create": "Tạo mới",
   "update": "Cập nhật",
+  "send": "Gửi",
   "done": "Đã hoàn thành",
-
   "generalInformation": "Thông tin chung",
   "stages": "Giai đoạn",
   "members": "Thành viên",
@@ -15,5 +15,9 @@
   "loadMore": "Xem thêm",
   "detail": "Xem chi tiết",
   "before": "Trước",
-  "after": "Sau"
+  "after": "Sau",
+  "success": "Thành công",
+  "error": "Thất bại",
+  "logout": "Đăng xuất",
+  "userInfo": "Thông tin tài khoản"
 }
