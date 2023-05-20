@@ -1,5 +1,9 @@
 {
   "title": "Danh sách công việc của bạn",
   "contact": "Liên hệ",
-  "placeholder": "Điền tên công việc..."
+  "placeholder": "Điền tên hoặc mã công việc...",
+  "typeAll": "Loại công việc - Tất cả",
+  "projectAll": "Dự án - Tất cả",
+  "type": "Loại công việc",
+  "projectList": "Danh sách dự án"
 }

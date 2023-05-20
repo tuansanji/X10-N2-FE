@@ -5,6 +5,7 @@ import { useAppDispatch, useAppSelector } from "../../redux/hook";
 import { reloadSidebar } from "../../redux/slice/menuSlice";
 import { RootState } from "../../redux/store";
 import taskApi from "../../services/api/taskApi";
+import { changeMsgLanguage } from "../../utils/changeMsgLanguage";
 import { disableStatus } from "../../utils/disableStatus";
 import { LoadingOutlined } from "@ant-design/icons";
 import EN from "antd/es/date-picker/locale/en_US";
@@ -129,28 +130,16 @@ const TaskForm = (props: ITaskForm) => {
     `/project/members/all/${params.projectId}`,
     []
   );
-  // lấy  của user hiện tại
+
+  // xác định dữ liệu user hiện tại
   useEffect(() => {
     if (responseData && user) {
       const currentUserArr = responseData?.members?.filter((member: any) => {
         return member.data.username === user.username;
       });
-
       currentUserArr &&
         currentUserArr.length > 0 &&
-        setCurrentUser(currentUserArr[0]);
-    }
-  }, [responseData, user]);
-
-  useEffect(() => {
-    if (responseData && user) {
-      const currentUserArr = responseData?.members?.filter((member: any) => {
-        return member.data.username === user.username;
-      });
-
-      currentUserArr &&
-        currentUserArr.length > 0 &&
-        setCurrentUser(currentUserArr[0].data);
+        setCurrentUser(currentUserArr[0]?.data);
     }
   }, [responseData, user]);
 
@@ -175,13 +164,21 @@ const TaskForm = (props: ITaskForm) => {
     taskApi
       .deleteTask(taskInfo.data?._id as string)
       .then((res: any) => {
-        showMessage("success", res.message, 2);
+        showMessage(
+          "success",
+          changeMsgLanguage(res?.message, "Xóa thành công"),
+          2
+        );
         setCountReloadTasks((prev) => prev + 1);
         setIsModalOpen(false);
         dispatch(reloadSidebar());
       })
       .catch((err: any) => {
-        showMessage("error", err.response.data?.message, 2);
+        showMessage(
+          "error",
+          changeMsgLanguage(err.response?.data?.message, "Xóa thất bại"),
+          2
+        );
       });
   };
 
@@ -189,6 +186,7 @@ const TaskForm = (props: ITaskForm) => {
   //statusForm false là tạo mới ,true là chỉnh sửa
   const onFinish = (data: any) => {
     showMessage("loading", `${t("content:loading")}...`);
+    //tạo mới
     if (!statusForm) {
       const task = {
         stageId: params.stagesId,
@@ -203,16 +201,26 @@ const TaskForm = (props: ITaskForm) => {
       taskApi
         .addTask(task)
         .then((res: any) => {
-          showMessage("success", res.message, 2);
+          showMessage(
+            "success",
+            changeMsgLanguage(res?.message, "Tạo mới thành công"),
+            2
+          );
           dispatch(reloadSidebar());
           setIsModalOpen(false);
           setEdit?.(false);
           setCountReloadTasks((prev) => prev + 1);
+          setDescription("");
         })
         .catch((err) => {
-          showMessage("error", err.response.data?.message, 2);
+          showMessage(
+            "error",
+            changeMsgLanguage(err.response.data?.message, "Tạo mới thất bại"),
+            2
+          );
         });
     } else {
+      // chỉnh sửa
       const task = {
         stageId: params.stagesId,
         title: data.title,
@@ -230,8 +238,11 @@ const TaskForm = (props: ITaskForm) => {
       taskApi
         .editTask(taskCurrent._id, task)
         .then((res: any) => {
-          showMessage("success", res.message, 2);
-
+          showMessage(
+            "success",
+            changeMsgLanguage(res?.message, "Chỉnh sửa thành công"),
+            2
+          );
           dispatch(reloadSidebar());
           setReloadData((prev) => prev + 1);
           setEdit?.(false);
@@ -239,7 +250,11 @@ const TaskForm = (props: ITaskForm) => {
           setCountReloadTasks((prev) => prev + 1);
         })
         .catch((err) => {
-          showMessage("error", err.response.data?.message, 2);
+          showMessage(
+            "error",
+            changeMsgLanguage(err.response.data?.message, "Chỉnh sửa thất bại"),
+            2
+          );
         });
     }
   };
@@ -332,9 +347,9 @@ const TaskForm = (props: ITaskForm) => {
               // Chủ dự án, quản lý dự án, người tạo công việc có thể sửa tất cả thông tin của công việc đã tạo.
               //	Người thực hiện công việc chỉ được phép cập nhật trạng thái công việc.
               (isBoss ||
-                // currentUser?.data._id === taskData?.assignee?._id ||
-                currentUser?.data?.username ===
-                  taskData?.createdBy?.username) && (
+                currentUser?._id === taskData?.assignee?._id ||
+                currentUser?._id === taskCurrent?.createdBy?._id ||
+                currentUser?.username === taskData?.assignee?.username) && (
                 <div className="task__action--form">
                   <Button type="primary" onClick={handleEditTask}>
                     {edit ? t("base:cancel") : t("base:edit")}
@@ -405,7 +420,7 @@ const TaskForm = (props: ITaskForm) => {
           </Descriptions.Item>
           <Descriptions.Item label={t("content:form.job code")}>
             {taskData?.code || (
-              <span style={{ opacity: 0.4 }}>Auto generated</span>
+              <span style={{ opacity: 0.4 }}>{t("content:task.jobCode")}</span>
             )}
           </Descriptions.Item>
           <Descriptions.Item label={t("content:form.status")}>

@@ -6,6 +6,7 @@
   "action": "Hành động",
   "createStage": "Tạo mới giai đoạn",
   "editStage": "Chỉnh sửa giai đoạn",
+  "loading": "Đang tải",
   "enterStageName": "Điền tên giai đoạn...",
   "addReview": "Thêm đánh giá",
   "review": "Đánh giá",
@@ -52,7 +53,7 @@
     "type": "Kiểu công việc",
     "priority": "Độ ưu tiên",
     "creator": "Người tạo",
-    "assignee": "Người thi hành",
+    "assignee": "Người thực hiện",
     "date created": "Ngày tạo",
     "deadline": "Hạn chót",
     "description": "Mô tả",
@@ -72,6 +73,8 @@
     "done": "Đã hoàn thành"
   },
   "task": {
+    "jobCode": "Tự động tạo",
+
     "includes": "Nhiệm vụ không tồn tại",
     "activity": "Hoạt động",
     "update": "cập nhật",

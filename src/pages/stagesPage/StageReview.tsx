@@ -5,6 +5,7 @@ import { useAppSelector } from "../../redux/hook";
 import { RootState } from "../../redux/store";
 import projectApi from "../../services/api/projectApi";
 import stageApi from "../../services/api/stageApi";
+import { changeMsgLanguage } from "../../utils/changeMsgLanguage";
 import { MemberDataType } from "../Members/MemberList";
 import { Button, Input, Modal, Skeleton } from "antd";
 import { useEffect, useRef, useState } from "react";
@@ -82,13 +83,24 @@ const StageReview = ({ stageId }: IPropsReview) => {
       stageApi
         .addComment(stageId, myReview)
         .then((res: any) => {
-          showMessage("success", res.message, 2);
+          showMessage(
+            "success",
+            changeMsgLanguage(res?.message, "Bình luận thành công"),
+            2
+          );
           setReviewAdded((prev) => prev + 1);
           setOpen(false);
           setMyReview("");
         })
         .catch((err) => {
-          showMessage("error", err.response.data?.message, 2);
+          showMessage(
+            "error",
+            changeMsgLanguage(
+              err.response?.data?.message,
+              "Bình luận thất bại"
+            ),
+            2
+          );
         });
     }
   };
@@ -106,36 +118,6 @@ const StageReview = ({ stageId }: IPropsReview) => {
     });
   };
 
-  // Lấy List member thuộc project
-  // useEffect(() => {
-  //   (async () => {
-  //     try {
-  //       const response: any = await projectApi.getAllMember(
-  //         params.projectId as string
-  //       );
-  //       response?.members?.forEach(
-  //         (userP: {
-  //           data: MemberDataType;
-  //           joiningDate: Date;
-  //           role: string;
-  //         }) => {
-  //           if (
-  //             userP.role === "manager" ||
-  //             userP.role === "leader" ||
-  //             userP.role === "supervisor"
-  //           ) {
-  //             if (userP.data.username === user.username) {
-  //               setIsBoss(true);
-  //               return;
-  //             }
-  //           }
-  //         }
-  //       );
-  //     } catch (err) {
-  //       console.error(err);
-  //     }
-  //   })();
-  // }, []);
   const showModal = () => {
     setOpen(true);
   };

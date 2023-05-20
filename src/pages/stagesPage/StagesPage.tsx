@@ -4,6 +4,7 @@ import Loading from "../../components/support/Loading";
 import useIsBoss from "../../hooks/useIsBoss";
 import { useAppDispatch, useAppSelector } from "../../redux/hook";
 import stageApi from "../../services/api/stageApi";
+import { changeMsgLanguage } from "../../utils/changeMsgLanguage";
 import { ProjectType } from "../projectPage/ProjectDetail";
 import { DeleteFilled, EditFilled, EyeFilled } from "@ant-design/icons";
 import Search from "antd/es/input/Search";
@@ -57,6 +58,7 @@ const StagesPage: React.FC<PropTypes> = (props: PropTypes) => {
   const [loading, setLoading] = useState<boolean>(true);
   const [createStages, setCreateStages] = useState<boolean>(false);
   const [searchInput, setSearchInput] = useState<string>();
+  const [loadingSearch, setLoadingSearch] = useState(false);
   const [finishCount, setFinishCount] = useState<number>(0);
   const [pageNumber, setPageNumber] = useState<number>(1);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
@@ -81,7 +83,7 @@ const StagesPage: React.FC<PropTypes> = (props: PropTypes) => {
   const { showMessage, contextHolder }: UseMessageApiReturnType =
     useMessageApi();
   const token: string = useAppSelector(
-    (state: any) => state.auth.userInfo.token
+    (state: any) => state.auth?.userInfo?.token
   );
   const { t, i18n } = useTranslation(["content", "base"]);
   const { isBoss } = useIsBoss([]);
@@ -110,17 +112,26 @@ const StagesPage: React.FC<PropTypes> = (props: PropTypes) => {
     stageApi
       .deleteStage(stages.key as string)
       .then((res: any) => {
-        showMessage("success", res?.message, 2);
+        showMessage(
+          "success",
+          changeMsgLanguage(res?.message, "Xóa thành công"),
+          2
+        );
         setFinishCount((prev) => prev + 1);
       })
       .catch((err) => {
-        showMessage("error", err.response.data?.message, 2);
+        showMessage(
+          "error",
+          changeMsgLanguage(err.response?.data?.message, "Xóa thất bại"),
+          2
+        );
       });
   };
 
   //hàm gọi api khi search
   const handleChangeSearch = (event: any) => {
     let value = event?.target.value;
+
     setSearchInput(value);
     setSearchParams({
       currentTab: "Stages",
@@ -144,6 +155,8 @@ const StagesPage: React.FC<PropTypes> = (props: PropTypes) => {
       clearTimeout(searchRef.current);
     }
     searchRef.current = setTimeout(() => {
+      setLoadingSearch(true);
+
       if (searchParams.get("name")) {
         const subParams = {
           page: 1,
@@ -153,6 +166,8 @@ const StagesPage: React.FC<PropTypes> = (props: PropTypes) => {
           .SearchStage(params.projectId as string, subParams)
           .then((res: any) => {
             setStagesData(res);
+            setLoadingSearch(false);
+
             setSearchParams({
               currentTab: "Stages",
               name: (searchParams.get("name") as string) || "",
@@ -160,13 +175,27 @@ const StagesPage: React.FC<PropTypes> = (props: PropTypes) => {
             });
           })
           .catch((err) => {});
+      } else {
+        stageApi
+          .SearchStage(params.projectId as string)
+          .then((res: any) => {
+            setStagesData(res);
+            setLoadingSearch(false);
+          })
+          .catch((err) => {
+            message.error(err.response.data.message);
+          });
       }
-    }, 1000);
+    }, 800);
   }, [searchInput]);
 
   //hám search
   const handleSearchStage = (value: string) => {
     setLoading(true);
+    setLoadingSearch(true);
+    if (searchRef.current) {
+      clearTimeout(searchRef.current);
+    }
     if (value) {
       const subParams = {
         page: 1,
@@ -177,6 +206,8 @@ const StagesPage: React.FC<PropTypes> = (props: PropTypes) => {
         .then((res: any) => {
           setStagesData(res);
           setLoading(false);
+          setLoadingSearch(false);
+
           setSearchInput("");
         })
         .catch((err) => {
@@ -188,6 +219,8 @@ const StagesPage: React.FC<PropTypes> = (props: PropTypes) => {
         .SearchStage(params.projectId as string)
         .then((res: any) => {
           setStagesData(res);
+          setLoadingSearch(false);
+
           setLoading(false);
         })
         .catch((err) => {
@@ -331,6 +364,7 @@ const StagesPage: React.FC<PropTypes> = (props: PropTypes) => {
               placeholder={t("content:enterStageName")}
               size="large"
               style={{ width: "300px" }}
+              loading={loadingSearch}
             />
           </Space>
         </div>

@@ -13,7 +13,7 @@ const Header = () => {
   const handleLogout = () => {
     dispatch(setLogout("Log Out"));
   };
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation(["base"]);
 
   // const currentLanguage = locales[i18n.language as keyof typeof locales];
 
@@ -27,14 +27,14 @@ const Header = () => {
   const items = [
     {
       key: "1",
-      label: <Link to="/user/info">Thông tin tài khoản </Link>,
+      label: <Link to="/user/info">{t("base:userInfo")}</Link>,
     },
     {
       key: "4",
       danger: true,
       label: (
         <Link to="/" onClick={handleLogout}>
-          Đăng xuất
+          {t("base:logout")}
         </Link>
       ),
     },
