@@ -125,10 +125,7 @@ const TaskItem: React.FC<TaskItemProp> = ({ task, handleOpenInfoTask }) => {
   }
   return (
     <>
-      <div
-        className="task_info"
-        // onClick={() => handleOpenInfoTask?.(task)}
-      >
+      <div className="task_info" onClick={() => handleOpenInfoTask?.(task)}>
         <Title className="task_title" level={5}>
           {task.title}
         </Title>

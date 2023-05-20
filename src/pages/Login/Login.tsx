@@ -34,7 +34,7 @@ const Login: React.FC = () => {
     dispatch(requestLogin(requestBody))
       .unwrap()
       .then(() => {
-        navigate("/dashboard");
+        navigate("/");
       })
       .catch((err) => {
         showMessage("error", err?.message, 2);

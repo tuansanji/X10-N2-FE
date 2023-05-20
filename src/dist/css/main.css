@@ -22,6 +22,7 @@ html {
   position: relative;
   height: 100%;
   width: 100%;
+  overflow: auto;
 }
 
 .container_content {
@@ -1245,6 +1246,9 @@ html {
   height: 100%;
   margin: 0;
 }
+.dashboard .projects_list {
+  height: 100%;
+}
 .dashboard .projects_list .projects_list_header {
   padding: 16px 0;
   display: flex;
@@ -1256,11 +1260,26 @@ html {
   margin: 0;
 }
 .dashboard .projects_list .projects_list_item {
-  padding: 8px 0;
+  height: calc(100% - 60px);
+}
+.dashboard .projects_list .projects_list_item .project_name_column {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+.dashboard .projects_list .projects_list_item .project_name_action .anticon {
+  margin-left: 8px;
+  cursor: pointer;
 }
 .dashboard .tasks_list .tasks_list_item {
   border: 1px solid black;
   padding: 8px 16px;
+}
+.dashboard .tasks_list .tasks_list_header {
+  padding: 16px 0;
+}
+.dashboard .tasks_list .tasks_list_header .ant-typography {
+  margin: 0;
 }
 
 /*# sourceMappingURL=main.css.map */

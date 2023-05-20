@@ -43,6 +43,12 @@ export const projectSlice = createSlice({
       );
       state.listProject.projects.splice(index, 1, action.payload);
     },
+    deleteProject: (state, action) => {
+      const index = state.listProject.projects.findIndex(
+        (project: IProject) => project._id === action.payload.key
+      );
+      state.listProject.projects.splice(index, 1);
+    },
   },
 });
 
@@ -52,4 +58,5 @@ export const {
   getAllProjectError,
   addNewProject,
   editProject,
+  deleteProject,
 } = projectSlice.actions;

@@ -12,6 +12,8 @@
   }
 
   .projects_list {
+    height: 100%;
+
     .projects_list_header {
       padding: 16px 0;
       @include flex(row, null, center, null, 16px);
@@ -20,7 +22,18 @@
       }
     }
     .projects_list_item {
-      padding: 8px 0;
+      height: calc(100% - 60px);
+
+      .project_name_column {
+        @include flex(row, space-between);
+      }
+
+      .project_name_action {
+        .anticon {
+          margin-left: 8px;
+          cursor: pointer;
+        }
+      }
     }
   }
 
@@ -28,6 +41,12 @@
     .tasks_list_item {
       border: 1px solid black;
       padding: 8px 16px;
+    }
+    .tasks_list_header {
+      padding: 16px 0;
+      .ant-typography {
+        margin: 0;
+      }
     }
   }
 }

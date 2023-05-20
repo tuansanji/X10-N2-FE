@@ -1,10 +1,17 @@
-import { useEffect, useState } from "react";
+import {
+  Dispatch,
+  SetStateAction,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import {
   getAllProjectError,
   getAllProjectStart,
   getAllProjectSuccess,
 } from "../../redux/slice/projectSlice";
-
+import _ from "lodash";
 import axios from "axios";
 import { useDispatch } from "react-redux";
 import { RootState } from "../../redux/store";
@@ -19,125 +26,45 @@ import {
   Button,
   Tooltip,
   Modal,
+  Avatar,
+  Input,
+  Popconfirm,
+  Skeleton,
 } from "antd";
 import { ColumnsType } from "antd/es/table";
-import { PlusCircleOutlined, PlusOutlined } from "@ant-design/icons";
+import {
+  DeleteOutlined,
+  EditOutlined,
+  PlusOutlined,
+  SearchOutlined,
+} from "@ant-design/icons";
 import ProjectForm from "../../components/projectForm/ProjectForm";
+import useMessageApi, {
+  UseMessageApiReturnType,
+} from "../../components/support/Message";
+import ProjectsList from "./ProjectsList";
+import taskApi from "../../services/api/taskApi";
+import moment from "moment";
+import TasksList from "./TasksList";
 
-const { Title, Text } = Typography;
+const { Title } = Typography;
 
-interface ProjectsListType {
-  listProject: any;
+export interface UserInfo {
+  avatar: string;
+  fullName: string;
+  username: string;
+  email: string;
 }
 
-interface ProjectsDataType {
-  key: string;
-  name: string;
+export interface TasksType {
+  code: string;
+  title: string;
   status: string;
-  members: any;
+  deadline: Date;
+  priority: string;
+  assignee: UserInfo;
+  _id?: string;
 }
-
-const ProjectsList: React.FC<ProjectsListType> = ({ listProject }) => {
-  const columns: ColumnsType<ProjectsDataType> = [
-    {
-      title: "Name",
-      dataIndex: "name",
-      key: "name",
-      render: (_, record: ProjectsDataType) => {
-        return (
-          <>
-            <Link to={`project/${record.key}`}>{record.name}</Link>
-          </>
-        );
-      },
-    },
-    {
-      title: "Status",
-      dataIndex: "status",
-      key: "status",
-      render: (_, { status }) => {
-        let bgColor: string = "";
-        switch (status) {
-          case "ongoing":
-            bgColor = "#F0E155";
-            break;
-          case "completed":
-            bgColor = "#44CB39";
-            break;
-          case "suspended":
-            bgColor = "#EC2B2B";
-            break;
-          case "preparing":
-            bgColor = "#2E55DE";
-            break;
-          default:
-            bgColor = "transparent";
-            break;
-        }
-        return (
-          <>
-            <Button
-              type="primary"
-              shape="round"
-              style={{ backgroundColor: bgColor }}
-            >
-              <Text className="btn_status" strong>
-                {status.toUpperCase()}
-              </Text>
-            </Button>
-          </>
-        );
-      },
-    },
-    {
-      title: "Members",
-      dataIndex: "members",
-      key: "members",
-      render: (_, record: ProjectsDataType) => {
-        return (
-          <>
-            <div>Test</div>
-          </>
-        );
-      },
-    },
-  ];
-
-  const data: ProjectsDataType[] = listProject.projects.map((project: any) => {
-    return {
-      key: project._id,
-      name: project.name,
-      status: project.status,
-      members: project.code,
-    };
-  });
-
-  return (
-    <>
-      <div className="projects_list_item">
-        <Table
-          columns={columns}
-          dataSource={data}
-          bordered
-          pagination={false}
-        />
-      </div>
-    </>
-  );
-};
-
-// const ItemsList: React.FC<ProjectsListType> = ({ project }) => {
-//   return (
-//     <div key={project._id} className="tasks_list_item">
-//       <Link
-//         to={`/${project._id}`}
-//         style={{ display: "flex", flexDirection: "column" }}
-//       >
-//         {project.name}
-//       </Link>
-//     </div>
-//   );
-// };
 
 const Dashboard: React.FC = () => {
   const [openCreateProject, setOpenCreateProject] = useState<boolean>(false);
@@ -146,10 +73,16 @@ const Dashboard: React.FC = () => {
   const listProject = useAppSelector(
     (state: any) => state.project?.listProject
   );
+  const { showMessage, contextHolder }: UseMessageApiReturnType =
+    useMessageApi();
+  const [openEditProject, setOpenEditProject] = useState<boolean>(false);
+  const [fetchingTasks, setFetchingTasks] = useState<boolean>(false);
+  const [projectDetail, setProjectDetail] = useState<any>();
+  const [tasksList, setTasksList] = useState<TasksType[]>([]);
+
   useEffect(() => {
     (async () => {
       dispatch(getAllProjectStart());
-
       try {
         const res = await axios.get(
           `${process.env.REACT_APP_BACKEND_URL}/project/all`,
@@ -164,6 +97,20 @@ const Dashboard: React.FC = () => {
     })();
   }, [token]);
 
+  useEffect(() => {
+    setFetchingTasks(true);
+    taskApi
+      .getTasksByUser()
+      .then((res: any) => {
+        setTasksList(res.tasks);
+        setFetchingTasks(false);
+      })
+      .catch((err: any) => {
+        showMessage("error", err.response.data.message, 2);
+        setFetchingTasks(false);
+      });
+  }, []);
+
   return (
     <>
       <Modal
@@ -177,27 +124,47 @@ const Dashboard: React.FC = () => {
           closeModal={setOpenCreateProject}
         />
       </Modal>
+
+      <Modal
+        open={openEditProject}
+        footer={null}
+        onCancel={() => setOpenEditProject(false)}
+      >
+        <ProjectForm
+          title="Edit Project Info"
+          useCase="edit"
+          closeModal={setOpenEditProject}
+          projectDetail={{ ...projectDetail }}
+          key={projectDetail?._id}
+        />
+      </Modal>
+      {contextHolder}
       <Row className="dashboard" justify="space-between">
-        <Col className="projects_list" span={11}>
+        <Col className="projects_list" span={10}>
           <div className="projects_list_header">
             <Title level={4}>Your Projects</Title>
             <Tooltip title="Create new project">
               <Button
                 onClick={() => setOpenCreateProject(true)}
+                size="small"
                 type="primary"
                 shape="circle"
                 icon={<PlusOutlined />}
               />
             </Tooltip>
           </div>
-          <ProjectsList listProject={listProject} />
+          <ProjectsList
+            listProject={listProject}
+            setOpenEditProject={setOpenEditProject}
+            setProjectDetail={setProjectDetail}
+          />
         </Col>
         <Divider type="vertical" />
-        <Col className="tasks_list" span={11}>
-          <Title level={4}>Your Tasks</Title>
-          {/* {listProject.projects?.map((project: any) => {
-          return <ItemsList project={project} />;
-        })} */}
+        <Col className="tasks_list" span={12}>
+          <div className="tasks_list_header">
+            <Title level={4}>Your Tasks</Title>
+          </div>
+          {fetchingTasks ? <Skeleton /> : <TasksList tasksList={tasksList} />}
         </Col>
       </Row>
     </>
