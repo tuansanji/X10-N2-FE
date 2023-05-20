@@ -6,8 +6,14 @@
   "delete": "Xóa",
   "create": "Tạo mới",
   "update": "Cập nhật",
+  "done": "Đã hoàn thành",
+
   "generalInformation": "Thông tin chung",
   "stages": "Giai đoạn",
   "members": "Thành viên",
-  "home": "Trang chủ"
+  "home": "Trang chủ",
+  "loadMore": "Xem thêm",
+  "detail": "Xem chi tiết",
+  "before": "Trước",
+  "after": "Sau"
 }

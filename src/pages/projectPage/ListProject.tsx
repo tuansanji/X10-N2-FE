@@ -3,14 +3,12 @@ import { IProject } from "../../components/sidebar/Sidebar";
 import Loading from "../../components/support/Loading";
 import { useAppSelector } from "../../redux/hook";
 import { RootState } from "../../redux/store";
-import projectApi from "../../services/api/projectApi";
-import { DeleteFilled, EditFilled, SearchOutlined } from "@ant-design/icons";
+import { DeleteFilled, EditFilled } from "@ant-design/icons";
 import axios from "axios";
 import moment from "moment";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
-import slugify from "slugify";
 import {
   getAllProjectError,
   getAllProjectStart,
@@ -18,7 +16,6 @@ import {
 } from "../../redux/slice/projectSlice";
 
 import {
-  Link,
   useSearchParams,
   useNavigate,
   createSearchParams,
@@ -29,17 +26,15 @@ import {
   Select,
   Space,
   Table,
-  Tag,
   Modal,
-  message,
   Popconfirm,
   Typography,
   Skeleton,
 } from "antd";
-import type { InputRef } from "antd";
-import type { ColumnsType, TableProps, ColumnType } from "antd/es/table";
+
+import type { ColumnsType, TableProps } from "antd/es/table";
 import type { SizeType } from "antd/es/config-provider/SizeContext";
-import type { FilterConfirmProps } from "antd/es/table/interface";
+
 import { deleteQuery, setQuery } from "../../redux/slice/paramsSlice";
 import useMessageApi, {
   UseMessageApiReturnType,
@@ -351,6 +346,7 @@ const ListProject: React.FC = () => {
     <div className="content_project-page">
       {contextHolder}
       {loading && <Loading />}
+      {/* {loading && <Loading />} */}
       <div className="project_page-header">
         {/* Create New Project Modal */}
         <Modal

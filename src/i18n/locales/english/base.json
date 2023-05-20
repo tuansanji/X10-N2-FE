@@ -5,9 +5,14 @@
   "edit": "Edit",
   "delete": "Delete",
   "create": "Create",
+  "done": "Done",
   "update": "Update",
   "generalInformation": "General Information",
   "stages": "Stages",
   "members": "Members",
-  "home": "Home"
+  "home": "Home",
+  "loadMore": "Load More",
+  "detail": "Details",
+  "before": "Before",
+  "after": "After"
 }

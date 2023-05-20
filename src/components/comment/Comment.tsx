@@ -64,6 +64,7 @@ const Comment: React.FC<IComment> = ({
   const handleCancel = () => {
     setOpen(false);
   };
+
   return (
     <div key={uuid()} className="comment_content">
       <img src={reviewComment?.reviewer?.avatar} alt="" className="img_user" />
@@ -78,47 +79,50 @@ const Comment: React.FC<IComment> = ({
           {reviewComment ? reviewComment.content : parse(taskComment?.content)}
         </div>
         <div className="action-buttons ">
-          {user.userName === reviewComment?.reviewer.userName && (
-            <span
-              className=""
-              onClick={() => {
-                setOpen(true);
-              }}
-            >
-              {t("base:edit")}
-            </span>
+          {user.username === reviewComment?.reviewer.username && (
+            <>
+              <span
+                className=""
+                onClick={() => {
+                  setOpen(true);
+                }}
+              >
+                {t("base:edit")}
+              </span>
+
+              <Modal
+                title={t("base:edit")}
+                open={open}
+                onOk={handleEdit}
+                onCancel={handleCancel}
+                okText={t("base:ok")}
+                cancelText={t("base:cancel")}
+              >
+                <TextArea
+                  defaultValue={reviewComment?.content}
+                  onChange={(e) => (myCommentRef.current = e.target.value)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter") {
+                      event.preventDefault();
+                    }
+                  }}
+                  rows={4}
+                />
+              </Modal>
+              <span className="">
+                <Popconfirm
+                  placement="right"
+                  title={t("content:titleDeleteComment")}
+                  description={t("content:desDeleteComment")}
+                  onConfirm={() => handleDelete(reviewComment?._id as string)}
+                  okText={t("base:ok")}
+                  cancelText={t("base:cancel")}
+                >
+                  <span className="btn_delete">{t("base:delete")}</span>
+                </Popconfirm>
+              </span>
+            </>
           )}
-          <Modal
-            title={t("base:edit")}
-            open={open}
-            onOk={handleEdit}
-            onCancel={handleCancel}
-            okText={t("base:ok")}
-            cancelText={t("base:cancel")}
-          >
-            <TextArea
-              defaultValue={reviewComment?.content}
-              onChange={(e) => (myCommentRef.current = e.target.value)}
-              onKeyDown={(event) => {
-                if (event.key === "Enter") {
-                  event.preventDefault();
-                }
-              }}
-              rows={4}
-            />
-          </Modal>
-          <span className="">
-            <Popconfirm
-              placement="right"
-              title={t("content:titleDeleteComment")}
-              description={t("content:desDeleteComment")}
-              onConfirm={() => handleDelete(reviewComment?._id as string)}
-              okText={t("base:ok")}
-              cancelText={t("base:cancel")}
-            >
-              <span className="btn_delete">Delete</span>
-            </Popconfirm>
-          </span>
         </div>
       </div>
     </div>

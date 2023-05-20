@@ -1,8 +1,19 @@
 import TaskForm, { ITask, IUser } from "./TaskForm";
+import TaskHistory from "./TaskHistory";
 import TaskInfo from "./TaskInfo";
 import { useAppSelector } from "../../redux/hook";
 import { setQuery, deleteQuery } from "../../redux/slice/paramsSlice";
 import { RootState } from "../../redux/store";
+import taskApi from "../../services/api/taskApi";
+import axios from "axios";
+import _ from "lodash";
+import moment from "moment";
+import React, { useEffect, useMemo, useState } from "react";
+import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
+import { useTranslation } from "react-i18next";
+import { useDispatch, useSelector } from "react-redux";
+import { Link, useParams, useSearchParams } from "react-router-dom";
+import * as Scroll from "react-scroll";
 import {
   ClockCircleOutlined,
   DoubleRightOutlined,
@@ -12,16 +23,7 @@ import {
   LoadingOutlined,
   SearchOutlined,
 } from "@ant-design/icons";
-import axios from "axios";
-import taskApi from "../../services/api/taskApi";
-import _ from "lodash";
-import moment from "moment";
-import React, { useEffect, useMemo, useState } from "react";
-import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
-import { useDispatch, useSelector } from "react-redux";
-import { Link, useParams, useSearchParams } from "react-router-dom";
-import * as Scroll from "react-scroll";
-import { useTranslation } from "react-i18next";
+
 import useMessageApi, {
   UseMessageApiReturnType,
 } from "../../components/support/Message";
@@ -125,7 +127,12 @@ const TaskItem: React.FC<TaskItemProp> = ({ task, handleOpenInfoTask }) => {
   }
   return (
     <>
-      <div className="task_info" onClick={() => handleOpenInfoTask?.(task)}>
+      <div
+        className="task_info"
+        onClick={() => {
+          handleOpenInfoTask?.(task);
+        }}
+      >
         <Title className="task_title" level={5}>
           {task.title}
         </Title>
@@ -158,23 +165,26 @@ const TasksPage = () => {
   const params = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
   const queryParams = useSelector((state: any) => state.queryParams);
+  const user = useAppSelector((state: RootState) => state.auth?.userInfo);
   const dispatch = useDispatch();
-  const [tasksColumns, setTasksColumns] = useState<ColumnData[]>([]);
-  const { t, i18n } = useTranslation(["content", "base"]);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [statusForm, setStatusForm] = useState(false);
   const [sortSelectValue, setSortSelectValue] = useState<string>("deadlineAsc");
-  const [openInfo, setOpenInfo] = useState(false);
-  const [edit, setEdit] = useState(false);
   const { showMessage, contextHolder }: UseMessageApiReturnType =
     useMessageApi();
-  const [taskCurrent, setTaskCurrent] = useState<ITask>();
+  const [taskCurrent, setTaskCurrent] = useState<any>(null);
   const [allTasks, setAllTasks] = useState<ITask[]>([]);
+  const { t, i18n } = useTranslation(["content", "base"]);
+  const [tasksColumns, setTasksColumns] = useState<ColumnData[]>([]);
+  const [dragLoading, setDragLoading] = useState<boolean>(false);
+  const [historyOrForm, setHistoryOrForm] = useState<boolean>(false);
   const [breadcrumb, setBreadcrumb] = useState({
     project: "",
     stages: "",
   });
-  const user = useAppSelector((state: RootState) => state.auth?.userInfo);
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const [statusForm, setStatusForm] = useState<boolean>(false);
+  const [openInfo, setOpenInfo] = useState<boolean>(false);
+  const [countReloadTasks, setCountReloadTasks] = useState<number>(1);
+  const [edit, setEdit] = useState<boolean>(false);
 
   const { responseData, isLoading } = useAxios(
     "get",
@@ -287,7 +297,7 @@ const TasksPage = () => {
       ],
     },
   ];
-  console.log("Params:", params);
+
   const breadcrumItems = useMemo(
     () => [
       { title: <Link to="/">Home</Link> },
@@ -595,27 +605,33 @@ const TasksPage = () => {
     setStatusForm(false);
     setEdit(false);
   };
+
   // chỉnh sửa task
   const handleEditTask = () => {
     setIsModalOpen(true);
-    setStatusForm(true);
+    setStatusForm(!statusForm);
     setEdit(!edit);
   };
   // cancel modal
   const handleCancel = () => {
     setIsModalOpen(false);
+    setStatusForm(false);
     setEdit(false);
     setOpenInfo(false);
+    setTaskCurrent(null);
   };
+
   // mở tab thông tin task
   const handleOpenInfoTask = (task: ITask) => {
     setIsModalOpen(true);
     setOpenInfo(true);
     setTaskCurrent(task);
   };
+
   // cuộn xuống phần tử khi nháy vào( sẽ cố gắng để thay đổi khi cuộn trang luôn)
   const handleTabLick = (tabLabel: string) => {
     if (tabLabel === "info") {
+      setHistoryOrForm(false);
       const element = document.getElementById("form_task");
       if (element) {
         element.scrollIntoView({
@@ -624,7 +640,8 @@ const TasksPage = () => {
           inline: "nearest",
         });
       }
-    } else if (tabLabel === "exchange") {
+    } else if (tabLabel === "comments") {
+      setHistoryOrForm(false);
       const element = document.getElementById("task_info");
       if (element) {
         element.scrollIntoView({
@@ -633,21 +650,29 @@ const TasksPage = () => {
           inline: "nearest",
         });
       }
+    } else if (tabLabel === "activity") {
+      setHistoryOrForm(true);
     }
   };
-
+  // phần tùy chọn modal task
   const items: TabsProps["items"] = [
     {
       key: "info",
-      label: `Info task`,
+      label: t("content:form.information"),
       children: "",
     },
     {
-      key: "exchange",
-      label: `Comments`,
+      key: "comments",
+      label: t("content:form.comments"),
+      children: "",
+    },
+    {
+      key: "activity",
+      label: t("content:task.activity"),
       children: "",
     },
   ];
+
   return (
     <div className="tasks_page">
       {contextHolder}
@@ -668,19 +693,23 @@ const TasksPage = () => {
             setAllTasks={setAllTasks}
             setTasksColumns={setTasksColumns}
             tasksColumns={tasksColumns}
+            setCountReloadTasks={setCountReloadTasks}
+            edit={edit}
+            handleEditTask={handleEditTask}
             showMessage={showMessage}
-            key={statusForm ? "create" : "update"}
-            title="Create new task"
+            key={statusForm ? t("base:create") : t("base:update")}
+            title={t("content:form.create task")}
             setIsModalOpen={setIsModalOpen}
             statusForm={false}
             setStatusForm={setStatusForm}
             taskInfo={{
               status: false,
             }}
-            button="Create"
+            button={t("base:create")}
           />
         )}
 
+        {/* phần modal thông tin task */}
         {openInfo && (
           <div className="task__info--container">
             <Tabs
@@ -688,44 +717,53 @@ const TasksPage = () => {
               items={items}
               onTabClick={handleTabLick}
             />
-            <div className="action__btn">
-              <Button type="primary" onClick={handleEditTask}>
-                {edit ? "Cancel" : "Edit"}
-              </Button>
-            </div>
-            {statusForm && edit ? (
-              <TaskForm
-                showMessage={showMessage}
-                key={statusForm ? "create" : "update"}
-                title="Edit task"
-                setIsModalOpen={setIsModalOpen}
-                statusForm={statusForm}
-                setEdit={setEdit}
-                setStatusForm={setStatusForm}
-                taskInfo={{
-                  status: false,
-                  data: taskCurrent,
-                }}
-                button="Update"
-                taskCurrent={taskCurrent}
-              />
+            {historyOrForm ? (
+              <>
+                <TaskHistory taskCurrentId={taskCurrent?._id} />
+              </>
             ) : (
-              <TaskForm
-                showMessage={showMessage}
-                key={statusForm ? "create" : "update"}
-                title=""
-                setIsModalOpen={setIsModalOpen}
-                statusForm={statusForm}
-                setStatusForm={setStatusForm}
-                taskInfo={{
-                  status: true,
-                  data: taskCurrent,
-                }}
-                taskCurrent={taskCurrent}
-              />
-            )}
+              <>
+                {statusForm && edit ? (
+                  <TaskForm
+                    setCountReloadTasks={setCountReloadTasks}
+                    edit={edit}
+                    handleEditTask={handleEditTask}
+                    showMessage={showMessage}
+                    key={statusForm ? t("base:create") : t("base:update")}
+                    title={t("content:form.edit task")}
+                    setIsModalOpen={setIsModalOpen}
+                    statusForm={statusForm}
+                    setEdit={setEdit}
+                    setStatusForm={setStatusForm}
+                    taskInfo={{
+                      status: false,
+                      data: taskCurrent,
+                    }}
+                    button={t("base:update")}
+                    taskCurrent={taskCurrent}
+                  />
+                ) : (
+                  <TaskForm
+                    setCountReloadTasks={setCountReloadTasks}
+                    handleEditTask={handleEditTask}
+                    edit={edit}
+                    showMessage={showMessage}
+                    key={statusForm ? t("base:create") : t("base:update")}
+                    title=""
+                    setIsModalOpen={setIsModalOpen}
+                    statusForm={statusForm}
+                    setStatusForm={setStatusForm}
+                    taskInfo={{
+                      status: true,
+                      data: taskCurrent,
+                    }}
+                    taskCurrent={taskCurrent}
+                  />
+                )}
 
-            <TaskInfo />
+                <TaskInfo taskCurrent={taskCurrent} showMessage={showMessage} />
+              </>
+            )}
           </div>
         )}
       </Modal>
@@ -733,8 +771,9 @@ const TasksPage = () => {
         <Breadcrumb items={breadcrumItems} />
         <div className="tool_bar">
           <Button size="large" type="primary" onClick={handleCreateTask}>
-            Create Task
+            {t("content:form.create task")}
           </Button>
+
           <Select
             size="large"
             value={`Type: ${

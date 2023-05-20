@@ -1,13 +1,5 @@
-import {
-  ListProject,
-  NotFoundPage,
-  ProjectDetail,
-  TasksPage,
-  UserDetails,
-} from "../../pages";
-import React from "react";
 import { useSelector } from "react-redux";
-import { Outlet, Route, Routes } from "react-router";
+import { Outlet } from "react-router";
 import Sidebar from "../sidebar/Sidebar";
 
 const Content = () => {

@@ -1,14 +1,34 @@
-import { Button, Table, Typography } from "antd";
+import { Button, Modal, Table, Tabs, TabsProps, Typography } from "antd";
 import { ColumnsType } from "antd/es/table";
 import moment from "moment";
 import _ from "lodash";
-import React, { useMemo } from "react";
-import { TasksType } from "./Dashboard";
+import React, { useMemo, useState } from "react";
+import { TasksType, UserInfo } from "./Dashboard";
+import TaskInfo from "../tasksPage/TaskInfo";
+import TaskForm from "../tasksPage/TaskForm";
+import TaskHistory from "../tasksPage/TaskHistory";
+import { useTranslation } from "react-i18next";
+import { NoticeType } from "antd/es/message/interface";
 
 const { Title, Text } = Typography;
 
 interface TasksListPropsType {
   tasksList: TasksType[];
+  showMessage: (
+    type: NoticeType,
+    content: string,
+    duration?: number | undefined
+  ) => void;
+}
+
+interface TasksTableData {
+  assignee: UserInfo;
+  code: string;
+  deadline: Date;
+  key: string;
+  priority: string;
+  status: string;
+  title: string;
 }
 
 const prioList: any = {
@@ -19,13 +39,75 @@ const prioList: any = {
   lowest: 1,
 };
 
-const TasksList: React.FC<TasksListPropsType> = ({ tasksList }) => {
-  const columns: ColumnsType<TasksType> = [
+const TasksList: React.FC<TasksListPropsType> = ({
+  tasksList,
+  showMessage,
+}) => {
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const [statusForm, setStatusForm] = useState<boolean>(false);
+  const [edit, setEdit] = useState<boolean>(false);
+  const [openInfo, setOpenInfo] = useState<boolean>(false);
+  const [taskCurrent, setTaskCurrent] = useState<any>(null);
+  const [historyOrForm, setHistoryOrForm] = useState<boolean>(false);
+  const [countReloadTasks, setCountReloadTasks] = useState<number>(1);
+  const { t, i18n } = useTranslation(["content", "base"]);
+
+  const showTaskDetail = (record: TasksTableData) => {
+    let filteredTask = tasksList.filter((task: TasksType) => {
+      return task._id === record.key;
+    })[0];
+    console.log("Filtered Tasks:", filteredTask);
+    setIsModalOpen(true);
+    setOpenInfo(true);
+    setTaskCurrent(filteredTask);
+  };
+
+  const handleEditTask = () => {
+    setIsModalOpen(true);
+    setStatusForm(!statusForm);
+    setEdit(!edit);
+  };
+
+  const handleTabLick = (tabLabel: string) => {
+    if (tabLabel === "info") {
+      setHistoryOrForm(false);
+      const element = document.getElementById("form_task");
+      if (element) {
+        element.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+          inline: "nearest",
+        });
+      }
+    } else if (tabLabel === "comments") {
+      setHistoryOrForm(false);
+      const element = document.getElementById("task_info");
+      if (element) {
+        element.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+          inline: "nearest",
+        });
+      }
+    } else if (tabLabel === "activity") {
+      setHistoryOrForm(true);
+    }
+  };
+
+  const handleCancel = () => {
+    setIsModalOpen(false);
+    setStatusForm(false);
+    setEdit(false);
+    setOpenInfo(false);
+    setTaskCurrent(null);
+  };
+
+  const columns: ColumnsType<TasksTableData> = [
     {
       title: "Code",
       dataIndex: "code",
       key: "code",
-      render: (_, record: TasksType) => {
+      render: (_, record: TasksTableData) => {
         return <Title level={5}>{record.code}</Title>;
       },
       width: "16%",
@@ -34,8 +116,18 @@ const TasksList: React.FC<TasksListPropsType> = ({ tasksList }) => {
       title: "Name",
       dataIndex: "name",
       key: "name",
-      render: (_, record: TasksType) => {
-        return <Title level={5}>{record.title}</Title>;
+      render: (_, record: TasksTableData) => {
+        return (
+          <Title
+            style={{ cursor: "pointer" }}
+            level={5}
+            onClick={() => {
+              showTaskDetail(record);
+            }}
+          >
+            {record.title}
+          </Title>
+        );
       },
       width: "16%",
     },
@@ -43,7 +135,7 @@ const TasksList: React.FC<TasksListPropsType> = ({ tasksList }) => {
       title: "Status",
       dataIndex: "status",
       key: "status",
-      render: (_, record: TasksType) => {
+      render: (_, record: TasksTableData) => {
         let bgColor: string = "";
         let statusLabel: string = "";
         switch (record.status) {
@@ -96,7 +188,7 @@ const TasksList: React.FC<TasksListPropsType> = ({ tasksList }) => {
       title: "Priority",
       dataIndex: "priority",
       key: "priority",
-      render: (text, record: TasksType) => {
+      render: (text, record: TasksTableData) => {
         return <Title level={5}>{_.capitalize(record.priority)}</Title>;
       },
       sorter: (a, b) => {
@@ -108,7 +200,7 @@ const TasksList: React.FC<TasksListPropsType> = ({ tasksList }) => {
       title: "Deadline",
       dataIndex: "deadline",
       key: "deadline",
-      render: (_, record: TasksType) => {
+      render: (_, record: TasksTableData) => {
         return (
           <Title level={5}>
             {moment(record.deadline).format("DD/MM/YYYY")}
@@ -127,13 +219,13 @@ const TasksList: React.FC<TasksListPropsType> = ({ tasksList }) => {
       title: "Assignee",
       dataIndex: "assignee",
       key: "assignee",
-      render: (_, record: TasksType) => {
+      render: (_, record: TasksTableData) => {
         return <Title level={5}>{record.assignee?.fullName}</Title>;
       },
       width: "16%",
     },
   ];
-  const data: TasksType[] = useMemo(() => {
+  const data: TasksTableData[] = useMemo(() => {
     let tasks =
       tasksList && TasksList.length > 0
         ? [
@@ -152,9 +244,99 @@ const TasksList: React.FC<TasksListPropsType> = ({ tasksList }) => {
         : [];
     return tasks;
   }, [tasksList]);
+
+  const items: TabsProps["items"] = [
+    {
+      key: "info",
+      label: t("content:form.information"),
+      children: "",
+    },
+    {
+      key: "comments",
+      label: t("content:form.comments"),
+      children: "",
+    },
+    {
+      key: "activity",
+      label: t("content:task.activity"),
+      children: "",
+    },
+  ];
+
   return (
     <>
       <div className="tasks_container" style={{ height: "100%" }}>
+        {/* modal create-info-edit */}
+        <Modal
+          title=""
+          width="70%"
+          open={isModalOpen}
+          onCancel={handleCancel}
+          maskClosable={false}
+          style={{ top: "50px" }}
+          footer={[]}
+        >
+          {/* phần modal thông tin task */}
+          {openInfo && (
+            <div className="task__info--container">
+              <Tabs
+                defaultActiveKey="1"
+                items={items}
+                onTabClick={handleTabLick}
+              />
+              {historyOrForm ? (
+                <>
+                  <TaskHistory taskCurrentId={taskCurrent?._id} />
+                </>
+              ) : (
+                <>
+                  {statusForm && edit ? (
+                    <TaskForm
+                      setCountReloadTasks={setCountReloadTasks}
+                      edit={edit}
+                      handleEditTask={handleEditTask}
+                      showMessage={showMessage}
+                      key={statusForm ? t("base:create") : t("base:update")}
+                      title={t("content:form.edit task")}
+                      setIsModalOpen={setIsModalOpen}
+                      statusForm={statusForm}
+                      setEdit={setEdit}
+                      setStatusForm={setStatusForm}
+                      taskInfo={{
+                        status: false,
+                        data: taskCurrent,
+                      }}
+                      button={t("base:update")}
+                      taskCurrent={taskCurrent}
+                    />
+                  ) : (
+                    <TaskForm
+                      setCountReloadTasks={setCountReloadTasks}
+                      handleEditTask={handleEditTask}
+                      edit={edit}
+                      showMessage={showMessage}
+                      key={statusForm ? t("base:create") : t("base:update")}
+                      title=""
+                      setIsModalOpen={setIsModalOpen}
+                      statusForm={statusForm}
+                      setStatusForm={setStatusForm}
+                      taskInfo={{
+                        status: true,
+                        data: taskCurrent,
+                      }}
+                      taskCurrent={taskCurrent}
+                    />
+                  )}
+
+                  <TaskInfo
+                    taskCurrent={taskCurrent}
+                    showMessage={showMessage}
+                  />
+                </>
+              )}
+            </div>
+          )}
+        </Modal>
         <Table
           bordered
           dataSource={data}

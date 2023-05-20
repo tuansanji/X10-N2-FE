@@ -1,11 +1,4 @@
-import {
-  Dispatch,
-  SetStateAction,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { useEffect, useState } from "react";
 import {
   getAllProjectError,
   getAllProjectStart,
@@ -16,35 +9,24 @@ import axios from "axios";
 import { useDispatch } from "react-redux";
 import { RootState } from "../../redux/store";
 import { useAppSelector } from "../../redux/hook";
-import { Link } from "react-router-dom";
 import {
   Col,
   Divider,
   Row,
   Typography,
-  Table,
   Button,
   Tooltip,
   Modal,
-  Avatar,
-  Input,
-  Popconfirm,
   Skeleton,
 } from "antd";
-import { ColumnsType } from "antd/es/table";
-import {
-  DeleteOutlined,
-  EditOutlined,
-  PlusOutlined,
-  SearchOutlined,
-} from "@ant-design/icons";
+import { PlusOutlined } from "@ant-design/icons";
 import ProjectForm from "../../components/projectForm/ProjectForm";
 import useMessageApi, {
   UseMessageApiReturnType,
 } from "../../components/support/Message";
 import ProjectsList from "./ProjectsList";
 import taskApi from "../../services/api/taskApi";
-import moment from "moment";
+
 import TasksList from "./TasksList";
 
 const { Title } = Typography;
@@ -63,7 +45,12 @@ export interface TasksType {
   deadline: Date;
   priority: string;
   assignee: UserInfo;
-  _id?: string;
+  createdBy: UserInfo;
+  description?: string;
+  startDate: Date;
+  type: string;
+  _id: string;
+  createdDate: Date;
 }
 
 const Dashboard: React.FC = () => {
@@ -164,7 +151,11 @@ const Dashboard: React.FC = () => {
           <div className="tasks_list_header">
             <Title level={4}>Your Tasks</Title>
           </div>
-          {fetchingTasks ? <Skeleton /> : <TasksList tasksList={tasksList} />}
+          {fetchingTasks ? (
+            <Skeleton />
+          ) : (
+            <TasksList tasksList={tasksList} showMessage={showMessage} />
+          )}
         </Col>
       </Row>
     </>

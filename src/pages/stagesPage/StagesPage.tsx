@@ -1,20 +1,16 @@
 import FormStages from "./FormStages";
 import StageReview from "./StageReview";
 import Loading from "../../components/support/Loading";
-import { listStages } from "../../data/statges";
-import { useAxios } from "../../hooks";
-import { useAppDispatch, useAppSelector } from "../../redux/hook";
-import { reloadSidebar } from "../../redux/slice/menuSlice";
+import useIsBoss from "../../hooks/useIsBoss";
+import { useAppSelector } from "../../redux/hook";
 import stageApi from "../../services/api/stageApi";
 import { ProjectType } from "../projectPage/ProjectDetail";
 import { DeleteFilled, EditFilled, EyeFilled } from "@ant-design/icons";
 import Search from "antd/es/input/Search";
-import axios from "axios";
 import moment from "moment";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
-  Link,
   createSearchParams,
   useNavigate,
   useParams,
@@ -88,7 +84,7 @@ const StagesPage: React.FC<PropTypes> = (props: PropTypes) => {
   const [searchParams, setSearchParams] = useSearchParams();
   const searchRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const params = useParams();
-  const dispatch = useAppDispatch();
+
   const { showMessage, contextHolder }: UseMessageApiReturnType =
     useMessageApi();
   const token: string = useAppSelector(
@@ -96,6 +92,7 @@ const StagesPage: React.FC<PropTypes> = (props: PropTypes) => {
   );
   const { t, i18n } = useTranslation(["content", "base"]);
   const navigate = useNavigate();
+  const { isBoss } = useIsBoss([]);
 
   // lấy dữ liệu stages theo page
   useEffect(() => {
@@ -108,7 +105,6 @@ const StagesPage: React.FC<PropTypes> = (props: PropTypes) => {
       .then((res: any) => {
         setStagesData(res);
         setLoading(false);
-        dispatch(reloadSidebar());
       })
       .catch((err: any) => {
         setLoading(false);
@@ -267,31 +263,38 @@ const StagesPage: React.FC<PropTypes> = (props: PropTypes) => {
           return startDateA.getTime() - startDateB.getTime();
         },
       },
+
       {
         title: t("content:action"),
         key: "action",
         render: (_, record: DataType) => (
           <Space size="middle">
-            <span
-              onClick={() => {
-                setEditStages({
-                  status: true,
-                  stages: record,
-                });
-              }}
-            >
-              <EditFilled style={{ fontSize: "16px", cursor: "pointer" }} />
-            </span>
-            <Popconfirm
-              placement="topRight"
-              title={t("content:titleDeleteStage")}
-              description={t("content:desDeleteStage")}
-              onConfirm={() => confirm(record)}
-              okText={t("base:ok")}
-              cancelText={t("base:cancel")}
-            >
-              <DeleteFilled style={{ fontSize: "16px", cursor: "pointer" }} />
-            </Popconfirm>
+            {isBoss && (
+              <>
+                <span
+                  onClick={() => {
+                    setEditStages({
+                      status: true,
+                      stages: record,
+                    });
+                  }}
+                >
+                  <EditFilled style={{ fontSize: "16px", cursor: "pointer" }} />
+                </span>
+                <Popconfirm
+                  placement="topRight"
+                  title={t("content:titleDeleteStage")}
+                  description={t("content:desDeleteStage")}
+                  onConfirm={() => confirm(record)}
+                  okText={t("base:ok")}
+                  cancelText={t("base:cancel")}
+                >
+                  <DeleteFilled
+                    style={{ fontSize: "16px", cursor: "pointer" }}
+                  />
+                </Popconfirm>
+              </>
+            )}
             <span
               onClick={() => {
                 setIsModalOpen(true);
@@ -306,6 +309,7 @@ const StagesPage: React.FC<PropTypes> = (props: PropTypes) => {
     ],
     [stagesData, i18n.language]
   );
+
   // dữ liệu stages trong table
   const data: DataType[] = useMemo(() => {
     if (!stagesData?.stages) return [];
@@ -321,31 +325,23 @@ const StagesPage: React.FC<PropTypes> = (props: PropTypes) => {
     }));
   }, [stagesData?.stages]);
 
-  //DATA ĐỂ TEST THỬ VÀO TRANG DANH SÁCH TASK
-  // const data: any[] = listStages.map((data) => {
-  //   return {
-  //     key: data._id,
-  //     name: data.name,
-  //     startDate: data.startDate,
-  //     endDateExpected: data.estimatedEndDate,
-  //     endDateActual: data.actualEndDate,
-  //   };
-  // });
-
   return (
     <div className="content_project-page stages_page">
       {loading && <Loading />}
       {contextHolder}
       <div className="project_page-header ">
-        <div className="header_left">
-          <Button
-            type="primary"
-            size={"large"}
-            onClick={() => setCreateStages(true)}
-          >
-            {t("content:createStage")}
-          </Button>
-        </div>
+        {isBoss && (
+          <div className="header_left">
+            <Button
+              type="primary"
+              size={"large"}
+              onClick={() => setCreateStages(true)}
+            >
+              {t("content:createStage")}
+            </Button>
+          </div>
+        )}
+
         <div className="header_right">
           <Space wrap>
             <Search
