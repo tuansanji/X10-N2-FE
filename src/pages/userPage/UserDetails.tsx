@@ -3,6 +3,7 @@ import InputPassword, { InputPasswordTextArea } from "./InputPassword";
 import { useAxios } from "../../hooks";
 import { updateUserInfo } from "../../redux/slice/authSlice";
 import userApi from "../../services/api/userApi";
+import { changeMsgLanguage } from "../../utils/changeMsgLanguage";
 import { RightOutlined } from "@ant-design/icons";
 import { DatePicker, Select, Space } from "antd";
 import { Modal, Skeleton } from "antd";
@@ -118,7 +119,11 @@ const UserDetails = () => {
           [fieldUserEdit.field]: fieldUserEdit.data,
         })
         .then((res: any) => {
-          showMessage("success", res.message, 2);
+          showMessage(
+            "success",
+            changeMsgLanguage(res?.message, "Thay đổi thành công"),
+            2
+          );
           setOpen(false);
           setFieldUserEdit({
             field: "",
@@ -128,7 +133,11 @@ const UserDetails = () => {
           setCountReload((prev) => prev + 1);
         })
         .catch((err: any) => {
-          showMessage("error", err.response.data?.message, 2);
+          showMessage(
+            "error",
+            changeMsgLanguage(err.response?.data?.message, "Thay đổi thất bại"),
+            2
+          );
         });
     }
     // Yêu cầu mật khẩu -- các field private
@@ -140,7 +149,11 @@ const UserDetails = () => {
           oldPassword: currentPassword,
         })
         .then((res: any) => {
-          showMessage("success", res.message, 2);
+          showMessage(
+            "success",
+            changeMsgLanguage(res?.message, "Thay đổi thành công"),
+            2
+          );
           setOpen(false);
           setCountReload((prev) => prev + 1);
           setFieldUserEdit({
@@ -150,7 +163,11 @@ const UserDetails = () => {
           });
         })
         .catch((err: any) => {
-          showMessage("error", err.response.data?.message, 2);
+          showMessage(
+            "error",
+            changeMsgLanguage(err.response?.data?.message, "Thay đổi thất bại"),
+            2
+          );
         });
     }
   };
@@ -160,13 +177,21 @@ const UserDetails = () => {
     userApi
       .editUser(dataImage)
       .then((res: any) => {
-        showMessage("success", res.message, 2);
+        showMessage(
+          "success",
+          changeMsgLanguage(res?.message, "Thay đổi thành công"),
+          2
+        );
         setModalImage(false);
         setCountReload((prev) => prev + 1);
         URL.revokeObjectURL(imagePreview.preview);
       })
       .catch((err: any) => {
-        showMessage("error", err.response.data?.message, 2);
+        showMessage(
+          "error",
+          changeMsgLanguage(err.response?.data?.message, "Thay đổi thất bại"),
+          2
+        );
       });
   };
   //show modal text

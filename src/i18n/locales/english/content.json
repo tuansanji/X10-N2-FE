@@ -71,12 +71,12 @@
     "done": "Done"
   },
   "task": {
+    "jobCode": "Auto generated",
     "includes": "No task found",
     "activity": "Activities",
     "task": "task",
     "update": "update",
     "comment": "comment",
-
     "complete": "complete",
     "create": "create",
     "cancel": "cancel"
