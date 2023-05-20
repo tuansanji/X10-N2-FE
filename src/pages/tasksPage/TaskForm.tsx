@@ -142,7 +142,6 @@ const TaskForm = (props: ITaskForm) => {
     []
   );
 
-  // lấy  của user hiện tại
   // xác định dữ liệu user hiện tại
   useEffect(() => {
     if (responseData && user) {
