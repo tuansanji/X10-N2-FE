@@ -42,8 +42,9 @@
     border-radius: 8px;
     img {
       width: 24px;
-      height: auto;
-      border-radius: 16px;
+      height: 24px;
+
+      border-radius: 50%;
     }
 
     &:hover {

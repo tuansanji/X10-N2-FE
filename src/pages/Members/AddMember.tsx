@@ -1,5 +1,6 @@
 import { CloseOutlined, LoadingOutlined } from "@ant-design/icons";
 import { Button, Input, message, Select, Typography } from "antd";
+import { NoticeType } from "antd/es/message/interface";
 import axios from "axios";
 import React, { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -13,6 +14,7 @@ interface PropTypes {
   memberData: any[];
   leaderCount: any[];
   setMemberData: React.Dispatch<React.SetStateAction<any[]>>;
+  showMessage: (type: NoticeType, content: string, duration?: number) => void;
 }
 
 interface UserSearchResult {
@@ -30,6 +32,7 @@ const AddMember: React.FC<PropTypes> = ({
   memberData,
   leaderCount,
   setMemberData,
+  showMessage,
 }) => {
   const params = useParams();
   const timeOutRef = useRef<any>(null);
@@ -183,7 +186,7 @@ const AddMember: React.FC<PropTypes> = ({
           headers: { Authorization: `Bearer ${token}` },
         });
         setMemberData(response.data.members);
-        // dispatch(toastSuccess(response.data.message));
+        showMessage("success", response.data.message, 2);
         setAddMemberFetching(false);
         setSelectedResult([]);
         setSearchInput("");
@@ -192,8 +195,8 @@ const AddMember: React.FC<PropTypes> = ({
         setError({ ...error, message: "Please add members" });
         setIsLoading(false);
       }
-    } catch (err) {
-      console.error(err);
+    } catch (err: any) {
+      showMessage("error", err.response.data.message, 2);
       setAddMemberFetching(false);
     }
   };

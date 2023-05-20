@@ -2,7 +2,7 @@ import FormStages from "./FormStages";
 import StageReview from "./StageReview";
 import Loading from "../../components/support/Loading";
 import useIsBoss from "../../hooks/useIsBoss";
-import { useAppDispatch, useAppSelector } from "../../redux/hook";
+import { useAppSelector } from "../../redux/hook";
 import stageApi from "../../services/api/stageApi";
 import { ProjectType } from "../projectPage/ProjectDetail";
 import { DeleteFilled, EditFilled, EyeFilled } from "@ant-design/icons";
@@ -10,8 +10,12 @@ import Search from "antd/es/input/Search";
 import moment from "moment";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Link, useParams, useSearchParams } from "react-router-dom";
-
+import {
+  createSearchParams,
+  useNavigate,
+  useParams,
+  useSearchParams,
+} from "react-router-dom";
 import {
   Button,
   message,
@@ -20,6 +24,7 @@ import {
   Popconfirm,
   Space,
   Table,
+  Typography,
 } from "antd";
 import useMessageApi, {
   UseMessageApiReturnType,
@@ -53,6 +58,8 @@ interface PropTypes {
   projectDetail?: ProjectType;
 }
 
+const { Text } = Typography;
+
 const StagesPage: React.FC<PropTypes> = (props: PropTypes) => {
   const [loading, setLoading] = useState<boolean>(true);
   const [createStages, setCreateStages] = useState<boolean>(false);
@@ -84,6 +91,7 @@ const StagesPage: React.FC<PropTypes> = (props: PropTypes) => {
     (state: any) => state.auth.userInfo.token
   );
   const { t, i18n } = useTranslation(["content", "base"]);
+  const navigate = useNavigate();
   const { isBoss } = useIsBoss([]);
 
   // lấy dữ liệu stages theo page
@@ -196,6 +204,14 @@ const StagesPage: React.FC<PropTypes> = (props: PropTypes) => {
         });
     }
   };
+
+  const navigateTasks = (record: any) => {
+    navigate({
+      pathname: `${record.key}`,
+      search: `${createSearchParams({ type: "all" })}`,
+    });
+  };
+
   //dữ liệu table
   const columns: ColumnsType<DataType> = useMemo(
     () => [
@@ -206,7 +222,14 @@ const StagesPage: React.FC<PropTypes> = (props: PropTypes) => {
 
         sorter: (a, b) => a.name.localeCompare(b.name),
         render: (_, record: DataType) => (
-          <Link to={`/${params.projectId}/${record.key}`}>{record.name}</Link>
+          <Text
+            className="stage_name"
+            onClick={() => {
+              navigateTasks(record);
+            }}
+          >
+            {record.name}
+          </Text>
         ),
       },
 

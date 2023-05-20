@@ -34,8 +34,29 @@ export const projectSlice = createSlice({
       state.isFetching = false;
       state.error = true;
     },
+    addNewProject: (state, action: PayloadAction<{ projects: IProject }>) => {
+      state.listProject.projects.unshift(action.payload);
+    },
+    editProject: (state, action) => {
+      const index = state.listProject.projects.findIndex(
+        (project: IProject) => project._id === action.payload._id
+      );
+      state.listProject.projects.splice(index, 1, action.payload);
+    },
+    deleteProject: (state, action) => {
+      const index = state.listProject.projects.findIndex(
+        (project: IProject) => project._id === action.payload.key
+      );
+      state.listProject.projects.splice(index, 1);
+    },
   },
 });
 
-export const { getAllProjectStart, getAllProjectSuccess, getAllProjectError } =
-  projectSlice.actions;
+export const {
+  getAllProjectStart,
+  getAllProjectSuccess,
+  getAllProjectError,
+  addNewProject,
+  editProject,
+  deleteProject,
+} = projectSlice.actions;

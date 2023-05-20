@@ -27,6 +27,10 @@ const taskApi = {
     const url = `/stage/tasks/${stageId}`;
     return axiosClient.get(url, { params });
   },
+  getTasksByUser() {
+    const url = `/task/related`;
+    return axiosClient.get(url);
+  },
   // phần comment
   getAllComment(taskId: string) {
     const url = `/task/${taskId}/getcomments`;

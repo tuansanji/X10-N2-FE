@@ -1,33 +1,32 @@
-import TaskForm, { ITask } from './TaskForm';
-import TaskHistory from './TaskHistory';
-import TaskInfo from './TaskInfo';
-import { descriptionTest } from '../../data/statges';
-import { useAppSelector } from '../../redux/hook';
-import { setQuery } from '../../redux/slice/paramsSlice';
-import { RootState } from '../../redux/store';
-import taskApi from '../../services/api/taskApi';
-import axios from 'axios';
-import _ from 'lodash';
-import moment from 'moment';
-import React, { useEffect, useMemo, useState } from 'react';
-import { DragDropContext, Draggable, Droppable } from 'react-beautiful-dnd';
-import { useTranslation } from 'react-i18next';
-import { useDispatch, useSelector } from 'react-redux';
-import { Link, useParams, useSearchParams } from 'react-router-dom';
-import * as Scroll from 'react-scroll';
+import TaskForm, { ITask, IUser } from "./TaskForm";
+import TaskHistory from "./TaskHistory";
+import TaskInfo from "./TaskInfo";
+import { useAppSelector } from "../../redux/hook";
+import { setQuery, deleteQuery } from "../../redux/slice/paramsSlice";
+import { RootState } from "../../redux/store";
+import taskApi from "../../services/api/taskApi";
+import axios from "axios";
+import _ from "lodash";
+import moment from "moment";
+import React, { useEffect, useMemo, useState } from "react";
+import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
+import { useTranslation } from "react-i18next";
+import { useDispatch, useSelector } from "react-redux";
+import { Link, useParams, useSearchParams } from "react-router-dom";
+import * as Scroll from "react-scroll";
 import {
-  EyeOutlined,
   ClockCircleOutlined,
   DoubleRightOutlined,
   DownOutlined,
   UpOutlined,
   PauseOutlined,
+  LoadingOutlined,
+  SearchOutlined,
 } from "@ant-design/icons";
 
 import useMessageApi, {
   UseMessageApiReturnType,
 } from "../../components/support/Message";
-
 import {
   Breadcrumb,
   Button,
@@ -39,24 +38,71 @@ import {
   Tabs,
   Typography,
   Tooltip,
-  message,
 } from "antd";
 import type { TabsProps } from "antd";
+import { useAxios } from "../../hooks";
 
-const { Text, Title } = Typography;
+const { Title } = Typography;
 const { Search } = Input;
 
-interface ColumnData {
+export interface ColumnData {
   id: string;
-
   title: string;
   items: any[];
+  dropAllow: boolean;
 }
 
 interface TaskItemProp {
   task: any;
   handleOpenInfoTask?: (task: ITask) => void;
 }
+
+const initialData: ColumnData[] = [
+  {
+    id: "open",
+    title: "Open",
+    items: [],
+    dropAllow: true,
+  },
+  {
+    id: "inprogress",
+    title: "In Progress",
+    items: [],
+    dropAllow: true,
+  },
+  {
+    id: "review",
+    title: "In Review",
+    items: [],
+    dropAllow: true,
+  },
+  {
+    id: "reopen",
+    title: "Re-Open",
+    items: [],
+    dropAllow: true,
+  },
+  {
+    id: "done",
+    title: "Done",
+    items: [],
+    dropAllow: true,
+  },
+  {
+    id: "cancel",
+    title: "Cancel",
+    items: [],
+    dropAllow: true,
+  },
+];
+
+const prioList: any = {
+  highest: 5,
+  high: 4,
+  medium: 3,
+  low: 2,
+  lowest: 1,
+};
 
 const TaskItem: React.FC<TaskItemProp> = ({ task, handleOpenInfoTask }) => {
   let priority = null;
@@ -118,17 +164,18 @@ const TaskItem: React.FC<TaskItemProp> = ({ task, handleOpenInfoTask }) => {
 const TasksPage = () => {
   const params = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { showMessage, contextHolder }: UseMessageApiReturnType =
-    useMessageApi();
   const queryParams = useSelector((state: any) => state.queryParams);
   const user = useAppSelector((state: RootState) => state.auth?.userInfo);
   const dispatch = useDispatch();
+  const [sortSelectValue, setSortSelectValue] = useState<string>("deadlineAsc");
+  const { showMessage, contextHolder }: UseMessageApiReturnType =
+    useMessageApi();
+  const [taskCurrent, setTaskCurrent] = useState<any>(null);
+  const [allTasks, setAllTasks] = useState<ITask[]>([]);
   const { t, i18n } = useTranslation(["content", "base"]);
-
   const [tasksColumns, setTasksColumns] = useState<ColumnData[]>([]);
   const [dragLoading, setDragLoading] = useState<boolean>(false);
   const [historyOrForm, setHistoryOrForm] = useState<boolean>(false);
-  const [taskCurrent, setTaskCurrent] = useState<any>(null);
   const [breadcrumb, setBreadcrumb] = useState({
     project: "",
     stages: "",
@@ -139,17 +186,97 @@ const TasksPage = () => {
   const [countReloadTasks, setCountReloadTasks] = useState<number>(1);
   const [edit, setEdit] = useState<boolean>(false);
 
+  const { responseData, isLoading } = useAxios(
+    "get",
+    `/project/members/all/${params.projectId}`,
+    []
+  );
+
+  //Gọi API Lấy danh sách tasks => set vào các column
+  //Lấy thông tin từ url để hiển thị tasks theo bộ lọc
   useEffect(() => {
     let query = Object.fromEntries([...searchParams]);
-    dispatch(setQuery(query));
+    const queryMembers = searchParams.getAll("member");
+    dispatch(setQuery({ ...query, member: queryMembers }));
+
+    taskApi
+      .getAllTask(params.stagesId as string)
+      .then((res: any) => {
+        setAllTasks(res.tasks);
+        if (query.type) {
+          if (query.type === "all") {
+            res.tasks = res.tasks.filter((task: ITask) => {
+              return task;
+            });
+          } else {
+            res.tasks = res.tasks.filter(
+              (task: ITask) => task.type === query.type
+            );
+          }
+        }
+        if (query.sort) {
+          if (query.sort.includes("prio")) {
+            res.tasks.sort((a: ITask, b: ITask) => {
+              return query.sort.includes("Asc")
+                ? prioList[a.priority] - prioList[b.priority]
+                : prioList[b.priority] - prioList[a.priority];
+            });
+          }
+          if (query.sort.includes("deadline")) {
+            res.tasks.sort((a: ITask, b: ITask) => {
+              let d1 = Number(new Date(a.deadline));
+              let d2 = Number(new Date(b.deadline));
+              return query.sort.includes("Asc") ? d1 - d2 : d2 - d1;
+            });
+          }
+        } else {
+          res.tasks.sort((a: ITask, b: ITask) => {
+            let d1 = Number(new Date(a.deadline));
+            let d2 = Number(new Date(b.deadline));
+            return d1 - d2;
+          });
+        }
+
+        if (queryMembers && queryMembers.length === 0) {
+          res.tasks = res.tasks.filter((task: any) => {
+            return task;
+          });
+        }
+
+        if (queryMembers && queryMembers.length > 0) {
+          res.tasks = res.tasks.filter((task: any) => {
+            return queryMembers.some(
+              (memberName: any) => memberName === task.assignee.username
+            );
+          });
+        }
+
+        if (query.search) {
+          res.tasks = res.tasks.filter((task: any) => {
+            return task.title.toLowerCase().includes(query.search);
+          });
+        }
+
+        let newState = initialData.map((data: any) => {
+          data.items = res.tasks.filter((task: any) => {
+            return task.status === data.id;
+          });
+          return data;
+        });
+        setTasksColumns(newState);
+      })
+      .catch((err: any) => {
+        showMessage("error", err.response.data?.message, 2);
+      });
   }, []);
+
   const taskTypeOptions = [
     {
       label: `Type`,
       options: [
         { label: `All`, value: `all` },
         { label: `Issue`, value: `issue` },
-        { label: `Task`, value: `task` },
+        { label: `Assignment`, value: `assignment` },
       ],
     },
   ];
@@ -158,8 +285,15 @@ const TasksPage = () => {
     {
       label: `Priority`,
       options: [
-        { label: `Asc`, value: `asc` },
-        { label: `Desc`, value: `desc` },
+        { label: `Asc`, value: `prioAsc` },
+        { label: `Desc`, value: `prioDesc` },
+      ],
+    },
+    {
+      label: `Deadline`,
+      options: [
+        { label: `Asc`, value: `deadlineAsc` },
+        { label: `Desc`, value: `deadlineDesc` },
       ],
     },
   ];
@@ -167,7 +301,11 @@ const TasksPage = () => {
   const breadcrumItems = useMemo(
     () => [
       { title: <Link to="/">Home</Link> },
-      { title: <Link to={`/${params.projectId}`}>{breadcrumb?.project}</Link> },
+      {
+        title: (
+          <Link to={`/project/${params.projectId}`}>{breadcrumb?.project}</Link>
+        ),
+      },
       {
         title: breadcrumb.stages,
       },
@@ -195,70 +333,118 @@ const TasksPage = () => {
     })();
   }, []);
 
-  const initialData = [
-    {
-      id: "open",
-      title: "Open",
-      items: [],
-      dropAllow: true,
-    },
-    {
-      id: "inprogress",
-      title: "In Progress",
-      items: [],
-      dropAllow: true,
-    },
-    {
-      id: "review",
-      title: "In Review",
-      items: [],
-      dropAllow: true,
-    },
-    {
-      id: "reopen",
-      title: "Re-Open",
-      items: [],
-      dropAllow: true,
-    },
-    {
-      id: "done",
-      title: "Done",
-      items: [],
-      dropAllow: true,
-    },
-    {
-      id: "cancel",
-      title: "Cancel",
-      items: [],
-      dropAllow: true,
-    },
-  ];
-
+  //Filter và sort các tasks theo thao tác người dùng
   useEffect(() => {
-    taskApi
-      .getAllTask(params.stagesId as string)
-      .then((res: any) => {
-        initialData.map((data: any) => {
-          data.items = res.tasks.filter((task: any) => {
-            return task.status === data.id;
-          });
-        });
-        setTasksColumns(initialData);
-      })
-      .catch((err: any) => {
-        console.error(err);
-      });
-  }, [countReloadTasks]);
+    const { type, sort, member, search } = queryParams;
+    let filteredTasks = allTasks;
 
+    if (search) {
+      filteredTasks = filteredTasks.filter((task: any) => {
+        return task.title.toLowerCase().includes(search);
+      });
+    }
+
+    if (sort) {
+      if (sort.includes("prio")) {
+        filteredTasks.sort((a: ITask, b: ITask) => {
+          return sort.includes("Asc")
+            ? prioList[a.priority] - prioList[b.priority]
+            : prioList[b.priority] - prioList[a.priority];
+        });
+      }
+      if (sort.includes("deadline")) {
+        filteredTasks.sort((a: ITask, b: ITask) => {
+          let d1 = Number(new Date(a.deadline));
+          let d2 = Number(new Date(b.deadline));
+          return sort.includes("Asc") ? d1 - d2 : d2 - d1;
+        });
+      }
+    }
+
+    if (member && member.length === 0) {
+      filteredTasks = filteredTasks.filter((task: any) => {
+        return task;
+      });
+    }
+
+    if (member && member.length > 0) {
+      filteredTasks = filteredTasks.filter((task: any) => {
+        return member.some(
+          (memberName: any) => memberName === task.assignee.username
+        );
+      });
+    }
+
+    if (type === "all") {
+      filteredTasks = filteredTasks.filter((task: any) => {
+        return task;
+      });
+    }
+    if (type !== "all") {
+      filteredTasks = filteredTasks.filter((task: any) => {
+        return task.type === type;
+      });
+    }
+    let newState = initialData.map((data: any) => {
+      data.items = filteredTasks.filter((task: any) => {
+        return task.status === data.id;
+      });
+      return data;
+    });
+    setTasksColumns(newState);
+  }, [queryParams]);
+
+  //Xử lý Filter theo loại công việc
   const selectTaskTypes = (value: string) => {
     dispatch(setQuery({ ...queryParams, type: value }));
     setSearchParams({ ...queryParams, type: value });
   };
 
+  //Xử lý sort theo thứ tự công việc và deadline
   const sortPriority = (value: string) => {
-    dispatch(setQuery({ ...queryParams, priority: value }));
-    setSearchParams({ ...queryParams, priority: value });
+    setSortSelectValue(value);
+    dispatch(setQuery({ ...queryParams, sort: value }));
+    setSearchParams({ ...queryParams, sort: value });
   };
+
+  //Filter công việc theo username của Member
+  const handleFilterMember = (values: any) => {
+    dispatch(setQuery({ ...queryParams, member: values }));
+    setSearchParams({ ...queryParams, member: values });
+  };
+
+  //Click cancel toàn bộ member đã chọn thì hiển thị lại toàn bộ danh sách tasks
+  const cancelSelect = () => {
+    initialData.map((data: any) => {
+      data.items = allTasks.filter((task: ITask) => {
+        return task.status === data.id;
+      });
+      return data;
+    });
+    setTasksColumns(initialData);
+  };
+
+  //Xử lý filter theo tên công việc
+  const handleInputChange = (event: any) => {
+    let value = event.target.value;
+    if (value === "" && searchParams.has("search")) {
+      let query = searchParams.get("search");
+      if (query) {
+        searchParams.delete("search");
+        const newParams: { [key: string]: string } = {};
+        searchParams.forEach((value: string, key: string) => {
+          newParams[key] = value;
+        });
+        setSearchParams(newParams);
+        dispatch(deleteQuery("search"));
+      }
+    } else {
+      dispatch(setQuery({ ...queryParams, search: value }));
+      setSearchParams({ ...queryParams, search: value });
+    }
+  };
+
+  //Thay đổi trạng thái các column khi bắt đầu drag
 
   const handleDragStart = (result: any) => {
     const startCol = tasksColumns.filter(
@@ -319,6 +505,7 @@ const TasksPage = () => {
     setTasksColumns(newState);
   };
 
+  //Cập nhật giao diện khi thả item
   const handleDragEnd = (result: any) => {
     const { destination, source } = result;
 
@@ -373,30 +560,41 @@ const TasksPage = () => {
       const newSourceTasks = Array.from(sourceCol.items);
       const [removedItem] = newSourceTasks.splice(source.index, 1);
       removedItem.status = destination.droppableId;
+      const newSourceCol = { ...sourceCol, items: newSourceTasks };
+      const newDesTasks = Array.from(desCol.items);
+      newDesTasks.splice(destination.index, 0, removedItem);
+      const newDesCol = { ...desCol, items: newDesTasks };
+      const newState = tasksColumns.map((column) => {
+        if (column.id === newSourceCol.id) {
+          return { ...newSourceCol, dropAllow: true };
+        } else if (column.id === newDesCol.id) {
+          return { ...newDesCol, dropAllow: true };
+        } else {
+          return { ...column, dropAllow: true };
+        }
+      });
+      setTasksColumns(newState);
       taskApi
         .editTask(removedItem._id, { ...removedItem, stageId: params.stagesId })
         .then((res: any) => {
-          const sourceTasks = Array.from(sourceCol.items);
-          const newSourceTasksTest = sourceTasks.filter((task: any) => {
-            return task._id !== res.task._id;
-          });
-          const newSourceColTest = { ...sourceCol, items: newSourceTasksTest };
-          const newDesTasksTest = Array.from(desCol.items);
-          newDesTasksTest.splice(destination.index, 0, res.task);
-          const newDesColTest = { ...desCol, items: newDesTasksTest };
+          showMessage("success", res?.message, 2);
+        })
+        .catch((err: any) => {
+          removedItem.status = source.droppableId;
+          newDesTasks.splice(destination.index, 1);
+          const newDesCol = { ...desCol, items: newDesTasks };
+          newSourceTasks.splice(source.index, 0, removedItem);
+          const newSourceCol = { ...sourceCol, items: newSourceTasks };
           const newState = tasksColumns.map((column) => {
-            if (column.id === newSourceColTest.id) {
-              return { ...newSourceColTest, dropAllow: true };
-            } else if (column.id === newDesColTest.id) {
-              return { ...newDesColTest, dropAllow: true };
+            if (column.id === newSourceCol.id) {
+              return { ...newSourceCol, dropAllow: true };
+            } else if (column.id === newDesCol.id) {
+              return { ...newDesCol, dropAllow: true };
             } else {
               return { ...column, dropAllow: true };
             }
           });
           setTasksColumns(newState);
-          showMessage("success", res?.message, 2);
-        })
-        .catch((err: any) => {
           showMessage("error", err.response.data?.message, 2);
         });
     }
@@ -491,6 +689,10 @@ const TasksPage = () => {
       >
         {!statusForm && !openInfo && (
           <TaskForm
+            allTasks={allTasks}
+            setAllTasks={setAllTasks}
+            setTasksColumns={setTasksColumns}
+            tasksColumns={tasksColumns}
             setCountReloadTasks={setCountReloadTasks}
             edit={edit}
             handleEditTask={handleEditTask}
@@ -584,16 +786,66 @@ const TasksPage = () => {
           />
           <Select
             size="large"
-            value={`Priority: ${
-              _.capitalize(queryParams.priority) ||
-              priorityOptions[0].options[0].label
-            }`}
+            value={
+              sortSelectValue?.includes("prio") ||
+              queryParams.sort?.includes("prio")
+                ? `Priority: ${
+                    queryParams.sort?.replace("prio", "") ||
+                    priorityOptions[0].options[0].label
+                  }`
+                : `Deadline: ${
+                    queryParams.sort?.replace("deadline", "") ||
+                    priorityOptions[1].options[0].label
+                  }`
+            }
             dropdownMatchSelectWidth={false}
             options={priorityOptions}
             onChange={sortPriority}
           />
-          <Select size="large" defaultValue="Filter Member" />
-          <Search size="large" placeholder="Task Name" />
+          <Select
+            allowClear
+            mode="multiple"
+            style={{ width: "300px" }}
+            maxTagCount="responsive"
+            showSearch
+            size="large"
+            suffixIcon={<SearchOutlined />}
+            value={queryParams.member}
+            placeholder="Search Member"
+            optionFilterProp="children"
+            filterOption={(input, option) =>
+              typeof option?.label === "string" &&
+              option.label.toLowerCase().includes(input.toLowerCase())
+            }
+            onChange={handleFilterMember}
+            onClear={cancelSelect}
+            dropdownRender={(menu) =>
+              isLoading ? (
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "center",
+                    padding: "10px 0",
+                  }}
+                >
+                  <LoadingOutlined />
+                </div>
+              ) : (
+                menu
+              )
+            }
+            options={responseData?.members?.map((item: IUser) => ({
+              label: `${item.data.fullName}`,
+              value: item.data.username,
+            }))}
+          />
+          <Search
+            size="large"
+            placeholder="Task Name"
+            value={queryParams.search}
+            allowClear
+            onChange={handleInputChange}
+          />
         </div>
         <Divider />
         <div className="tasks_board">

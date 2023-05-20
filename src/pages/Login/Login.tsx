@@ -13,17 +13,22 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "../../redux/hook";
 import { images } from "../../assets/images/index";
 import { requestLogin } from "../../redux/store";
+import useMessageApi, {
+  UseMessageApiReturnType,
+} from "../../components/support/Message";
 
 const { Title, Paragraph } = Typography;
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
   const [form] = Form.useForm();
-  const [api, contextHolder] = notification.useNotification();
+  // const [api, contextHolder] = notification.useNotification();
   const { isLoading } = useAppSelector((state) => {
     return state.auth;
   });
   const dispatch = useAppDispatch();
+  const { showMessage, contextHolder }: UseMessageApiReturnType =
+    useMessageApi();
 
   const onFinish = async (requestBody: any) => {
     dispatch(requestLogin(requestBody))
@@ -31,11 +36,8 @@ const Login: React.FC = () => {
       .then(() => {
         navigate("/");
       })
-      .catch((error) => {
-        api["error"]({
-          message: "Error",
-          description: error.message,
-        });
+      .catch((err) => {
+        showMessage("error", err?.message, 2);
       });
   };
 

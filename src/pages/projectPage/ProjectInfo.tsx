@@ -1,7 +1,9 @@
-import React from "react";
-import { Descriptions, Typography, Button } from "antd";
+import React, { useState } from "react";
+import { Descriptions, Typography, Button, Modal, Tooltip } from "antd";
 import dayjs from "dayjs";
 import { ProjectType } from "./ProjectDetail";
+import { EditOutlined } from "@ant-design/icons";
+import ProjectForm from "../../components/projectForm/ProjectForm";
 
 const { Title, Text } = Typography;
 
@@ -10,6 +12,7 @@ interface PropTypes {
 }
 
 const ProjectInfo: React.FC<PropTypes> = ({ projectDetail }) => {
+  const [openEditProject, setOpenEditProject] = useState<boolean>(false);
   let bgColor: string = "";
   switch (projectDetail?.status) {
     case "ongoing":
@@ -31,14 +34,30 @@ const ProjectInfo: React.FC<PropTypes> = ({ projectDetail }) => {
 
   return (
     <div className="project-info">
+      <Modal
+        open={openEditProject}
+        footer={null}
+        onCancel={() => setOpenEditProject(false)}
+      >
+        <ProjectForm
+          title="Edit Project Info"
+          useCase="edit"
+          closeModal={setOpenEditProject}
+          projectDetail={{ ...projectDetail }}
+          key={projectDetail?._id}
+        />
+      </Modal>
       <Descriptions
         bordered
         layout="vertical"
         column={2}
         title={
-          <>
+          <div className="description_title">
             <Title level={3}>{projectDetail?.name}</Title>
-          </>
+            <Tooltip title="Edit project">
+              <EditOutlined onClick={() => setOpenEditProject(true)} />
+            </Tooltip>
+          </div>
         }
       >
         <Descriptions.Item label="Project Code">

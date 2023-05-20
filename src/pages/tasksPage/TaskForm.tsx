@@ -37,6 +37,8 @@ import {
   Select,
   Skeleton,
 } from "antd";
+import { ColumnData } from "./TasksPage";
+import _ from "lodash";
 
 export interface ITask {
   _id: string;
@@ -72,6 +74,10 @@ interface ITaskForm {
   setEdit?: Dispatch<SetStateAction<boolean>>;
   setStatusForm: Dispatch<SetStateAction<boolean>>;
   showMessage: (type: NoticeType, content: string, duration?: number) => void;
+  setTasksColumns?: React.Dispatch<React.SetStateAction<ColumnData[]>>;
+  tasksColumns?: ColumnData[];
+  allTasks?: ITask[];
+  setAllTasks?: React.Dispatch<React.SetStateAction<ITask[]>>;
 }
 export interface IUserBase {
   _id: string;
@@ -99,6 +105,10 @@ const TaskForm = (props: ITaskForm) => {
     button,
     taskCurrent,
     showMessage,
+    setTasksColumns,
+    tasksColumns,
+    allTasks,
+    setAllTasks,
     setCountReloadTasks,
   } = props;
   const [description, setDescription] = useState<string>("");
@@ -112,23 +122,24 @@ const TaskForm = (props: ITaskForm) => {
     stages: "",
     task: "",
   });
-
   const params = useParams();
   const [form] = Form.useForm();
   const user = useAppSelector((state: RootState) => state.auth?.userInfo);
   const dispatch = useDispatch();
-  const { isBoss } = useIsBoss([], 2);
-
+  const { isBoss } = useIsBoss([], 2, taskCurrent.project?.id);
   const { t, i18n } = useTranslation(["content", "base"]);
-
   moment.locale(i18n.language);
 
+  console.log(taskCurrent.project?.id);
   // lấy all user trong project
   const { responseData, isLoading } = useAxios(
     "get",
-    `/project/members/all/${params.projectId}`,
+    `/project/members/all/${
+      !taskCurrent.project ? params.projectId : taskCurrent.project?.id
+    }`,
     []
   );
+
   // lấy  của user hiện tại
   useEffect(() => {
     if (responseData && user) {
@@ -203,10 +214,20 @@ const TaskForm = (props: ITaskForm) => {
       taskApi
         .addTask(task)
         .then((res: any) => {
+          if (tasksColumns && allTasks) {
+            let newState = tasksColumns.map((task: any) => {
+              if (task.id === "open") {
+                return { ...task, items: [res.task, ...task.items] };
+              } else return task;
+            });
+            setAllTasks?.([...allTasks, res.task]);
+            setTasksColumns?.(newState);
+          }
           showMessage("success", res.message, 2);
           dispatch(reloadSidebar());
           setIsModalOpen(false);
           setEdit?.(false);
+          form.resetFields();
           setCountReloadTasks((prev) => prev + 1);
         })
         .catch((err) => {
@@ -250,11 +271,15 @@ const TaskForm = (props: ITaskForm) => {
       setLoading(true);
       try {
         const project = await axios.get(
-          `${process.env.REACT_APP_BACKEND_URL}/project/details/${params.projectId}`,
+          `${process.env.REACT_APP_BACKEND_URL}/project/details/${
+            !taskCurrent.project ? params.projectId : taskCurrent.project.id
+          }`,
           { headers: { Authorization: `Bearer ${user.token}` } }
         );
         const stages = await axios.get(
-          `${process.env.REACT_APP_BACKEND_URL}/stage/details/${params.stagesId}`,
+          `${process.env.REACT_APP_BACKEND_URL}/stage/details/${
+            !taskCurrent.stage ? params.stagesId : taskCurrent.stage.id
+          }`,
           { headers: { Authorization: `Bearer ${user.token}` } }
         );
         setBreadcrumb({

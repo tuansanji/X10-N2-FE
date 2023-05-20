@@ -8,6 +8,9 @@ import moment from "moment";
 import React, { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
+import useMessageApi, {
+  UseMessageApiReturnType,
+} from "../../components/support/Message";
 
 import {
   Button,
@@ -21,6 +24,7 @@ import {
   message,
   Skeleton,
 } from "antd";
+import { NoticeType } from "antd/es/message/interface";
 
 const { Search } = Input;
 const { Text } = Typography;
@@ -39,6 +43,7 @@ interface PopupPropTypes {
   token: string;
   params: { projectId?: string };
   setMemberData: React.Dispatch<React.SetStateAction<any[]>>;
+  showMessage: (type: NoticeType, content: string, duration?: number) => void;
 }
 
 interface MemberRolePropTypes {
@@ -47,6 +52,7 @@ interface MemberRolePropTypes {
   params: { projectId?: string };
   token: string;
   setMemberData: React.Dispatch<React.SetStateAction<any[]>>;
+  showMessage: (type: NoticeType, content: string, duration?: number) => void;
 }
 
 const DeleteConfirmPopup: React.FC<PopupPropTypes> = ({
@@ -54,6 +60,7 @@ const DeleteConfirmPopup: React.FC<PopupPropTypes> = ({
   params,
   token,
   setMemberData,
+  showMessage,
 }) => {
   const [open, setOpen] = useState<boolean>(false);
   const [confirmLoading, setConfirmLoading] = useState<boolean>(false);
@@ -69,11 +76,11 @@ const DeleteConfirmPopup: React.FC<PopupPropTypes> = ({
         data: { id: stages.key },
       });
       setMemberData(response.data.members);
-      // dispatch(toastSuccess(response.data.message));
+      showMessage("success", response.data.message, 2);
       setConfirmLoading(false);
       setOpen(false);
-    } catch (err) {
-      console.error(err);
+    } catch (err: any) {
+      showMessage("error", err.response.data.message, 2);
       setConfirmLoading(false);
       setOpen(false);
     }
@@ -81,7 +88,6 @@ const DeleteConfirmPopup: React.FC<PopupPropTypes> = ({
 
   return (
     <>
-      {/* <ToastContainer /> */}
       <Popconfirm
         disabled={record.role === "manager" && true}
         placement="topRight"
@@ -108,6 +114,7 @@ const UpdateMemberRole: React.FC<MemberRolePropTypes> = ({
   params,
   token,
   setMemberData,
+  showMessage,
 }) => {
   const [roleUpdating, setRoleUpdating] = useState<boolean>(false);
   const dispatch = useDispatch();
@@ -125,10 +132,10 @@ const UpdateMemberRole: React.FC<MemberRolePropTypes> = ({
         },
       });
       setMemberData(response.data.members);
-      // dispatch(toastSuccess(response.data.message));
+      showMessage("success", response.data.message, 2);
       setRoleUpdating(false);
-    } catch (err) {
-      console.error(err);
+    } catch (err: any) {
+      showMessage("error", err.response.data.message, 2);
       setRoleUpdating(false);
     }
   };
@@ -162,13 +169,14 @@ const MemberList: React.FC = () => {
     useState<boolean>(false);
   const [showAddMemberModal, setShowAddMemberModal] = useState<boolean>(false);
   const [searchInput, setSearchInput] = useState<string>("");
-  const [searchResult, setSearchResult] = useState<any>([]);
+  const [searchResult, setSearchResult] = useState<any[]>([]);
   const [pagination, setPagination] = useState<any>({
     pageIndex: 1,
     total: null,
   });
-  console.log("Pagination:", pagination);
-  console.log("Query Params:", queryParams);
+  const { showMessage, contextHolder }: UseMessageApiReturnType =
+    useMessageApi();
+
   // Lấy List member thuộc project
   useEffect(() => {
     const getMemberData = async () => {
@@ -223,18 +231,19 @@ const MemberList: React.FC = () => {
         try {
           const response = await axios({
             method: "get",
-            url: `${process.env.REACT_APP_BACKEND_URL}/user/search`,
-            params: { query: queryParams.search },
+            url: `${process.env.REACT_APP_BACKEND_URL}/project/members/${params.projectId}`,
+            params: {
+              credential: queryParams.search,
+            },
             headers: { Authorization: `Bearer ${token}` },
           });
-          let result = memberData.filter((member: any) =>
-            response.data.users.some(
-              (user: any) => user._id === member.data._id
-            )
-          );
 
-          setSearchResult(result);
-
+          setSearchResult(response.data.members);
+          setPagination({
+            ...pagination,
+            total: response.data.total,
+            pageIndex: response.data.currentPage,
+          });
           setIsLoading(false);
         } catch (err) {
           console.error(err);
@@ -242,7 +251,7 @@ const MemberList: React.FC = () => {
         }
       }
     };
-    timeOutRef.current = setTimeout(searchUsers, 1500);
+    timeOutRef.current = setTimeout(searchUsers, 500);
     return () => {
       clearTimeout(timeOutRef.current);
     };
@@ -292,6 +301,7 @@ const MemberList: React.FC = () => {
         searchParams.forEach((value: string, key: string) => {
           newParams[key] = value;
         });
+        setSearchResult([]);
         setSearchParams(newParams);
         dispatch(deleteQuery("search"));
       }
@@ -330,6 +340,7 @@ const MemberList: React.FC = () => {
         return (
           <>
             <UpdateMemberRole
+              showMessage={showMessage}
               setMemberData={setMemberData}
               params={params}
               token={token}
@@ -353,6 +364,7 @@ const MemberList: React.FC = () => {
         return (
           <>
             <DeleteConfirmPopup
+              showMessage={showMessage}
               setMemberData={setMemberData}
               record={record}
               params={params}
@@ -364,19 +376,30 @@ const MemberList: React.FC = () => {
     },
   ];
 
-  const data: MemberDataType[] = memberData.map((data) => {
-    return {
-      key: data.data._id,
-      name: data.data.fullName,
-      role: data.role,
-      joinDate: moment(data.joiningDate).format("DD/MM/YYYY"),
-    };
-  });
+  const data: MemberDataType[] =
+    searchResult && searchResult.length > 0
+      ? searchResult.map((data) => {
+          return {
+            key: data.data._id,
+            name: data.data.fullName,
+            role: data.role,
+            joinDate: moment(data.joiningDate).format("DD/MM/YYYY"),
+          };
+        })
+      : memberData.map((data) => {
+          return {
+            key: data.data._id,
+            name: data.data.fullName,
+            role: data.role,
+            joinDate: moment(data.joiningDate).format("DD/MM/YYYY"),
+          };
+        });
 
   //Kết thúc setup table
 
   return (
     <div className="member-list">
+      {contextHolder}
       {/* Member Info Modal */}
       {/* <Modal
         footer={null}
@@ -402,6 +425,7 @@ const MemberList: React.FC = () => {
         footer={null}
       >
         <AddMember
+          showMessage={showMessage}
           setMemberData={setMemberData}
           closeModal={setShowAddMemberModal}
           memberData={memberData}

@@ -22,6 +22,7 @@ html {
   position: relative;
   height: 100%;
   width: 100%;
+  overflow: auto;
 }
 
 .container_content {
@@ -83,6 +84,8 @@ html {
   margin-left: auto;
   margin-right: auto;
   width: 500px;
+  height: 100%;
+  background-color: white;
 }
 .register .form-layout {
   margin: auto;
@@ -160,6 +163,8 @@ html {
   margin-left: auto;
   margin-right: auto;
   width: 500px;
+  height: 100%;
+  background-color: white;
 }
 .login .form-layout, .forgot-password .form-layout {
   margin: auto;
@@ -603,7 +608,7 @@ img.img-tiny {
   font-size: 12px;
 }
 
-.project-name {
+.project_name {
   cursor: pointer;
   color: #1677ff;
 }
@@ -1119,6 +1124,11 @@ img.img-tiny {
   left: 20px;
 }
 
+.stage_name {
+  cursor: pointer;
+  color: #1677ff;
+}
+
 .project-detail {
   padding: 32px;
 }
@@ -1163,6 +1173,15 @@ img.img-tiny {
 .project-info {
   max-width: 992px;
   margin-top: 1rem;
+}
+.project-info .description_title {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 16px;
+}
+.project-info .description_title .ant-typography {
+  margin-bottom: 0.3em;
 }
 
 .add-member-container {
@@ -1216,8 +1235,8 @@ img.img-tiny {
 }
 .search-result-container .search-result-item img {
   width: 24px;
-  height: auto;
-  border-radius: 16px;
+  height: 24px;
+  border-radius: 50%;
 }
 .search-result-container .search-result-item:hover {
   background-color: #d1d6de;
@@ -1445,6 +1464,53 @@ img.img-tiny {
 }
 .form__content .form__password span {
   white-space: nowrap;
+}
+
+.dashboard {
+  width: 100%;
+  padding: 0 30px;
+}
+.dashboard .btn_status {
+  padding: 0;
+}
+.dashboard .ant-divider {
+  height: 100%;
+  margin: 0;
+}
+.dashboard .projects_list {
+  height: 100%;
+}
+.dashboard .projects_list .projects_list_header {
+  padding: 16px 0;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 16px;
+}
+.dashboard .projects_list .projects_list_header .ant-typography {
+  margin: 0;
+}
+.dashboard .projects_list .projects_list_item {
+  height: calc(100% - 60px);
+}
+.dashboard .projects_list .projects_list_item .project_name_column {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+.dashboard .projects_list .projects_list_item .project_name_action .anticon {
+  margin-left: 8px;
+  cursor: pointer;
+}
+.dashboard .tasks_list .tasks_list_item {
+  border: 1px solid black;
+  padding: 8px 16px;
+}
+.dashboard .tasks_list .tasks_list_header {
+  padding: 16px 0;
+}
+.dashboard .tasks_list .tasks_list_header .ant-typography {
+  margin: 0;
 }
 
 .notfound__page {
