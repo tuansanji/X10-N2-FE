@@ -154,7 +154,11 @@ const Dashboard: React.FC = () => {
           {fetchingTasks ? (
             <Skeleton />
           ) : (
-            <TasksList tasksList={tasksList} showMessage={showMessage} />
+            <TasksList
+              tasksList={tasksList}
+              setTasksList={setTasksList}
+              showMessage={showMessage}
+            />
           )}
         </Col>
       </Row>

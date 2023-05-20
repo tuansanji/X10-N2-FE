@@ -2,7 +2,7 @@ import { Button, Modal, Table, Tabs, TabsProps, Typography } from "antd";
 import { ColumnsType } from "antd/es/table";
 import moment from "moment";
 import _ from "lodash";
-import React, { useMemo, useState } from "react";
+import React, { Dispatch, SetStateAction, useMemo, useState } from "react";
 import { TasksType, UserInfo } from "./Dashboard";
 import TaskInfo from "../tasksPage/TaskInfo";
 import TaskForm from "../tasksPage/TaskForm";
@@ -19,6 +19,7 @@ interface TasksListPropsType {
     content: string,
     duration?: number | undefined
   ) => void;
+  setTasksList: Dispatch<SetStateAction<TasksType[]>>;
 }
 
 interface TasksTableData {
@@ -42,6 +43,7 @@ const prioList: any = {
 const TasksList: React.FC<TasksListPropsType> = ({
   tasksList,
   showMessage,
+  setTasksList,
 }) => {
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [statusForm, setStatusForm] = useState<boolean>(false);
@@ -292,6 +294,8 @@ const TasksList: React.FC<TasksListPropsType> = ({
                 <>
                   {statusForm && edit ? (
                     <TaskForm
+                      tasksList={tasksList}
+                      setTasksList={setTasksList}
                       setCountReloadTasks={setCountReloadTasks}
                       edit={edit}
                       handleEditTask={handleEditTask}
@@ -311,6 +315,8 @@ const TasksList: React.FC<TasksListPropsType> = ({
                     />
                   ) : (
                     <TaskForm
+                      tasksList={tasksList}
+                      setTasksList={setTasksList}
                       setCountReloadTasks={setCountReloadTasks}
                       handleEditTask={handleEditTask}
                       edit={edit}
