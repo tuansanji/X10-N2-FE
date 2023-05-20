@@ -6,7 +6,7 @@ import projectApi from "../services/api/projectApi";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router";
 
-const useIsBoss = (devDependencies = [], boss = 3, projectId?: string) => {
+const useIsBoss = (devDependencies = [], boss = 3, projId?: string) => {
   const [isBoss, setIsBoss] = useState(false);
   const params = useParams();
   const user = useAppSelector((state: RootState) => state.auth.userInfo);
@@ -16,7 +16,7 @@ const useIsBoss = (devDependencies = [], boss = 3, projectId?: string) => {
     (async () => {
       try {
         const response: any = await projectApi.getAllMember(
-          !projectId ? (params.projectId as string) : projectId
+          !projId ? params.projectId as string : projId
         );
 
         response?.members?.forEach(
