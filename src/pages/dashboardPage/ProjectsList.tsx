@@ -239,7 +239,10 @@ const ProjectsList: React.FC<ProjectsListType> = ({
       render: (_, record: ProjectsDataType) => {
         return (
           <>
-            <Avatar.Group maxCount={5} maxStyle={{ cursor: "pointer" }}>
+            <Avatar.Group
+              maxCount={5}
+              maxStyle={{ cursor: "pointer", backgroundColor: "#4e5658" }}
+            >
               {record.members?.map((member: any) => {
                 return (
                   <Tooltip title={member.data.fullName} key={member.data._id}>

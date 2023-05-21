@@ -9,6 +9,12 @@ import TaskForm from "../tasksPage/TaskForm";
 import TaskHistory from "../tasksPage/TaskHistory";
 import { useTranslation } from "react-i18next";
 import { NoticeType } from "antd/es/message/interface";
+import {
+  DoubleRightOutlined,
+  DownOutlined,
+  PauseOutlined,
+  UpOutlined,
+} from "@ant-design/icons";
 
 const { Title, Text } = Typography;
 
@@ -191,7 +197,36 @@ const TasksList: React.FC<TasksListPropsType> = ({
       dataIndex: "priority",
       key: "priority",
       render: (text, record: TasksTableData) => {
-        return <Title level={5}>{_.capitalize(record.priority)}</Title>;
+        let priority = null;
+        switch (record.priority) {
+          case "lowest":
+            priority = (
+              <DoubleRightOutlined rotate={90} style={{ color: "#3d5cd7" }} />
+            );
+            break;
+          case "low":
+            priority = <DownOutlined style={{ color: "#3d5cd7" }} />;
+            break;
+          case "medium":
+            priority = (
+              <PauseOutlined rotate={90} style={{ color: "#C59a10" }} />
+            );
+            break;
+          case "high":
+            priority = <UpOutlined style={{ color: "#F07c6f" }} />;
+            break;
+          case "highest":
+            priority = (
+              <DoubleRightOutlined rotate={270} style={{ color: "#Ee240c" }} />
+            );
+            break;
+        }
+        return (
+          <div className="task_priority">
+            <span>{priority}</span>
+            <Title level={5}>{_.capitalize(record.priority)}</Title>
+          </div>
+        );
       },
       sorter: (a, b) => {
         return prioList[a.priority] - prioList[b.priority];
