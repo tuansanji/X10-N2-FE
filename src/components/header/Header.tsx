@@ -1,10 +1,16 @@
-import { setLogout } from "../../redux/slice/authSlice";
-import { BellOutlined, DownOutlined } from "@ant-design/icons";
-import { Button, Dropdown, Popover, Select, Space } from "antd";
-import { useEffect, useState } from "react";
-import { useTranslation } from "react-i18next";
-import { useDispatch, useSelector } from "react-redux";
-import { Link } from "react-router-dom";
+import { setLogout } from '../../redux/slice/authSlice';
+import { BellOutlined, DownOutlined } from '@ant-design/icons';
+import {
+  Button,
+  Dropdown,
+  Popover,
+  Select,
+  Space
+  } from 'antd';
+import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { useDispatch, useSelector } from 'react-redux';
+import { Link } from 'react-router-dom';
 
 const Header = () => {
   const [language, setLanguage] = useState(1);
@@ -27,7 +33,7 @@ const Header = () => {
   const items = [
     {
       key: "1",
-      label: <Link to="/user/info">{t("base:userInfo")}</Link>,
+      label: <Link to="/project/user/info">{t("base:userInfo")}</Link>,
     },
     {
       key: "4",
