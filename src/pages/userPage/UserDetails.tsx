@@ -1,5 +1,6 @@
 import InputFile from "./InputFile";
 import InputPassword, { InputPasswordTextArea } from "./InputPassword";
+import Sidebar from "../../components/sidebar/Sidebar";
 import { useAxios } from "../../hooks";
 import { updateUserInfo } from "../../redux/slice/authSlice";
 import userApi from "../../services/api/userApi";
@@ -18,7 +19,6 @@ import type { DatePickerProps } from "antd";
 import useMessageApi, {
   UseMessageApiReturnType,
 } from "../../components/support/Message";
-import Sidebar from "../../components/sidebar/Sidebar";
 
 export interface IUser {
   avatar: string;
@@ -225,199 +225,200 @@ const UserDetails = () => {
   };
 
   return isLoading && !userInfo ? (
-    <Skeleton />
+    <div style={{ paddingTop: "30px" }}>
+      {" "}
+      <Skeleton active />
+    </div>
   ) : (
-    <div className="container">
-      <Sidebar />
-      <div className="user__container">
-        {contextHolder}
-        <div className="basic__info info">
-          <div className="info__content">
-            <div className="title">
-              <h2>{t("content:profileUser.title basic")}</h2>
-              <p>{t("content:profileUser.sub title basic")}</p>
-            </div>
-            <div className=" wrapper" onClick={() => setModalImage(true)}>
-              <span>{t("content:profileUser.avatar")}</span>
-              <span>{t("content:profileUser.sub avatar")}</span>
-              <div className="avatar">
-                <img
-                  src={imagePreview?.preview || userInfo?.avatar}
-                  alt="avatar"
-                />
-                <div className="camera">
-                  <div className="camera__icon"></div>
-                </div>
-              </div>
-            </div>
-            <div
-              className=" wrapper "
-              onClick={() => {
-                handleChangeFieldUserEdit("fullName");
-              }}
-            >
-              <span>{t("content:profileUser.fullName")}</span>
-              <span>{userInfo?.fullName}</span>
-              <RightOutlined />
-            </div>
-            <div
-              className=" wrapper"
-              onClick={() => {
-                handleChangeFieldUserEdit("gender");
-              }}
-            >
-              <span>{t("content:profileUser.gender")}</span>
-              <span>
-                {t(`content:profileUser.${userInfo?.gender}` as keyof typeof t)}
-              </span>
-              <RightOutlined />
-            </div>
-            <div
-              className=" wrapper"
-              onClick={() => {
-                handleChangeFieldUserEdit("phone");
-              }}
-            >
-              <span>{t("content:profileUser.phone")}</span>
-              <span>{userInfo?.phone}</span>
-              <RightOutlined />
-            </div>
-            <div
-              className=" wrapper"
-              onClick={() => {
-                handleChangeFieldUserEdit("dob");
-              }}
-            >
-              <span>{t("content:profileUser.date of birth")}</span>
-              <span>{moment(userInfo?.dob).format("DD MMMM, YYYY")}</span>
-              <RightOutlined />
-            </div>
+    <div className="user__container">
+      {contextHolder}
+      <div className="basic__info info">
+        <div className="info__content">
+          <div className="title">
+            <h2>{t("content:profileUser.title basic")}</h2>
+            <p>{t("content:profileUser.sub title basic")}</p>
           </div>
-        </div>
-        <div className="private__info info">
-          <div className="info__content">
-            <div className="title">
-              <h2>{t("content:profileUser.title account")}</h2>
-              <p>{t("content:profileUser.sub title account")}</p>
-            </div>
-          </div>
-          <div className=" wrapper">
-            <span>{t("content:profileUser.username")}</span>
-            <span>{userInfo?.username}</span>
-          </div>
-          <div
-            className=" wrapper"
-            onClick={() => {
-              handleChangeFieldUserEdit("email", true);
-            }}
-          >
-            <span>Email</span>
-            <span>{userInfo?.email}</span>
-            <RightOutlined />
-          </div>
-          <div
-            className=" wrapper"
-            onClick={() => {
-              handleChangeFieldUserEdit("newPassword", true);
-            }}
-          >
-            <span>{t("content:profileUser.password")}</span>
-            <span>*******</span>
-            <RightOutlined />
-          </div>
-        </div>
-        {/* modal các field text */}
-        <Modal
-          title={t("content:profileUser.edit title form")}
-          okButtonProps={{ disabled: !fieldUserEdit.data }}
-          open={open}
-          onOk={handleEditUser}
-          onCancel={handleCancel}
-          okText={t("base:ok")}
-          cancelText={t("base:cancel")}
-        >
-          <div style={{ padding: "13px 0" }}>
-            {fieldUserEdit.field === "dob" && (
-              <DatePicker
-                style={{ width: "50%" }}
-                value={dayjs(fieldUserEdit?.data || userInfo?.dob)}
-                onChange={handleChangeDay}
-                disabledDate={(current) => {
-                  return (
-                    current && current > dayjs(Date.now()).subtract(1, "year")
-                  );
-                }}
-              />
-            )}
-            {fieldUserEdit.field !== "dob" &&
-              fieldUserEdit.field !== "gender" && (
-                <div className="form__content">
-                  {fieldUserEdit.requirePassword && (
-                    <div className="form__password">
-                      <span style={{ width: "150px" }}>
-                        {t("content:profileUser.current password")}
-                      </span>
-                      <InputPassword
-                        currentPassword={currentPassword}
-                        setCurrentPassword={setCurrentPassword}
-                      />
-                    </div>
-                  )}
-                  <div className="form__password">
-                    <span style={{ width: "150px" }}>
-                      {t(
-                        `content:profileUser.${fieldUserEdit.field}` as keyof typeof t
-                      )}
-                    </span>
-                    <InputPasswordTextArea
-                      fieldUserEdit={fieldUserEdit}
-                      setFieldUserEdit={setFieldUserEdit}
-                    />
-                  </div>
-                </div>
-              )}
-            {fieldUserEdit.field === "gender" && (
-              <Select
-                value={fieldUserEdit.data}
-                defaultValue={userInfo.gender}
-                style={{ width: 120 }}
-                onChange={handleChangeGender}
-                options={[
-                  { value: "other", label: t("content:profileUser.other") },
-                  { value: "male", label: t("content:profileUser.male") },
-                  { value: "female", label: t("content:profileUser.female") },
-                ]}
-              />
-            )}
-          </div>
-        </Modal>
-
-        {/* modal với field image */}
-        <Modal
-          title={t("content:profileUser.avatar")}
-          open={modalImage}
-          okButtonProps={{ disabled: !imagePreview }}
-          onOk={handleEditAvatar}
-          onCancel={handleCancel}
-          okText={t("base:ok")}
-          cancelText={t("base:cancel")}
-        >
-          <div className="modal__avatar">
-            <div className="avatar__img">
+          <div className=" wrapper" onClick={() => setModalImage(true)}>
+            <span>{t("content:profileUser.avatar")}</span>
+            <span>{t("content:profileUser.sub avatar")}</span>
+            <div className="avatar">
               <img
                 src={imagePreview?.preview || userInfo?.avatar}
-                alt="ảnh đại diện"
+                alt="avatar"
               />
-            </div>
-            <div>
-              <div className="avatar__upload">
-                <InputFile handleImagePreview={handleImagePreview} />
+              <div className="camera">
+                <div className="camera__icon"></div>
               </div>
             </div>
           </div>
-        </Modal>
+          <div
+            className=" wrapper "
+            onClick={() => {
+              handleChangeFieldUserEdit("fullName");
+            }}
+          >
+            <span>{t("content:profileUser.fullName")}</span>
+            <span>{userInfo?.fullName}</span>
+            <RightOutlined />
+          </div>
+          <div
+            className=" wrapper"
+            onClick={() => {
+              handleChangeFieldUserEdit("gender");
+            }}
+          >
+            <span>{t("content:profileUser.gender")}</span>
+            <span>
+              {t(`content:profileUser.${userInfo?.gender}` as keyof typeof t)}
+            </span>
+            <RightOutlined />
+          </div>
+          <div
+            className=" wrapper"
+            onClick={() => {
+              handleChangeFieldUserEdit("phone");
+            }}
+          >
+            <span>{t("content:profileUser.phone")}</span>
+            <span>{userInfo?.phone}</span>
+            <RightOutlined />
+          </div>
+          <div
+            className=" wrapper"
+            onClick={() => {
+              handleChangeFieldUserEdit("dob");
+            }}
+          >
+            <span>{t("content:profileUser.date of birth")}</span>
+            <span>{moment(userInfo?.dob).format("DD MMMM, YYYY")}</span>
+            <RightOutlined />
+          </div>
+        </div>
       </div>
+      <div className="private__info info">
+        <div className="info__content">
+          <div className="title">
+            <h2>{t("content:profileUser.title account")}</h2>
+            <p>{t("content:profileUser.sub title account")}</p>
+          </div>
+        </div>
+        <div className=" wrapper">
+          <span>{t("content:profileUser.username")}</span>
+          <span>{userInfo?.username}</span>
+        </div>
+        <div
+          className=" wrapper"
+          onClick={() => {
+            handleChangeFieldUserEdit("email", true);
+          }}
+        >
+          <span>Email</span>
+          <span>{userInfo?.email}</span>
+          <RightOutlined />
+        </div>
+        <div
+          className=" wrapper"
+          onClick={() => {
+            handleChangeFieldUserEdit("newPassword", true);
+          }}
+        >
+          <span>{t("content:profileUser.password")}</span>
+          <span>*******</span>
+          <RightOutlined />
+        </div>
+      </div>
+      {/* modal các field text */}
+      <Modal
+        title={t("content:profileUser.edit title form")}
+        okButtonProps={{ disabled: !fieldUserEdit.data }}
+        open={open}
+        onOk={handleEditUser}
+        onCancel={handleCancel}
+        okText={t("base:ok")}
+        cancelText={t("base:cancel")}
+      >
+        <div style={{ padding: "13px 0" }}>
+          {fieldUserEdit.field === "dob" && (
+            <DatePicker
+              style={{ width: "50%" }}
+              value={dayjs(fieldUserEdit?.data || userInfo?.dob)}
+              onChange={handleChangeDay}
+              disabledDate={(current) => {
+                return (
+                  current && current > dayjs(Date.now()).subtract(1, "year")
+                );
+              }}
+            />
+          )}
+          {fieldUserEdit.field !== "dob" &&
+            fieldUserEdit.field !== "gender" && (
+              <div className="form__content">
+                {fieldUserEdit.requirePassword && (
+                  <div className="form__password">
+                    <span style={{ width: "150px" }}>
+                      {t("content:profileUser.current password")}
+                    </span>
+                    <InputPassword
+                      currentPassword={currentPassword}
+                      setCurrentPassword={setCurrentPassword}
+                    />
+                  </div>
+                )}
+                <div className="form__password">
+                  <span style={{ width: "150px" }}>
+                    {t(
+                      `content:profileUser.${fieldUserEdit.field}` as keyof typeof t
+                    )}
+                  </span>
+                  <InputPasswordTextArea
+                    fieldUserEdit={fieldUserEdit}
+                    setFieldUserEdit={setFieldUserEdit}
+                  />
+                </div>
+              </div>
+            )}
+          {fieldUserEdit.field === "gender" && (
+            <Select
+              value={fieldUserEdit.data}
+              defaultValue={userInfo.gender}
+              style={{ width: 120 }}
+              onChange={handleChangeGender}
+              options={[
+                { value: "other", label: t("content:profileUser.other") },
+                { value: "male", label: t("content:profileUser.male") },
+                { value: "female", label: t("content:profileUser.female") },
+              ]}
+            />
+          )}
+        </div>
+      </Modal>
+
+      {/* modal với field image */}
+      <Modal
+        title={t("content:profileUser.avatar")}
+        open={modalImage}
+        okButtonProps={{ disabled: !imagePreview }}
+        onOk={handleEditAvatar}
+        onCancel={handleCancel}
+        okText={t("base:ok")}
+        cancelText={t("base:cancel")}
+      >
+        <div className="modal__avatar">
+          <div className="avatar__img">
+            <img
+              src={imagePreview?.preview || userInfo?.avatar}
+              alt="ảnh đại diện"
+            />
+          </div>
+          <div>
+            <div className="avatar__upload">
+              <InputFile handleImagePreview={handleImagePreview} />
+            </div>
+          </div>
+        </div>
+      </Modal>
     </div>
+    // </div>
   );
 };
 

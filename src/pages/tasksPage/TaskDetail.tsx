@@ -233,10 +233,14 @@ const TaskDetail: React.FC = () => {
   const breadcrumbItem = useMemo(() => {
     return [
       { title: <Link to="/">{t("base:home")}</Link> },
-      { title: <Link to={`/${params.projectId}`}>{breadcrumb?.project}</Link> },
       {
         title: (
-          <Link to={`/${params.projectId}/${params.stagesId}`}>
+          <Link to={`/project/${params.projectId}`}>{breadcrumb?.project}</Link>
+        ),
+      },
+      {
+        title: (
+          <Link to={`/project/${params.projectId}/${params.stagesId}`}>
             {breadcrumb?.stages}
           </Link>
         ),

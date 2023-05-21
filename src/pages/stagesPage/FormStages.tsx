@@ -91,7 +91,10 @@ const FormStages: React.FC<IForm> = ({
           setLoading(false);
           showMessage(
             "error",
-            changeMsgLanguage(err.response.data?.message, "Tạo mới thất bại"),
+            changeMsgLanguage(
+              err.response.data?.message,
+              "Ngày bắt đầu phải sau ngày kết thúc cuối cùng và trước ngày kết thúc dự kiến ​"
+            ),
             2
           );
         });

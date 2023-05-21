@@ -148,7 +148,7 @@ const Sidebar = () => {
           getItem(
             <Link
               key={task._id}
-              to={`/${task.project.id}/${task.stage.id}/${task._id}`}
+              to={`/project/${task.project.id}/${task.stage.id}/${task._id}`}
             >
               {/* {task?.title} */}
               <Highlighter
@@ -184,6 +184,7 @@ const Sidebar = () => {
       className={`container_sidebar`}
       style={{
         left: statusMenu ? "-324px" : "0px",
+        boxShadow: statusMenu ? "rgba(0, 0, 0, 0.4) 0px 0px 10px" : "none",
       }}
     >
       <div className="sidebar__title ">
@@ -332,7 +333,7 @@ const Sidebar = () => {
       <div
         className="sidebar__menu"
         style={{
-          boxShadow: statusMenu ? "rgba(0, 0, 0, 0.4) 0px 0px 10px" : "none",
+          overflowY: statusMenu ? "hidden" : "auto",
         }}
       >
         {loading ? (
