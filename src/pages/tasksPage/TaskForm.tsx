@@ -199,6 +199,7 @@ const TaskForm = (props: ITaskForm) => {
         );
       });
   };
+
   // hàm submit form
   //statusForm false là tạo mới ,true là chỉnh sửa
   const onFinish = (data: any) => {
@@ -266,15 +267,39 @@ const TaskForm = (props: ITaskForm) => {
       taskApi
         .editTask(taskCurrent._id, task)
         .then((res: any) => {
+          //update giao diện danh sách tasks ở dashboard
           if (tasksList) {
             let newList = tasksList.map((task: TasksType) => {
+              if (task._id === res.task._id) {
+                return {
+                  ...res.task,
+                  project: taskCurrent.project,
+                  stage: taskCurrent.stage,
+                };
+              } else {
+                return task;
+              }
+            });
+            setTasksList?.(newList);
+          }
+
+          //update giao diện danh sách tasks ở trang công việc
+          if (tasksColumns && allTasks) {
+            let newTasks = allTasks.map((task: any) => {
               if (task._id === res.task._id) {
                 return res.task;
               } else {
                 return task;
               }
             });
-            setTasksList?.(newList);
+            setAllTasks?.(newTasks);
+            let newState = tasksColumns.map((column: any) => {
+              column.items = newTasks.filter((task: any) => {
+                return task.status === column.id;
+              });
+              return column;
+            });
+            setTasksColumns?.(newState);
           }
           showMessage(
             "success",
@@ -424,7 +449,7 @@ const TaskForm = (props: ITaskForm) => {
         initialValues={initialValues}
         size="large"
         layout="vertical"
-        name={params.stagesId || taskCurrent?.stage.id}
+        name={params?.stagesId || taskCurrent?.stage.id}
         form={form}
         onFinish={onFinish}
       >

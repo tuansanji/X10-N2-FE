@@ -1,16 +1,12 @@
-import { setLogout } from '../../redux/slice/authSlice';
-import { BellOutlined, DownOutlined } from '@ant-design/icons';
-import {
-  Button,
-  Dropdown,
-  Popover,
-  Select,
-  Space
-  } from 'antd';
-import { useEffect, useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { useDispatch, useSelector } from 'react-redux';
-import { Link } from 'react-router-dom';
+import { setLogout } from "../../redux/slice/authSlice";
+import { BellOutlined, DownOutlined } from "@ant-design/icons";
+import { Button, Dropdown, Popover, Select, Space, Typography } from "antd";
+import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { useDispatch, useSelector } from "react-redux";
+import { Link } from "react-router-dom";
+
+const { Text } = Typography;
 
 const Header = () => {
   const [language, setLanguage] = useState(1);
@@ -91,12 +87,12 @@ const Header = () => {
               items,
             }}
           >
-            <Link className="" to="/auth/info">
+            <Text>
               <Space>
                 {user.userInfo.fullName}
                 <DownOutlined />
               </Space>
-            </Link>
+            </Text>
           </Dropdown>
           <div className="header__img">
             <img

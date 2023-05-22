@@ -27,6 +27,7 @@ const taskApi = {
     const url = `/stage/tasks/${stageId}`;
     return axiosClient.get(url, { params });
   },
+  //tất cả task mà user tạo và thực hiện
   getTasksByUser() {
     const url = `/task/related`;
     return axiosClient.get(url);

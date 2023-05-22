@@ -25,6 +25,8 @@ import {
   Skeleton,
 } from "antd";
 import { NoticeType } from "antd/es/message/interface";
+import { useTranslation } from "react-i18next";
+import { changeMsgLanguage } from "../../utils/changeMsgLanguage";
 
 const { Search } = Input;
 const { Text } = Typography;
@@ -44,6 +46,7 @@ interface PopupPropTypes {
   params: { projectId?: string };
   setMemberData: React.Dispatch<React.SetStateAction<any[]>>;
   showMessage: (type: NoticeType, content: string, duration?: number) => void;
+  setPagination: React.Dispatch<any>;
 }
 
 interface MemberRolePropTypes {
@@ -61,13 +64,11 @@ const DeleteConfirmPopup: React.FC<PopupPropTypes> = ({
   token,
   setMemberData,
   showMessage,
+  setPagination,
 }) => {
-  const [open, setOpen] = useState<boolean>(false);
-  const [confirmLoading, setConfirmLoading] = useState<boolean>(false);
-  const dispatch = useDispatch();
+  const { t, i18n } = useTranslation(["content", "base"]);
 
   const handleConfirm = async (stages: MemberDataType) => {
-    setConfirmLoading(true);
     try {
       const response = await axios({
         method: "post",
@@ -75,14 +76,22 @@ const DeleteConfirmPopup: React.FC<PopupPropTypes> = ({
         headers: { Authorization: `Bearer ${token}` },
         data: { id: stages.key },
       });
+      showMessage(
+        "success",
+        changeMsgLanguage(response.data?.message, "Đã xóa thành viên"),
+        2
+      );
       setMemberData(response.data.members);
-      showMessage("success", response.data.message, 2);
-      setConfirmLoading(false);
-      setOpen(false);
+      setPagination({ pageIndex: 1, total: response.data.members.length });
     } catch (err: any) {
-      showMessage("error", err.response.data.message, 2);
-      setConfirmLoading(false);
-      setOpen(false);
+      showMessage(
+        "error",
+        changeMsgLanguage(
+          err.response.data?.message,
+          "Xóa thành viên thất bại"
+        ),
+        2
+      );
     }
   };
 
@@ -91,17 +100,15 @@ const DeleteConfirmPopup: React.FC<PopupPropTypes> = ({
       <Popconfirm
         disabled={record.role === "manager" && true}
         placement="topRight"
-        title="Delete Member"
-        description="Are you sure to delete this member?"
-        open={open}
+        title={`${t("content:member.delete popup title")}`}
+        description={`${t("content:member.deltete popup desc")}`}
         onConfirm={() => handleConfirm(record)}
-        onCancel={() => setOpen(false)}
-        okButtonProps={{ loading: confirmLoading }}
+        okText={t("base:ok")}
+        cancelText={t("base:cancel")}
       >
         <Button
           icon={<DeleteFilled />}
           disabled={record.role === "manager" && true}
-          onClick={() => setOpen(true)}
         />
       </Popconfirm>
     </>
@@ -117,7 +124,6 @@ const UpdateMemberRole: React.FC<MemberRolePropTypes> = ({
   showMessage,
 }) => {
   const [roleUpdating, setRoleUpdating] = useState<boolean>(false);
-  const dispatch = useDispatch();
   const updateRole = async (selectValue: any, record: MemberDataType) => {
     setRoleUpdating(true);
     try {
@@ -131,11 +137,22 @@ const UpdateMemberRole: React.FC<MemberRolePropTypes> = ({
           joiningDate: formatDate(record.joinDate),
         },
       });
+      showMessage(
+        "success",
+        changeMsgLanguage(
+          response.data?.message,
+          "Cập nhật vai trò thành công"
+        ),
+        2
+      );
       setMemberData(response.data.members);
-      showMessage("success", response.data.message, 2);
       setRoleUpdating(false);
     } catch (err: any) {
-      showMessage("error", err.response.data.message, 2);
+      showMessage(
+        "error",
+        changeMsgLanguage(err.response.data?.message, "Cập nhật thất bại"),
+        2
+      );
       setRoleUpdating(false);
     }
   };
@@ -156,19 +173,14 @@ const UpdateMemberRole: React.FC<MemberRolePropTypes> = ({
 
 const MemberList: React.FC = () => {
   const timeOutRef = useRef<any>(null);
-  const searchRef = useRef<any>(null);
   const dispatch = useDispatch();
   const [searchParams, setSearchParams] = useSearchParams();
   const queryParams = useSelector((state: any) => state.queryParams);
   const params = useParams();
   const token = useSelector((state: any) => state.auth.userInfo.token);
   const [memberData, setMemberData] = useState<any[]>([]);
-  const [memberInfoModal, setmemberInfoModal] = useState<any>({});
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [showMemberInfoModal, setShowMemberInfoModal] =
-    useState<boolean>(false);
   const [showAddMemberModal, setShowAddMemberModal] = useState<boolean>(false);
-  const [searchInput, setSearchInput] = useState<string>("");
   const [searchResult, setSearchResult] = useState<any[]>([]);
   const [pagination, setPagination] = useState<any>({
     pageIndex: 1,
@@ -176,6 +188,8 @@ const MemberList: React.FC = () => {
   });
   const { showMessage, contextHolder }: UseMessageApiReturnType =
     useMessageApi();
+  const { t, i18n } = useTranslation(["content", "base"]);
+  const [countValidate, setCountValidate] = useState<number>();
 
   // Lấy List member thuộc project
   useEffect(() => {
@@ -203,23 +217,26 @@ const MemberList: React.FC = () => {
   }, []);
 
   // Validate điều kiện 1 dự án chỉ có 1 owner và 3 manager
-  let leaderCount = memberData.filter((data: any) => {
-    return data.role === "leader";
-  });
+  useEffect(() => {
+    let count = memberData.filter((data: any) => {
+      return data.role === "leader";
+    }).length;
+    setCountValidate(count);
+  }, [memberData]);
 
   const roleSelectOptions = [
     {
       value: "manager",
-      label: "Manager",
+      label: `${t("content:member.manager")}`,
       disabled: true,
     },
     {
       value: "leader",
-      label: "Leader",
-      disabled: leaderCount?.length >= 3 && true,
+      label: `${t("content:member.leader")}`,
+      disabled: (countValidate as number) >= 3 && true,
     },
-    { value: "supervisor", label: "Supervisor" },
-    { value: "member", label: "Member" },
+    { value: "supervisor", label: `${t("content:member.supervisor")}` },
+    { value: "member", label: `${t("content:member.member")}` },
   ];
   // Kết thúc Validate
 
@@ -256,15 +273,6 @@ const MemberList: React.FC = () => {
       clearTimeout(timeOutRef.current);
     };
   }, [queryParams.search]);
-
-  // Show thông tin chi tiết member khi click vào từng member
-  const showMemberModal = (indexValue: any) => {
-    let memberInfo = memberData.filter((element: any, index: number) => {
-      return indexValue === index;
-    });
-    setmemberInfoModal(memberInfo[0]);
-    setShowMemberInfoModal(true);
-  };
 
   // **** PAGE CHANGE SẼ GỬI TIẾP API GET USER MEMBER ĐỂ LẤY THEO PAGE TƯƠNG ỨNG ****
   const handlePageChange = async (page: number) => {
@@ -314,26 +322,20 @@ const MemberList: React.FC = () => {
   // Setup Table
   const columns: ColumnsType<MemberDataType> = [
     {
-      title: "Name",
+      title: `${t("content:name")}`,
       dataIndex: "name",
       key: "name",
 
       render: (_, record: MemberDataType, index: number) => {
         return (
           <>
-            <Text
-              onClick={() => {
-                showMemberModal(index);
-              }}
-            >
-              {record.name}
-            </Text>
+            <Text>{record.name}</Text>
           </>
         );
       },
     },
     {
-      title: "Role",
+      title: `${t("content:member.role")}`,
       dataIndex: "role",
       key: "role",
       render: (_, record: MemberDataType, index: number) => {
@@ -352,12 +354,12 @@ const MemberList: React.FC = () => {
       },
     },
     {
-      title: "Join date",
+      title: `${t("content:member.join date")}`,
       dataIndex: "joinDate",
       key: "joinDate",
     },
     {
-      title: "Action",
+      title: `${t("content:action")}`,
       dataIndex: "action",
       key: "action",
       render: (_, record: MemberDataType, index: number) => {
@@ -369,6 +371,7 @@ const MemberList: React.FC = () => {
               record={record}
               params={params}
               token={token}
+              setPagination={setPagination}
             />
           </>
         );
@@ -400,21 +403,6 @@ const MemberList: React.FC = () => {
   return (
     <div className="member-list">
       {contextHolder}
-      {/* Member Info Modal */}
-      {/* <Modal
-        footer={null}
-        centered
-        open={showMemberInfoModal}
-        onCancel={() => {
-          setShowMemberInfoModal(false);
-        }}
-      >
-        <p>{memberInfoModal.id}</p>
-        <p>{memberInfoModal.name}</p>
-        <p>{memberInfoModal.role}</p>
-        <p>{moment(memberInfoModal.joinDate).format("DD/MM/YYYY")}</p>
-      </Modal> */}
-
       {/* Add Member Modal */}
       <Modal
         centered
@@ -423,13 +411,15 @@ const MemberList: React.FC = () => {
           setShowAddMemberModal(false);
         }}
         footer={null}
+        destroyOnClose
       >
         <AddMember
           showMessage={showMessage}
           setMemberData={setMemberData}
           closeModal={setShowAddMemberModal}
           memberData={memberData}
-          leaderCount={leaderCount}
+          countValidate={countValidate as number}
+          setPagination={setPagination}
         />
       </Modal>
 
@@ -439,11 +429,10 @@ const MemberList: React.FC = () => {
           type="primary"
           size="large"
           onClick={() => {
-            setSearchInput("");
             setShowAddMemberModal(true);
           }}
         >
-          Add Members
+          {`${t("content:member.add member")}`}
         </Button>
 
         {/* Search Project Member Input */}
@@ -451,8 +440,7 @@ const MemberList: React.FC = () => {
           value={queryParams.search}
           allowClear
           onChange={handleInputChange}
-          // onSearch={handleSearchBox}
-          placeholder="Member Name"
+          placeholder={`${t("content:member.member name")}`}
           size="large"
           style={{ width: "300px" }}
         />

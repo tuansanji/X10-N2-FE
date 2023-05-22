@@ -3,7 +3,7 @@ import { addNewProject, editProject } from "../../redux/slice/projectSlice";
 import axios from "axios";
 import dayjs from "dayjs";
 import _ from "lodash";
-import React, { useState } from "react";
+import React, { Dispatch, useEffect, useMemo, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import useMessageApi, { UseMessageApiReturnType } from "../support/Message";
 import {
@@ -17,6 +17,8 @@ import {
   Button,
   notification,
 } from "antd";
+import { useTranslation } from "react-i18next";
+import { changeMsgLanguage } from "../../utils/changeMsgLanguage";
 
 const { Title } = Typography;
 const { TextArea } = Input;
@@ -28,6 +30,7 @@ interface PropsType {
   key?: any;
   closeModal?: React.Dispatch<React.SetStateAction<boolean>>;
   projectDetail?: any;
+  setProjectDetail?: Dispatch<any>;
 }
 
 const ProjectForm: React.FC<PropsType> = (props) => {
@@ -39,6 +42,7 @@ const ProjectForm: React.FC<PropsType> = (props) => {
     useMessageApi();
   const [startDate, setStartDate] = useState<string>();
   const [endDate, setEndDate] = useState<string>();
+  const { t, i18n } = useTranslation(["content", "base"]);
 
   const statusOptions = [
     { label: "Preparing", value: "preparing" },
@@ -46,6 +50,23 @@ const ProjectForm: React.FC<PropsType> = (props) => {
     { label: "Suspension", value: "suspended" },
     { label: "Complete", value: "completed" },
   ];
+
+  const initialValue = useMemo(() => {
+    return (
+      props.projectDetail && {
+        name: props.projectDetail?.name,
+        status: props.projectDetail?.status.toUpperCase(),
+        startDate: dayjs(props.projectDetail?.startDate),
+        estimatedEndDate: dayjs(props.projectDetail?.estimatedEndDate),
+        code: props.projectDetail?.code,
+        description: props.projectDetail?.description,
+      }
+    );
+  }, [props.projectDetail]);
+
+  useEffect(() => {
+    form.resetFields();
+  }, [form, initialValue]);
 
   // Gửi Request tạo project mới
   const handleCreate = async (data: any) => {
@@ -58,7 +79,11 @@ const ProjectForm: React.FC<PropsType> = (props) => {
           { headers: { Authorization: `Bearer ${token}` } }
         );
         dispatch(addNewProject(response.data.project));
-        showMessage("success", response.data.message, 2);
+        showMessage(
+          "success",
+          changeMsgLanguage(response.data?.message, "Tạo mới thành công"),
+          2
+        );
         setIsLoading(false);
         if (props.closeModal) {
           props.closeModal(false);
@@ -66,7 +91,11 @@ const ProjectForm: React.FC<PropsType> = (props) => {
         }
       }
     } catch (err: any) {
-      showMessage("error", err.response.data?.message, 2);
+      showMessage(
+        "error",
+        changeMsgLanguage(err.response.data?.message, "Tạo mới thất bại"),
+        2
+      );
       setIsLoading(false);
     }
   };
@@ -80,16 +109,22 @@ const ProjectForm: React.FC<PropsType> = (props) => {
         { ...data },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      console.log("Response trả về khi edit:", response);
       dispatch(editProject(response.data.project));
-      showMessage("success", response.data.message, 2);
+      showMessage(
+        "success",
+        changeMsgLanguage(response.data?.message, "Chỉnh sửa thành công"),
+        2
+      );
       setIsLoading(false);
       if (props.closeModal) {
         props.closeModal(false);
-        form.resetFields();
       }
     } catch (err: any) {
-      showMessage("error", err.response.data?.message, 2);
+      showMessage(
+        "error",
+        changeMsgLanguage(err.response.data?.message, "Chỉnh sửa thất bại"),
+        2
+      );
       setIsLoading(false);
     }
   };
@@ -108,12 +143,7 @@ const ProjectForm: React.FC<PropsType> = (props) => {
       <Title level={3}>{props.title}</Title>
       <Form
         disabled={props.useCase === "info" ? true : false}
-        initialValues={{
-          ...props.projectDetail,
-          status: props.projectDetail?.status.toUpperCase(),
-          startDate: dayjs(props.projectDetail?.startDate),
-          estimatedEndDate: dayjs(props.projectDetail?.estimatedEndDate),
-        }}
+        initialValues={initialValue}
         size="large"
         layout="vertical"
         name="projectInfo"
@@ -122,12 +152,12 @@ const ProjectForm: React.FC<PropsType> = (props) => {
       >
         {/* Project Name Field */}
         <Form.Item
-          label="Project Name"
+          label={`${t("content:form.project name")}`}
           name="name"
           rules={[
             {
               required: true,
-              message: "Please input your project name!",
+              message: `${t("content:message.requiredUsername")}`,
             },
           ]}
         >
@@ -138,7 +168,10 @@ const ProjectForm: React.FC<PropsType> = (props) => {
         <Form.Item hidden={props.useCase === "create" && true}>
           <Row>
             <Col span={11}>
-              <Form.Item label="Code Name" name="code">
+              <Form.Item
+                label={`${t("content:form.project code")}`}
+                name="code"
+              >
                 <Input disabled />
               </Form.Item>
             </Col>
@@ -152,12 +185,12 @@ const ProjectForm: React.FC<PropsType> = (props) => {
 
         {/* Description Field */}
         <Form.Item
-          label="Description"
+          label={`${t("content:form.description")}`}
           name="description"
           rules={[
             {
               required: true,
-              message: "Please describe your project!",
+              message: `${t("content:message.requiredDes")}`,
             },
           ]}
         >
@@ -167,7 +200,7 @@ const ProjectForm: React.FC<PropsType> = (props) => {
         {/* Start Date - End Date Field */}
         <Row>
           <Col span={11}>
-            <Form.Item label="Start Date" name="startDate">
+            <Form.Item label={`${t("content:startingDate")}`} name="startDate">
               <DatePicker
                 style={{ width: "100%" }}
                 disabledDate={(current) => {
@@ -182,7 +215,10 @@ const ProjectForm: React.FC<PropsType> = (props) => {
             </Form.Item>
           </Col>
           <Col span={11} offset={2}>
-            <Form.Item label="End Date" name="estimatedEndDate">
+            <Form.Item
+              label={`${t("content:endDateExpected")}`}
+              name="estimatedEndDate"
+            >
               <DatePicker
                 onChange={(date: any, dateString: string) => {
                   setEndDate(dateString);

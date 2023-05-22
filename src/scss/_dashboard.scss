@@ -38,14 +38,22 @@
   }
 
   .tasks_list {
-    .tasks_list_item {
-      border: 1px solid black;
-      padding: 8px 16px;
-    }
     .tasks_list_header {
       padding: 16px 0;
       .ant-typography {
         margin: 0;
+      }
+    }
+    .tasks_container {
+      .task_priority {
+        @include flex(row, null, center, null, 8px);
+      }
+      .ant-typography {
+        margin: 0;
+      }
+      .task_name {
+        cursor: pointer;
+        color: #1677ff;
       }
     }
   }

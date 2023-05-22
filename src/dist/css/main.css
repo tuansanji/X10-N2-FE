@@ -265,14 +265,16 @@ html {
   align-items: center;
   gap: 15px;
 }
-.header_auth-user a {
+.header_auth-user .ant-typography {
   text-overflow: ellipsis;
   overflow: hidden;
   white-space: nowrap;
   flex: 1;
   text-decoration: none;
   font-weight: 600;
+  font-size: 16px;
   color: red;
+  cursor: pointer;
 }
 .header_auth-user .header__img {
   flex-shrink: 0;
@@ -1208,9 +1210,9 @@ img.img-tiny {
   justify-content: space-between;
 }
 .add-member-container .add-member-item img {
-  width: 24px;
-  height: auto;
-  border-radius: 16px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
 }
 
 .add-member-button {
@@ -1505,15 +1507,24 @@ img.img-tiny {
   margin-left: 8px;
   cursor: pointer;
 }
-.dashboard .tasks_list .tasks_list_item {
-  border: 1px solid black;
-  padding: 8px 16px;
-}
 .dashboard .tasks_list .tasks_list_header {
   padding: 16px 0;
 }
 .dashboard .tasks_list .tasks_list_header .ant-typography {
   margin: 0;
+}
+.dashboard .tasks_list .tasks_container .task_priority {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+}
+.dashboard .tasks_list .tasks_container .ant-typography {
+  margin: 0;
+}
+.dashboard .tasks_list .tasks_container .task_name {
+  cursor: pointer;
+  color: #1677ff;
 }
 
 .notfound__page {

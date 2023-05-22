@@ -26,8 +26,8 @@ import useMessageApi, {
 } from "../../components/support/Message";
 import ProjectsList from "./ProjectsList";
 import taskApi from "../../services/api/taskApi";
-
 import TasksList from "./TasksList";
+import { useTranslation } from "react-i18next";
 
 const { Title } = Typography;
 
@@ -66,6 +66,7 @@ const Dashboard: React.FC = () => {
   const [fetchingTasks, setFetchingTasks] = useState<boolean>(false);
   const [projectDetail, setProjectDetail] = useState<any>();
   const [tasksList, setTasksList] = useState<TasksType[]>([]);
+  const { t, i18n } = useTranslation(["content", "base"]);
 
   useEffect(() => {
     (async () => {
@@ -93,10 +94,9 @@ const Dashboard: React.FC = () => {
         setFetchingTasks(false);
       })
       .catch((err: any) => {
-        showMessage("error", err.response.data.message, 2);
         setFetchingTasks(false);
       });
-  }, []);
+  }, [projectDetail]);
 
   return (
     <>
@@ -106,7 +106,7 @@ const Dashboard: React.FC = () => {
         onCancel={() => setOpenCreateProject(false)}
       >
         <ProjectForm
-          title="Create New Project"
+          title={`${t("content:form.create project")}`}
           useCase="create"
           closeModal={setOpenCreateProject}
         />
@@ -118,8 +118,9 @@ const Dashboard: React.FC = () => {
         onCancel={() => setOpenEditProject(false)}
       >
         <ProjectForm
-          title="Edit Project Info"
+          title={`${t("content:form.edit project")}`}
           useCase="edit"
+          setProjectDetail={setProjectDetail}
           closeModal={setOpenEditProject}
           projectDetail={{ ...projectDetail }}
           key={projectDetail?._id}
@@ -129,7 +130,7 @@ const Dashboard: React.FC = () => {
       <Row className="dashboard" justify="space-between">
         <Col className="projects_list" span={10}>
           <div className="projects_list_header">
-            <Title level={4}>Your Projects</Title>
+            <Title level={4}>{t("content:dashboardProjectsListTitle")}</Title>
             <Tooltip title="Create new project">
               <Button
                 onClick={() => setOpenCreateProject(true)}
@@ -149,7 +150,7 @@ const Dashboard: React.FC = () => {
         <Divider type="vertical" />
         <Col className="tasks_list" span={12}>
           <div className="tasks_list_header">
-            <Title level={4}>Your Tasks</Title>
+            <Title level={4}>{t("content:dashbaordTasksListTitle")}</Title>
           </div>
           {fetchingTasks ? (
             <Skeleton />
