@@ -37,7 +37,7 @@ const Login: React.FC = () => {
         navigate("/");
       })
       .catch((err) => {
-        showMessage("error", err?.message, 2);
+        showMessage("error", err, 2);
       });
   };
 
@@ -63,15 +63,12 @@ const Login: React.FC = () => {
           {/* Email Field */}
           <Form.Item
             name="credential"
-            label="E-mail"
+            label="E-mail/Username"
             rules={[
               {
-                type: "email",
-                message: "The input is not valid E-mail!",
-              },
-              {
                 required: true,
-                message: "Please input your E-mail!",
+                message: "Please input your E-mail or Username",
+                whitespace: true,
               },
             ]}
           >

@@ -2,7 +2,7 @@
   display: flex;
   flex-direction: column;
   gap: 20px;
-  width: 70%;
+  width: 80%;
   @include maxWidth(900px) {
     width: 90%;
   }
@@ -13,7 +13,7 @@
     padding-bottom: 8px;
     padding-top: 8px;
     display: block;
-    text-align: left;
+    text-align: center;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -21,6 +21,8 @@
     gap: 5px;
 
     h2 {
+      text-align: center;
+
       font-family: "Google Sans", Roboto, Arial, sans-serif;
       line-height: 1.75rem;
       font-size: 1.375rem;
@@ -34,6 +36,8 @@
       flex-shrink: 0;
     }
     p {
+      text-align: center;
+
       font-size: 14px;
       font-weight: 400;
       letter-spacing: 0;
@@ -125,7 +129,7 @@
     border-radius: 8px;
     border: 1px solid rgb(218, 220, 224);
     box-sizing: border-box;
-    overflow: hidden;
+    // overflow: hidden;
     margin-top: 8px;
     &__content {
       display: flex;

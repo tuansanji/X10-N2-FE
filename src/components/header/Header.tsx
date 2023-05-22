@@ -1,10 +1,12 @@
 import { setLogout } from "../../redux/slice/authSlice";
 import { BellOutlined, DownOutlined } from "@ant-design/icons";
-import { Button, Dropdown, Popover, Select, Space } from "antd";
+import { Button, Dropdown, Popover, Select, Space, Typography } from "antd";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom";
+
+const { Text } = Typography;
 
 const Header = () => {
   const [language, setLanguage] = useState(1);
@@ -13,7 +15,7 @@ const Header = () => {
   const handleLogout = () => {
     dispatch(setLogout("Log Out"));
   };
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation(["base"]);
 
   // const currentLanguage = locales[i18n.language as keyof typeof locales];
 
@@ -27,14 +29,14 @@ const Header = () => {
   const items = [
     {
       key: "1",
-      label: <Link to="/user/info">Thông tin tài khoản </Link>,
+      label: <Link to="/project/user/info">{t("base:userInfo")}</Link>,
     },
     {
       key: "4",
       danger: true,
       label: (
         <Link to="/" onClick={handleLogout}>
-          Đăng xuất
+          {t("base:logout")}
         </Link>
       ),
     },
@@ -85,12 +87,12 @@ const Header = () => {
               items,
             }}
           >
-            <Link className="" to="/auth/info">
+            <Text>
               <Space>
                 {user.userInfo.fullName}
                 <DownOutlined />
               </Space>
-            </Link>
+            </Text>
           </Dropdown>
           <div className="header__img">
             <img

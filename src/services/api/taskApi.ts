@@ -27,6 +27,7 @@ const taskApi = {
     const url = `/stage/tasks/${stageId}`;
     return axiosClient.get(url, { params });
   },
+  //tất cả task mà user tạo và thực hiện
   getTasksByUser() {
     const url = `/task/related`;
     return axiosClient.get(url);
@@ -45,6 +46,12 @@ const taskApi = {
   deleteComment(taskId: string, commentId: string) {
     const url = `/task/${taskId}/deletecomment/${commentId}`;
     return axiosClient.delete(url);
+  },
+  editComment(taskId: string, commentId: string, comment: string) {
+    const url = `/task/${taskId}/updatecomment/${commentId}`;
+    return axiosClient.put(url, {
+      content: comment,
+    });
   },
   // phần lịch sử hoạt động của task
   getActivities(taskId: string) {

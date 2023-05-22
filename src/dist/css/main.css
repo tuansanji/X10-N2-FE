@@ -265,14 +265,16 @@ html {
   align-items: center;
   gap: 15px;
 }
-.header_auth-user a {
+.header_auth-user .ant-typography {
   text-overflow: ellipsis;
   overflow: hidden;
   white-space: nowrap;
   flex: 1;
   text-decoration: none;
   font-weight: 600;
+  font-size: 16px;
   color: red;
+  cursor: pointer;
 }
 .header_auth-user .header__img {
   flex-shrink: 0;
@@ -465,8 +467,10 @@ img.img-tiny {
 
 /* css phần sidebar */
 .container_sidebar {
+  display: flex;
+  flex-direction: column;
   flex-shrink: 0;
-  height: calc(100% - 55px);
+  bottom: 0;
   position: relative;
   width: 340px;
   transition: all 0.3s linear;
@@ -517,7 +521,7 @@ img.img-tiny {
   padding: 16px;
 }
 .container_sidebar .sidebar__menu {
-  height: 100%;
+  flex: 1;
   overflow-y: auto;
   max-height: calc(100vh - 60px);
   background: #fff;
@@ -1206,9 +1210,9 @@ img.img-tiny {
   justify-content: space-between;
 }
 .add-member-container .add-member-item img {
-  width: 24px;
-  height: auto;
-  border-radius: 16px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
 }
 
 .add-member-button {
@@ -1271,7 +1275,7 @@ img.img-tiny {
   display: flex;
   flex-direction: column;
   gap: 20px;
-  width: 70%;
+  width: 80%;
   margin: 20px auto 100px;
 }
 @media only screen and (max-width: 900px) {
@@ -1285,7 +1289,7 @@ img.img-tiny {
   padding-bottom: 8px;
   padding-top: 8px;
   display: block;
-  text-align: left;
+  text-align: center;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -1293,6 +1297,7 @@ img.img-tiny {
   gap: 5px;
 }
 .user__container .title h2 {
+  text-align: center;
   font-family: "Google Sans", Roboto, Arial, sans-serif;
   line-height: 1.75rem;
   font-size: 1.375rem;
@@ -1306,6 +1311,7 @@ img.img-tiny {
   flex-shrink: 0;
 }
 .user__container .title p {
+  text-align: center;
   font-size: 14px;
   font-weight: 400;
   letter-spacing: 0;
@@ -1393,7 +1399,6 @@ img.img-tiny {
   border-radius: 8px;
   border: 1px solid rgb(218, 220, 224);
   box-sizing: border-box;
-  overflow: hidden;
   margin-top: 8px;
 }
 .user__container .info__content {
@@ -1516,6 +1521,10 @@ img.img-tiny {
 }
 .dashboard .tasks_list .tasks_container .ant-typography {
   margin: 0;
+}
+.dashboard .tasks_list .tasks_container .task_name {
+  cursor: pointer;
+  color: #1677ff;
 }
 
 .notfound__page {

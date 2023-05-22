@@ -66,14 +66,16 @@
   display: flex;
   align-items: center;
   gap: 15px;
-  a {
+  .ant-typography {
     text-overflow: ellipsis;
     overflow: hidden;
     white-space: nowrap;
     flex: 1;
     text-decoration: none;
     font-weight: 600;
+    font-size: 16px;
     color: red;
+    cursor: pointer;
   }
   .header__img {
     flex-shrink: 0;

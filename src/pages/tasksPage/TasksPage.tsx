@@ -41,6 +41,7 @@ import {
 } from "antd";
 import type { TabsProps } from "antd";
 import { useAxios } from "../../hooks";
+import { setPriority } from "../../utils/setPriority";
 
 const { Title } = Typography;
 const { Search } = Input;
@@ -105,26 +106,7 @@ const prioList: any = {
 };
 
 const TaskItem: React.FC<TaskItemProp> = ({ task, handleOpenInfoTask }) => {
-  let priority = null;
-  switch (task.priority) {
-    case "lowest":
-      priority = <DoubleRightOutlined style={{ transform: "rotate(90deg)" }} />;
-      break;
-    case "low":
-      priority = <DownOutlined />;
-      break;
-    case "medium":
-      priority = <PauseOutlined style={{ transform: "rotate(90deg)" }} />;
-      break;
-    case "high":
-      priority = <UpOutlined />;
-      break;
-    case "highest":
-      priority = (
-        <DoubleRightOutlined style={{ transform: "rotate(270deg)" }} />
-      );
-      break;
-  }
+  let priority = setPriority(task.priority);
   return (
     <>
       <div
@@ -167,7 +149,7 @@ const TasksPage = () => {
   const queryParams = useSelector((state: any) => state.queryParams);
   const user = useAppSelector((state: RootState) => state.auth?.userInfo);
   const dispatch = useDispatch();
-  const [sortSelectValue, setSortSelectValue] = useState<string>("deadlineAsc");
+  const [sortSelectValue, setSortSelectValue] = useState<string>("");
   const { showMessage, contextHolder }: UseMessageApiReturnType =
     useMessageApi();
   const [taskCurrent, setTaskCurrent] = useState<any>(null);
@@ -272,28 +254,28 @@ const TasksPage = () => {
 
   const taskTypeOptions = [
     {
-      label: `Type`,
+      label: `${t("content:task.type")}`,
       options: [
-        { label: `All`, value: `all` },
-        { label: `Issue`, value: `issue` },
-        { label: `Assignment`, value: `assignment` },
+        { label: `${t("content:form.all")}`, value: `all` },
+        { label: `${t("content:form.issue")}`, value: `issue` },
+        { label: `${t("content:form.assignment")}`, value: `assignment` },
       ],
     },
   ];
 
   const priorityOptions = [
     {
-      label: `Priority`,
+      label: `${t("content:form.priority")}`,
       options: [
-        { label: `Asc`, value: `prioAsc` },
-        { label: `Desc`, value: `prioDesc` },
+        { label: `${t("content:form.asc")}`, value: `prioAsc` },
+        { label: `${t("content:form.desc")}`, value: `prioDesc` },
       ],
     },
     {
-      label: `Deadline`,
+      label: `${t("content:form.deadline")}`,
       options: [
-        { label: `Asc`, value: `deadlineAsc` },
-        { label: `Desc`, value: `deadlineDesc` },
+        { label: `${t("content:form.asc")}`, value: `deadlineAsc` },
+        { label: `${t("content:form.desc")}`, value: `deadlineDesc` },
       ],
     },
   ];
@@ -725,6 +707,10 @@ const TasksPage = () => {
               <>
                 {statusForm && edit ? (
                   <TaskForm
+                    allTasks={allTasks}
+                    setAllTasks={setAllTasks}
+                    setTasksColumns={setTasksColumns}
+                    tasksColumns={tasksColumns}
                     setCountReloadTasks={setCountReloadTasks}
                     edit={edit}
                     handleEditTask={handleEditTask}
@@ -776,8 +762,8 @@ const TasksPage = () => {
 
           <Select
             size="large"
-            value={`Type: ${
-              _.capitalize(queryParams.type) ||
+            value={`${t("content:task.type")}: ${
+              t<any>(`content:form.${queryParams.type}`) ||
               taskTypeOptions[0].options[0].label
             }`}
             options={taskTypeOptions}
@@ -789,12 +775,19 @@ const TasksPage = () => {
             value={
               sortSelectValue?.includes("prio") ||
               queryParams.sort?.includes("prio")
-                ? `Priority: ${
-                    queryParams.sort?.replace("prio", "") ||
-                    priorityOptions[0].options[0].label
-                  }`
-                : `Deadline: ${
-                    queryParams.sort?.replace("deadline", "") ||
+                ? `${t("content:form.priority")}: ${t<any>(
+                    `content:form.${queryParams.sort
+                      ?.replace("prio", "")
+                      .toLowerCase()}`
+                  )}`
+                : sortSelectValue?.includes("deadline") ||
+                  queryParams.sort?.includes("deadline")
+                ? `${t("content:form.deadline")}: ${t<any>(
+                    `content:form.${queryParams.sort
+                      ?.replace("deadline", "")
+                      .toLowerCase()}`
+                  )}`
+                : `${t("content:form.deadline")}: ${
                     priorityOptions[1].options[0].label
                   }`
             }
@@ -811,7 +804,7 @@ const TasksPage = () => {
             size="large"
             suffixIcon={<SearchOutlined />}
             value={queryParams.member}
-            placeholder="Search Member"
+            placeholder={`${t("content:member.member name")}`}
             optionFilterProp="children"
             filterOption={(input, option) =>
               typeof option?.label === "string" &&
@@ -841,7 +834,7 @@ const TasksPage = () => {
           />
           <Search
             size="large"
-            placeholder="Task Name"
+            placeholder={`${t("content:task.task name")}`}
             value={queryParams.search}
             allowClear
             onChange={handleInputChange}

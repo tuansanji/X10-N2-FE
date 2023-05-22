@@ -4,6 +4,7 @@ import dayjs from "dayjs";
 import { ProjectType } from "./ProjectDetail";
 import { EditOutlined } from "@ant-design/icons";
 import ProjectForm from "../../components/projectForm/ProjectForm";
+import { useTranslation } from "react-i18next";
 
 const { Title, Text } = Typography;
 
@@ -13,6 +14,7 @@ interface PropTypes {
 
 const ProjectInfo: React.FC<PropTypes> = ({ projectDetail }) => {
   const [openEditProject, setOpenEditProject] = useState<boolean>(false);
+  const { t, i18n } = useTranslation(["content", "base"]);
   let bgColor: string = "";
   switch (projectDetail?.status) {
     case "ongoing":
@@ -60,10 +62,10 @@ const ProjectInfo: React.FC<PropTypes> = ({ projectDetail }) => {
           </div>
         }
       >
-        <Descriptions.Item label="Project Code">
+        <Descriptions.Item label={`${t("content:form.project code")}`}>
           {projectDetail?.code}
         </Descriptions.Item>
-        <Descriptions.Item label="Project Status">
+        <Descriptions.Item label={`${t("content:form.status")}`}>
           <Button
             type="primary"
             shape="round"
@@ -72,13 +74,13 @@ const ProjectInfo: React.FC<PropTypes> = ({ projectDetail }) => {
             <Text strong> {projectDetail?.status.toUpperCase()}</Text>
           </Button>
         </Descriptions.Item>
-        <Descriptions.Item label="Description" span={2}>
+        <Descriptions.Item label={`${t("content:form.description")}`} span={2}>
           {projectDetail?.description}
         </Descriptions.Item>
-        <Descriptions.Item label="Start Date">
+        <Descriptions.Item label={`${t("content:startingDate")}`}>
           {dayjs(projectDetail?.startDate).format("DD-MM-YYYY")}
         </Descriptions.Item>
-        <Descriptions.Item label="End Date">
+        <Descriptions.Item label={`${t("content:endDateExpected")}`}>
           {dayjs(projectDetail?.estimatedEndDate).format("DD-MM-YYYY")}
         </Descriptions.Item>
       </Descriptions>

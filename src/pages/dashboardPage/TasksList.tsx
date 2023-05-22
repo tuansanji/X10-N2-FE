@@ -15,6 +15,7 @@ import {
   PauseOutlined,
   UpOutlined,
 } from "@ant-design/icons";
+import { setPriority } from "../../utils/setPriority";
 
 const { Title, Text } = Typography;
 
@@ -64,7 +65,6 @@ const TasksList: React.FC<TasksListPropsType> = ({
     let filteredTask = tasksList.filter((task: TasksType) => {
       return task._id === record.key;
     })[0];
-    console.log("Filtered Tasks:", filteredTask);
     setIsModalOpen(true);
     setOpenInfo(true);
     setTaskCurrent(filteredTask);
@@ -112,7 +112,7 @@ const TasksList: React.FC<TasksListPropsType> = ({
 
   const columns: ColumnsType<TasksTableData> = [
     {
-      title: "Code",
+      title: `${t("content:form.job code")}`,
       dataIndex: "code",
       key: "code",
       render: (_, record: TasksTableData) => {
@@ -121,26 +121,25 @@ const TasksList: React.FC<TasksListPropsType> = ({
       width: "16%",
     },
     {
-      title: "Name",
+      title: `${t("content:name")}`,
       dataIndex: "name",
       key: "name",
       render: (_, record: TasksTableData) => {
         return (
-          <Title
-            style={{ cursor: "pointer" }}
-            level={5}
+          <Text
+            className="task_name"
             onClick={() => {
               showTaskDetail(record);
             }}
           >
             {record.title}
-          </Title>
+          </Text>
         );
       },
       width: "16%",
     },
     {
-      title: "Status",
+      title: `${t("content:form.status")}`,
       dataIndex: "status",
       key: "status",
       render: (_, record: TasksTableData) => {
@@ -193,34 +192,11 @@ const TasksList: React.FC<TasksListPropsType> = ({
       width: "16%",
     },
     {
-      title: "Priority",
+      title: `${t("content:form.priority")}`,
       dataIndex: "priority",
       key: "priority",
       render: (text, record: TasksTableData) => {
-        let priority = null;
-        switch (record.priority) {
-          case "lowest":
-            priority = (
-              <DoubleRightOutlined rotate={90} style={{ color: "#3d5cd7" }} />
-            );
-            break;
-          case "low":
-            priority = <DownOutlined style={{ color: "#3d5cd7" }} />;
-            break;
-          case "medium":
-            priority = (
-              <PauseOutlined rotate={90} style={{ color: "#C59a10" }} />
-            );
-            break;
-          case "high":
-            priority = <UpOutlined style={{ color: "#F07c6f" }} />;
-            break;
-          case "highest":
-            priority = (
-              <DoubleRightOutlined rotate={270} style={{ color: "#Ee240c" }} />
-            );
-            break;
-        }
+        let priority = setPriority(record.priority);
         return (
           <div className="task_priority">
             <span>{priority}</span>
@@ -234,7 +210,7 @@ const TasksList: React.FC<TasksListPropsType> = ({
       width: "16%",
     },
     {
-      title: "Deadline",
+      title: `${t("content:form.deadline")}`,
       dataIndex: "deadline",
       key: "deadline",
       render: (_, record: TasksTableData) => {
@@ -253,7 +229,7 @@ const TasksList: React.FC<TasksListPropsType> = ({
       width: "16%",
     },
     {
-      title: "Assignee",
+      title: `${t("content:form.assignee")}`,
       dataIndex: "assignee",
       key: "assignee",
       render: (_, record: TasksTableData) => {

@@ -7,6 +7,7 @@
   "create": "Create",
   "done": "Done",
   "update": "Update",
+  "send": "Send",
   "generalInformation": "General Information",
   "stages": "Stages",
   "members": "Members",
@@ -14,5 +15,9 @@
   "loadMore": "Load More",
   "detail": "Details",
   "before": "Before",
-  "after": "After"
+  "after": "After",
+  "success": "Success",
+  "error": "Error",
+  "logout": "Logout",
+  "userInfo": "Account information"
 }

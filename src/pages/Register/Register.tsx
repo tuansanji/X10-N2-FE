@@ -63,6 +63,7 @@ const Register: React.FC = () => {
               {
                 required: true,
                 message: "Please input your name!",
+                whitespace: true,
               },
             ]}
           >
@@ -110,6 +111,12 @@ const Register: React.FC = () => {
               {
                 required: true,
                 message: "Please input your password!",
+              },
+              {
+                pattern:
+                  /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*])(?=.{8,})/,
+                message:
+                  "Passwords must contain at least minimum eight characters, at least one uppercase letter, one lowercase letter, one number and one special character(#$@!%&*)",
               },
             ]}
             hasFeedback

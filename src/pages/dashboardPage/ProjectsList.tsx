@@ -11,6 +11,7 @@ import {
   Tooltip,
   Typography,
   Input,
+  Modal,
 } from "antd";
 import { ColumnsType } from "antd/es/table";
 import axios from "axios";
@@ -31,6 +32,8 @@ import { RootState } from "../../redux/store";
 import projectApi from "../../services/api/projectApi";
 import { deleteProject } from "../../redux/slice/projectSlice";
 import { NoticeType } from "antd/es/message/interface";
+import { useTranslation } from "react-i18next";
+import { changeMsgLanguage } from "../../utils/changeMsgLanguage";
 
 const { Text } = Typography;
 const { Search } = Input;
@@ -66,13 +69,21 @@ const DeleteConfirm: React.FC<DeleteConfirmPropsType> = ({
     projectApi
       .deleteProject(project.key)
       .then((res: any) => {
-        showMessage("success", res.message, 2);
+        showMessage(
+          "success",
+          changeMsgLanguage(res?.message, "Xóa thành công"),
+          2
+        );
         dispatch(deleteProject(project));
         setConfirmLoading(false);
         setOpen(false);
       })
       .catch((err: any) => {
-        showMessage("error", err.response.data.message, 2);
+        showMessage(
+          "error",
+          changeMsgLanguage(err.response.data?.message, "Xóa thất bại"),
+          2
+        );
         setConfirmLoading(false);
         setOpen(false);
       });
@@ -107,7 +118,9 @@ const ProjectsList: React.FC<ProjectsListType> = ({
   const [searchResult, setSearchResult] = useState<any[]>([]);
   const { showMessage, contextHolder }: UseMessageApiReturnType =
     useMessageApi();
+  const { t, i18n } = useTranslation(["content", "base"]);
 
+  //Gọi api search project name
   useEffect(() => {
     const searchProject = async () => {
       if (searchText) {
@@ -135,6 +148,7 @@ const ProjectsList: React.FC<ProjectsListType> = ({
     };
   }, [searchText]);
 
+  //handle search input
   const handleSearchProject = (event: any) => {
     if (event.target.value === "") {
       setSearchResult([]);
@@ -142,19 +156,17 @@ const ProjectsList: React.FC<ProjectsListType> = ({
     setSearchText(event.target.value);
   };
 
-  const handleEditProject = (indexValue: number) => {
-    let projectDetail = listProject.projects.filter(
-      (project: ProjectsDataType, index: number) => {
-        return indexValue === index;
-      }
-    );
+  const handleEditProject = (record: ProjectsDataType) => {
+    let projectDetail = listProject.projects.filter((project: any) => {
+      return project._id === record.key;
+    });
     setProjectDetail(projectDetail[0]);
     setOpenEditProject(true);
   };
 
   const columns: ColumnsType<ProjectsDataType> = [
     {
-      title: "Name",
+      title: `${t("content:name")}`,
       dataIndex: "name",
       key: "name",
       render: (_, record: ProjectsDataType, index: number) => {
@@ -163,7 +175,7 @@ const ProjectsList: React.FC<ProjectsListType> = ({
             <Link to={`project/${record.key}`}>{record.name}</Link>
             <div className="project_name_action">
               <Tooltip title="Edit project">
-                <EditOutlined onClick={() => handleEditProject(index)} />
+                <EditOutlined onClick={() => handleEditProject(record)} />
               </Tooltip>
               <Tooltip title="Delete project">
                 <DeleteConfirm record={record} showMessage={showMessage} />
@@ -187,7 +199,7 @@ const ProjectsList: React.FC<ProjectsListType> = ({
       ),
     },
     {
-      title: "Status",
+      title: `${t("content:form.status")}`,
       dataIndex: "status",
       key: "status",
       filters: [
@@ -233,7 +245,7 @@ const ProjectsList: React.FC<ProjectsListType> = ({
       width: "20%",
     },
     {
-      title: "Members",
+      title: `${t("content:form.members")}`,
       dataIndex: "members",
       key: "members",
       render: (_, record: ProjectsDataType) => {

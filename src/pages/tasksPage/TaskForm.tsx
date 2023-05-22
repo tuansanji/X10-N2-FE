@@ -1,3 +1,4 @@
+import { ColumnData } from "./TasksPage";
 import TinyMce from "../../components/tinyMce/TinyMce";
 import { useAxios } from "../../hooks";
 import useIsBoss from "../../hooks/useIsBoss";
@@ -5,7 +6,9 @@ import { useAppDispatch, useAppSelector } from "../../redux/hook";
 import { reloadSidebar } from "../../redux/slice/menuSlice";
 import { RootState } from "../../redux/store";
 import taskApi from "../../services/api/taskApi";
+import { changeMsgLanguage } from "../../utils/changeMsgLanguage";
 import { disableStatus } from "../../utils/disableStatus";
+import { TasksType } from "../dashboardPage/Dashboard";
 import { LoadingOutlined } from "@ant-design/icons";
 import EN from "antd/es/date-picker/locale/en_US";
 import VN from "antd/es/date-picker/locale/vi_VN";
@@ -13,6 +16,7 @@ import { NoticeType } from "antd/es/message/interface";
 import axios from "axios";
 import dayjs from "dayjs";
 import parse from "html-react-parser";
+import _ from "lodash";
 import moment from "moment";
 import "moment/locale/vi";
 import { useTranslation } from "react-i18next";
@@ -37,9 +41,6 @@ import {
   Select,
   Skeleton,
 } from "antd";
-import { ColumnData } from "./TasksPage";
-import _ from "lodash";
-import { TasksType } from "../dashboardPage/Dashboard";
 
 export interface ITask {
   _id: string;
@@ -141,28 +142,15 @@ const TaskForm = (props: ITaskForm) => {
     []
   );
 
-  // lấy  của user hiện tại
+  // xác định dữ liệu user hiện tại
   useEffect(() => {
     if (responseData && user) {
       const currentUserArr = responseData?.members?.filter((member: any) => {
         return member.data.username === user.username;
       });
-
       currentUserArr &&
         currentUserArr.length > 0 &&
-        setCurrentUser(currentUserArr[0]);
-    }
-  }, [responseData, user]);
-
-  useEffect(() => {
-    if (responseData && user) {
-      const currentUserArr = responseData?.members?.filter((member: any) => {
-        return member.data.username === user.username;
-      });
-
-      currentUserArr &&
-        currentUserArr.length > 0 &&
-        setCurrentUser(currentUserArr[0].data);
+        setCurrentUser(currentUserArr[0]?.data);
     }
   }, [responseData, user]);
 
@@ -193,19 +181,30 @@ const TaskForm = (props: ITaskForm) => {
           });
           setTasksList?.(newList);
         }
-        showMessage("success", res.message, 2);
+
+        showMessage(
+          "success",
+          changeMsgLanguage(res?.message, "Xóa thành công"),
+          2
+        );
         setCountReloadTasks((prev) => prev + 1);
         setIsModalOpen(false);
         dispatch(reloadSidebar());
       })
       .catch((err: any) => {
-        showMessage("error", err.response.data?.message, 2);
+        showMessage(
+          "error",
+          changeMsgLanguage(err.response?.data?.message, "Xóa thất bại"),
+          2
+        );
       });
   };
+
   // hàm submit form
   //statusForm false là tạo mới ,true là chỉnh sửa
   const onFinish = (data: any) => {
     showMessage("loading", `${t("content:loading")}...`);
+    //tạo mới
     if (!statusForm) {
       const task = {
         stageId: params.stagesId || taskCurrent?.stage.id,
@@ -229,17 +228,28 @@ const TaskForm = (props: ITaskForm) => {
             setAllTasks?.([...allTasks, res.task]);
             setTasksColumns?.(newState);
           }
-          showMessage("success", res.message, 2);
+
+          showMessage(
+            "success",
+            changeMsgLanguage(res?.message, "Tạo mới thành công"),
+            2
+          );
           dispatch(reloadSidebar());
           setIsModalOpen(false);
           setEdit?.(false);
           form.resetFields();
           setCountReloadTasks((prev) => prev + 1);
+          setDescription("");
         })
         .catch((err) => {
-          showMessage("error", err.response.data?.message, 2);
+          showMessage(
+            "error",
+            changeMsgLanguage(err.response.data?.message, "Tạo mới thất bại"),
+            2
+          );
         });
     } else {
+      // chỉnh sửa
       const task = {
         stageId: params.stagesId || taskCurrent?.stage.id,
         title: data.title,
@@ -257,17 +267,45 @@ const TaskForm = (props: ITaskForm) => {
       taskApi
         .editTask(taskCurrent._id, task)
         .then((res: any) => {
-          showMessage("success", res.message, 2);
+          //update giao diện danh sách tasks ở dashboard
           if (tasksList) {
             let newList = tasksList.map((task: TasksType) => {
               if (task._id === res.task._id) {
-                return res.task;
+                return {
+                  ...res.task,
+                  project: taskCurrent.project,
+                  stage: taskCurrent.stage,
+                };
               } else {
                 return task;
               }
             });
             setTasksList?.(newList);
           }
+
+          //update giao diện danh sách tasks ở trang công việc
+          if (tasksColumns && allTasks) {
+            let newTasks = allTasks.map((task: any) => {
+              if (task._id === res.task._id) {
+                return res.task;
+              } else {
+                return task;
+              }
+            });
+            setAllTasks?.(newTasks);
+            let newState = tasksColumns.map((column: any) => {
+              column.items = newTasks.filter((task: any) => {
+                return task.status === column.id;
+              });
+              return column;
+            });
+            setTasksColumns?.(newState);
+          }
+          showMessage(
+            "success",
+            changeMsgLanguage(res?.message, "Chỉnh sửa thành công"),
+            2
+          );
           dispatch(reloadSidebar());
           setReloadData((prev) => prev + 1);
           setEdit?.(false);
@@ -275,7 +313,11 @@ const TaskForm = (props: ITaskForm) => {
           setCountReloadTasks((prev) => prev + 1);
         })
         .catch((err) => {
-          showMessage("error", err.response.data?.message, 2);
+          showMessage(
+            "error",
+            changeMsgLanguage(err.response.data?.message, "Chỉnh sửa thất bại"),
+            2
+          );
         });
     }
   };
@@ -372,9 +414,9 @@ const TaskForm = (props: ITaskForm) => {
               // Chủ dự án, quản lý dự án, người tạo công việc có thể sửa tất cả thông tin của công việc đã tạo.
               //	Người thực hiện công việc chỉ được phép cập nhật trạng thái công việc.
               (isBoss ||
-                // currentUser?.data._id === taskData?.assignee?._id ||
-                currentUser?.data?.username ===
-                  taskData?.createdBy?.username) && (
+                currentUser?._id === taskData?.assignee?._id ||
+                currentUser?._id === taskCurrent?.createdBy?._id ||
+                currentUser?.username === taskData?.assignee?.username) && (
                 <div className="task__action--form">
                   <Button type="primary" onClick={handleEditTask}>
                     {edit ? t("base:cancel") : t("base:edit")}
@@ -407,7 +449,7 @@ const TaskForm = (props: ITaskForm) => {
         initialValues={initialValues}
         size="large"
         layout="vertical"
-        name={params.stagesId || taskCurrent?.stage.id}
+        name={params?.stagesId || taskCurrent?.stage.id}
         form={form}
         onFinish={onFinish}
       >
@@ -445,7 +487,7 @@ const TaskForm = (props: ITaskForm) => {
           </Descriptions.Item>
           <Descriptions.Item label={t("content:form.job code")}>
             {taskData?.code || (
-              <span style={{ opacity: 0.4 }}>Auto generated</span>
+              <span style={{ opacity: 0.4 }}>{t("content:task.jobCode")}</span>
             )}
           </Descriptions.Item>
           <Descriptions.Item label={t("content:form.status")}>
