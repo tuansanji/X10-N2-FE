@@ -107,21 +107,20 @@ const prioList: any = {
 };
 
 const TaskItem: React.FC<TaskItemProp> = ({ task, handleOpenInfoTask }) => {
-  const highlightDeadline = useMemo(() => {
-    let bgColor: string = "";
+  const [bgColor, setBgColor] = useState<string>("");
+  useEffect(() => {
     const now = new Date();
     const deadline = new Date(task.deadline);
     const hourBetweenDates =
       (deadline.getTime() - now.getTime()) / (60 * 60 * 1000);
     if (task.status !== "done") {
       if (hourBetweenDates < 24) {
-        bgColor = "#E6883f";
+        setBgColor("#E6883f");
       }
       if (hourBetweenDates < 0) {
-        bgColor = "#EC2B2B";
+        setBgColor("#EC2B2B");
       }
     }
-    return bgColor;
   }, [task]);
 
   let priority = setPriority(task.priority);
@@ -155,7 +154,7 @@ const TaskItem: React.FC<TaskItemProp> = ({ task, handleOpenInfoTask }) => {
         <div className="task_deadline--container">
           <span
             className="task_deadline--content"
-            style={{ backgroundColor: highlightDeadline }}
+            style={{ backgroundColor: bgColor }}
           >
             <ClockCircleOutlined />
             <Text>{moment(task.deadline).format("DD/MM/YYYY - HH:mm")}</Text>
