@@ -39,6 +39,7 @@ import {
   Form,
   Popconfirm,
   Descriptions,
+  Skeleton,
 } from "antd";
 import type { TabsProps } from "antd";
 
@@ -283,7 +284,7 @@ const TaskDetail: React.FC = () => {
     <>
       {contextHolder}
       {loading || !taskCurrent ? (
-        <Loading />
+        <Skeleton active />
       ) : (
         <div className="task__Detail--page">
           <Tabs defaultActiveKey="1" items={items} onTabClick={handleTabLick} />

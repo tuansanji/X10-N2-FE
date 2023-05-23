@@ -1,9 +1,9 @@
-import { Descriptions } from 'antd';
-import parse from 'html-react-parser';
-import moment from 'moment';
-import 'moment/locale/vi';
-import React from 'react';
-import { useTranslation } from 'react-i18next';
+import { Descriptions } from "antd";
+import parse from "html-react-parser";
+import moment from "moment";
+import "moment/locale/vi";
+import React from "react";
+import { useTranslation } from "react-i18next";
 
 type Props = {
   activity: any;
@@ -68,7 +68,7 @@ const ActivityForm = ({ activity }: Props) => {
           {activity?.createdBy?.fullName || ""}
         </Descriptions.Item>
         <Descriptions.Item label={t("content:form.assignee")}>
-          {activity?.assignee?.fullName || ""}
+          {activity?.assignee || ""}
         </Descriptions.Item>
 
         <Descriptions.Item label={t("content:form.date created")}>
