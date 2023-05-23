@@ -36,19 +36,6 @@ const ProjectInfo: React.FC<PropTypes> = ({ projectDetail }) => {
 
   return (
     <div className="project-info">
-      <Modal
-        open={openEditProject}
-        footer={null}
-        onCancel={() => setOpenEditProject(false)}
-      >
-        <ProjectForm
-          title="Edit Project Info"
-          useCase="edit"
-          closeModal={setOpenEditProject}
-          projectDetail={{ ...projectDetail }}
-          key={projectDetail?._id}
-        />
-      </Modal>
       <Descriptions
         bordered
         layout="vertical"
@@ -56,9 +43,6 @@ const ProjectInfo: React.FC<PropTypes> = ({ projectDetail }) => {
         title={
           <div className="description_title">
             <Title level={3}>{projectDetail?.name}</Title>
-            <Tooltip title="Edit project">
-              <EditOutlined onClick={() => setOpenEditProject(true)} />
-            </Tooltip>
           </div>
         }
       >

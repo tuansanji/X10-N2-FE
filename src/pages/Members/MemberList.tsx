@@ -27,6 +27,7 @@ import {
 import { NoticeType } from "antd/es/message/interface";
 import { useTranslation } from "react-i18next";
 import { changeMsgLanguage } from "../../utils/changeMsgLanguage";
+import useIsBoss from "../../hooks/useIsBoss";
 
 const { Search } = Input;
 const { Text } = Typography;
@@ -47,6 +48,7 @@ interface PopupPropTypes {
   setMemberData: React.Dispatch<React.SetStateAction<any[]>>;
   showMessage: (type: NoticeType, content: string, duration?: number) => void;
   setPagination: React.Dispatch<any>;
+  isBoss: boolean;
 }
 
 interface MemberRolePropTypes {
@@ -56,6 +58,7 @@ interface MemberRolePropTypes {
   token: string;
   setMemberData: React.Dispatch<React.SetStateAction<any[]>>;
   showMessage: (type: NoticeType, content: string, duration?: number) => void;
+  isBoss: boolean;
 }
 
 const DeleteConfirmPopup: React.FC<PopupPropTypes> = ({
@@ -65,6 +68,7 @@ const DeleteConfirmPopup: React.FC<PopupPropTypes> = ({
   setMemberData,
   showMessage,
   setPagination,
+  isBoss,
 }) => {
   const { t, i18n } = useTranslation(["content", "base"]);
 
@@ -98,7 +102,7 @@ const DeleteConfirmPopup: React.FC<PopupPropTypes> = ({
   return (
     <>
       <Popconfirm
-        disabled={record.role === "manager" && true}
+        disabled={(record.role === "manager" && true) || !isBoss}
         placement="topRight"
         title={`${t("content:member.delete popup title")}`}
         description={`${t("content:member.deltete popup desc")}`}
@@ -108,7 +112,7 @@ const DeleteConfirmPopup: React.FC<PopupPropTypes> = ({
       >
         <Button
           icon={<DeleteFilled />}
-          disabled={record.role === "manager" && true}
+          disabled={(record.role === "manager" && true) || !isBoss}
         />
       </Popconfirm>
     </>
@@ -122,6 +126,7 @@ const UpdateMemberRole: React.FC<MemberRolePropTypes> = ({
   token,
   setMemberData,
   showMessage,
+  isBoss,
 }) => {
   const [roleUpdating, setRoleUpdating] = useState<boolean>(false);
   const updateRole = async (selectValue: any, record: MemberDataType) => {
@@ -161,7 +166,7 @@ const UpdateMemberRole: React.FC<MemberRolePropTypes> = ({
       {/* <ToastContainer /> */}
       <Select
         loading={roleUpdating && true}
-        disabled={record.role === "manager" && true}
+        disabled={(record.role === "manager" && true) || !isBoss}
         onSelect={(value) => updateRole(value, record)}
         value={record.role}
         options={roleSelectOptions}
@@ -190,6 +195,7 @@ const MemberList: React.FC = () => {
     useMessageApi();
   const { t, i18n } = useTranslation(["content", "base"]);
   const [countValidate, setCountValidate] = useState<number>();
+  const { isBoss } = useIsBoss([], 2);
 
   // Lấy List member thuộc project
   useEffect(() => {
@@ -342,6 +348,7 @@ const MemberList: React.FC = () => {
         return (
           <>
             <UpdateMemberRole
+              isBoss={isBoss}
               showMessage={showMessage}
               setMemberData={setMemberData}
               params={params}
@@ -366,6 +373,7 @@ const MemberList: React.FC = () => {
         return (
           <>
             <DeleteConfirmPopup
+              isBoss={isBoss}
               showMessage={showMessage}
               setMemberData={setMemberData}
               record={record}
@@ -426,6 +434,7 @@ const MemberList: React.FC = () => {
       {/* Main Content */}
       <div className="header">
         <Button
+          disabled={!isBoss}
           type="primary"
           size="large"
           onClick={() => {

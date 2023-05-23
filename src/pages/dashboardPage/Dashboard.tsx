@@ -36,6 +36,7 @@ export interface UserInfo {
   fullName: string;
   username: string;
   email: string;
+  _id: string;
 }
 
 export interface TasksType {
@@ -96,7 +97,7 @@ const Dashboard: React.FC = () => {
       .catch((err: any) => {
         setFetchingTasks(false);
       });
-  }, [projectDetail]);
+  }, []);
 
   return (
     <>

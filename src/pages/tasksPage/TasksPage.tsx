@@ -42,8 +42,9 @@ import {
 import type { TabsProps } from "antd";
 import { useAxios } from "../../hooks";
 import { setPriority } from "../../utils/setPriority";
+import { changeMsgLanguage } from "../../utils/changeMsgLanguage";
 
-const { Title } = Typography;
+const { Title, Text } = Typography;
 const { Search } = Input;
 
 export interface ColumnData {
@@ -106,6 +107,23 @@ const prioList: any = {
 };
 
 const TaskItem: React.FC<TaskItemProp> = ({ task, handleOpenInfoTask }) => {
+  const highlightDeadline = useMemo(() => {
+    let bgColor: string = "";
+    const now = new Date();
+    const deadline = new Date(task.deadline);
+    const hourBetweenDates =
+      (deadline.getTime() - now.getTime()) / (60 * 60 * 1000);
+    if (task.status !== "done") {
+      if (hourBetweenDates < 24) {
+        bgColor = "#E6883f";
+      }
+      if (hourBetweenDates < 0) {
+        bgColor = "#EC2B2B";
+      }
+    }
+    return bgColor;
+  }, [task]);
+
   let priority = setPriority(task.priority);
   return (
     <>
@@ -134,9 +152,14 @@ const TaskItem: React.FC<TaskItemProp> = ({ task, handleOpenInfoTask }) => {
             <img src={task.assignee.avatar} alt="user-avatar" />
           </Tooltip>
         </div>
-        <div className="task_deadline">
-          <ClockCircleOutlined />
-          <span>{moment(task.deadline).format("DD/MM/YYYY")}</span>
+        <div className="task_deadline--container">
+          <span
+            className="task_deadline--content"
+            style={{ backgroundColor: highlightDeadline }}
+          >
+            <ClockCircleOutlined />
+            <Text>{moment(task.deadline).format("DD/MM/YYYY - HH:mm")}</Text>
+          </span>
         </div>
       </div>
     </>
@@ -559,7 +582,11 @@ const TasksPage = () => {
       taskApi
         .editTask(removedItem._id, { ...removedItem, stageId: params.stagesId })
         .then((res: any) => {
-          showMessage("success", res?.message, 2);
+          showMessage(
+            "success",
+            changeMsgLanguage(res?.message, "Cập nhật công việc thành công"),
+            2
+          );
         })
         .catch((err: any) => {
           removedItem.status = source.droppableId;
@@ -577,7 +604,14 @@ const TasksPage = () => {
             }
           });
           setTasksColumns(newState);
-          showMessage("error", err.response.data?.message, 2);
+          showMessage(
+            "error",
+            changeMsgLanguage(
+              err.response.data?.message,
+              "Cập nhật công việc thất bại"
+            ),
+            2
+          );
         });
     }
   };

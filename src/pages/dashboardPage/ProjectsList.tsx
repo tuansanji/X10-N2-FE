@@ -34,6 +34,8 @@ import { deleteProject } from "../../redux/slice/projectSlice";
 import { NoticeType } from "antd/es/message/interface";
 import { useTranslation } from "react-i18next";
 import { changeMsgLanguage } from "../../utils/changeMsgLanguage";
+import useIsBoss from "../../hooks/useIsBoss";
+import { UserInfo } from "./Dashboard";
 
 const { Text } = Typography;
 const { Search } = Input;
@@ -54,18 +56,42 @@ interface ProjectsDataType {
 interface DeleteConfirmPropsType {
   record: ProjectsDataType;
   showMessage: (type: NoticeType, content: string, duration?: number) => void;
+  handleEditProject: (record: ProjectsDataType) => void;
 }
 
-const DeleteConfirm: React.FC<DeleteConfirmPropsType> = ({
+const Action: React.FC<DeleteConfirmPropsType> = ({
   record,
   showMessage,
+  handleEditProject,
 }) => {
   const [confirmLoading, setConfirmLoading] = useState<boolean>(false);
   const [open, setOpen] = useState<boolean>(false);
+  const [isEdit, setIsEdit] = useState<boolean>(false);
+  const [isDelete, setIsDelete] = useState<boolean>(false);
+  const user = useAppSelector((state: RootState) => state.auth.userInfo);
+  const { t, i18n } = useTranslation(["content", "base"]);
   const dispatch = useAppDispatch();
+  console.log("user:", user);
+  console.log("Record:", record);
+  console.log("Is Edit:", isEdit);
+  console.log("Is Delete:", isDelete);
+  //Chỉ Leader và manager mới thực hiện được edit/delete
+  useEffect(() => {
+    record.members.forEach((member: any) => {
+      if (
+        member.data.email === user.email &&
+        member.role !== "member" &&
+        member.role !== "supervisor"
+      ) {
+        setIsEdit(true);
+      }
+      if (member.data.email === user.email && member.role === "manager") {
+        setIsDelete(true);
+      }
+    });
+  }, [record, user]);
 
   const handleDeleteProject = (project: ProjectsDataType) => {
-    setConfirmLoading(true);
     projectApi
       .deleteProject(project.key)
       .then((res: any) => {
@@ -76,7 +102,6 @@ const DeleteConfirm: React.FC<DeleteConfirmPropsType> = ({
         );
         dispatch(deleteProject(project));
         setConfirmLoading(false);
-        setOpen(false);
       })
       .catch((err: any) => {
         showMessage(
@@ -84,24 +109,31 @@ const DeleteConfirm: React.FC<DeleteConfirmPropsType> = ({
           changeMsgLanguage(err.response.data?.message, "Xóa thất bại"),
           2
         );
-        setConfirmLoading(false);
-        setOpen(false);
       });
   };
 
   return (
     <>
-      <Popconfirm
-        open={open}
-        placement="topRight"
-        title="Delete the project"
-        description="Are you sure to delete this project?"
-        onConfirm={() => handleDeleteProject(record)}
-        onCancel={() => setOpen(false)}
-        okButtonProps={{ loading: confirmLoading }}
-      >
-        <DeleteOutlined onClick={() => setOpen(true)} />
-      </Popconfirm>
+      <div className="project_name_column">
+        <Link to={`project/${record.key}`}>{record.name}</Link>
+        <div className="project_name_action">
+          <Button
+            disabled={!isEdit}
+            onClick={() => handleEditProject(record)}
+            icon={<EditOutlined />}
+          />
+          <Popconfirm
+            placement="topRight"
+            title={`${t("content:titleDeleteProject")}`}
+            description={`${t("content:desDeleteProject")}`}
+            onConfirm={() => handleDeleteProject(record)}
+            okText={t("base:ok")}
+            cancelText={t("base:cancel")}
+          >
+            <Button icon={<DeleteOutlined />} disabled={!isDelete} />
+          </Popconfirm>
+        </div>
+      </div>
     </>
   );
 };
@@ -119,6 +151,7 @@ const ProjectsList: React.FC<ProjectsListType> = ({
   const { showMessage, contextHolder }: UseMessageApiReturnType =
     useMessageApi();
   const { t, i18n } = useTranslation(["content", "base"]);
+  const [validateAction, setValidateAction] = useState<boolean>(false);
 
   //Gọi api search project name
   useEffect(() => {
@@ -171,17 +204,11 @@ const ProjectsList: React.FC<ProjectsListType> = ({
       key: "name",
       render: (_, record: ProjectsDataType, index: number) => {
         return (
-          <div className="project_name_column">
-            <Link to={`project/${record.key}`}>{record.name}</Link>
-            <div className="project_name_action">
-              <Tooltip title="Edit project">
-                <EditOutlined onClick={() => handleEditProject(record)} />
-              </Tooltip>
-              <Tooltip title="Delete project">
-                <DeleteConfirm record={record} showMessage={showMessage} />
-              </Tooltip>
-            </div>
-          </div>
+          <Action
+            record={record}
+            showMessage={showMessage}
+            handleEditProject={handleEditProject}
+          />
         );
       },
       width: "60%",
