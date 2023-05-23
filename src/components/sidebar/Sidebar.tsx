@@ -61,7 +61,7 @@ interface ITaskData extends ITask {
 const Sidebar = () => {
   const dispatch = useAppDispatch();
   const { t } = useTranslation(["sidebar", "base", "content"]);
-  const inputRef = useRef<InputRef>(null);
+  const inputSearchRef = useRef<InputRef>(null);
 
   const statusMenu = useAppSelector((state: RootState) => state.menu?.status);
   const reloadSidebar = useAppSelector(
@@ -304,8 +304,8 @@ const Sidebar = () => {
             onClick={() => {
               setSearch(!search);
 
-              inputRef.current &&
-                inputRef.current!.focus({
+              inputSearchRef.current &&
+                inputSearchRef.current!.focus({
                   cursor: "start",
                 });
             }}
@@ -322,7 +322,7 @@ const Sidebar = () => {
         }}
       >
         <Input
-          ref={inputRef}
+          ref={inputSearchRef}
           style={{ display: "flex", gap: "6px" }}
           onChange={(e) => setSearchValue(e.target.value)}
           placeholder={t("sidebar:placeholder")}
