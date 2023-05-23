@@ -1,10 +1,13 @@
 import TaskForm, { ITask, IUser } from "./TaskForm";
 import TaskHistory from "./TaskHistory";
 import TaskInfo from "./TaskInfo";
+import { useAxios } from "../../hooks";
 import { useAppSelector } from "../../redux/hook";
-import { setQuery, deleteQuery } from "../../redux/slice/paramsSlice";
+import { deleteQuery, setQuery } from "../../redux/slice/paramsSlice";
 import { RootState } from "../../redux/store";
 import taskApi from "../../services/api/taskApi";
+import { changeMsgLanguage } from "../../utils/changeMsgLanguage";
+import { setPriority } from "../../utils/setPriority";
 import axios from "axios";
 import _ from "lodash";
 import moment from "moment";
@@ -40,9 +43,6 @@ import {
   Tooltip,
 } from "antd";
 import type { TabsProps } from "antd";
-import { useAxios } from "../../hooks";
-import { setPriority } from "../../utils/setPriority";
-import { changeMsgLanguage } from "../../utils/changeMsgLanguage";
 
 const { Title, Text } = Typography;
 const { Search } = Input;
@@ -701,6 +701,7 @@ const TasksPage = () => {
         maskClosable={false}
         style={{ top: "50px" }}
         footer={[]}
+        className="task__modal__responsive"
       >
         {!statusForm && !openInfo && (
           <TaskForm

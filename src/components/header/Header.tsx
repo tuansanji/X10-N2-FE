@@ -78,22 +78,26 @@ const Header = () => {
           </Popover>
         </div>
 
-        <span className="bell">
+        {/* <span className="bell">
           <BellOutlined />
-        </span>
+        </span> */}
         <div className="header_auth-user">
-          <Dropdown
-            menu={{
-              items,
-            }}
-          >
-            <Text>
-              <Space>
-                {user.userInfo.fullName}
-                <DownOutlined />
-              </Space>
-            </Text>
-          </Dropdown>
+          <div className="dropdown__user">
+            <Dropdown
+              menu={{
+                items,
+              }}
+            >
+              <Text>
+                <Space>
+                  {user?.userInfo?.fullName.length < 13
+                    ? user?.userInfo?.fullName
+                    : `${user?.userInfo?.fullName.substring(0, 13)}...`}
+                  <DownOutlined />
+                </Space>
+              </Text>
+            </Dropdown>
+          </div>
           <div className="header__img">
             <img
               srcSet={`${

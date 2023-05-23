@@ -142,8 +142,10 @@
 
 .task_info--container {
   padding: 50px 30px;
-
   margin: 0 auto;
+  @include maxWidth($mobile-width) {
+    padding: 0;
+  }
 }
 
 .form_task {
@@ -172,14 +174,6 @@
     ol {
       list-style-position: inside;
     }
-  }
-}
-.task__info--container {
-  .ant-tabs.ant-tabs-top.css-dev-only-do-not-override-htwhyh {
-    position: sticky;
-    top: 0;
-    background-color: #fff;
-    z-index: 10;
   }
 }
 
@@ -221,16 +215,25 @@
     padding-right: 5%;
     max-height: 70vh;
     overflow-y: auto;
+    @include maxWidth($tablet-width) {
+      width: 100%;
+    }
   }
   .title {
     font-weight: 700;
+    @include maxWidth($mobile-width) {
+      font-size: 16px;
+    }
   }
   .history__des {
     display: flex;
     justify-content: space-between;
     align-items: center;
-
     gap: 40px;
+    @include maxWidth(600px) {
+      flex-direction: column;
+      gap: 7px;
+    }
     .fields__change {
       flex: 1;
       overflow: hidden;
@@ -249,19 +252,29 @@
     width: 340px;
     flex-shrink: 0;
     justify-content: space-between;
+    @include maxWidth(900px) {
+      width: 300px;
+    }
+    @include maxWidth(600px) {
+      width: 100%;
+    }
     p {
       color: #505f79;
-
       font-weight: 500;
       font-size: 16px;
       letter-spacing: -0.006em;
       line-height: 1.42857143;
+      @include maxWidth(600px) {
+        font-size: 14px;
+      }
     }
     time {
       font-size: 14px;
-
       color: #505f79;
       font-weight: 400;
+      @include maxWidth(600px) {
+        font-size: 12px;
+      }
     }
   }
   .history__status {
@@ -270,6 +283,9 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
+    @include maxWidth(600px) {
+      width: 100%;
+    }
     .comment {
       padding-right: 50px;
       white-space: nowrap;
@@ -290,6 +306,11 @@
       width: 20%;
       display: flex;
       justify-content: center;
+      @include maxWidth($mobile-width) {
+        button {
+          font-size: 13px;
+        }
+      }
       .arrow-1 {
         width: 50%;
         height: 20px;
@@ -355,6 +376,11 @@
   position: relative;
   top: -9px;
   min-height: 30px;
+  @include maxWidth($mobile-width) {
+    flex-direction: column;
+    gap: 11px;
+    align-items: flex-start;
+  }
   .task__action--form {
     display: flex;
     gap: 20px;
@@ -439,5 +465,30 @@
     ).ant-descriptions.ant-descriptions-bordered
     .ant-descriptions-view {
     border: 4px solid rgba(5, 5, 5, 0.06);
+  }
+}
+.task__info--container {
+  .ant-tabs.ant-tabs-top.css-dev-only-do-not-override-htwhyh {
+    position: sticky;
+    top: 0;
+    background-color: #fff;
+    z-index: 10;
+  }
+}
+//responsive modal task
+.task__modal__responsive {
+  @include maxWidth(900px) {
+    width: 90% !important;
+    overflow-y: auto;
+    .ant-descriptions-item-label,
+    .ant-descriptions-item-content {
+      font-size: 12px;
+      padding: 10px !important;
+    }
+  }
+}
+.modal__activity--detail {
+  @include maxWidth($desktop-width) {
+    width: 95% !important;
   }
 }

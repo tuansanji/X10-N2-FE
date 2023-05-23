@@ -97,7 +97,9 @@ const ProjectDetail: React.FC = () => {
         <Skeleton />
       ) : (
         <Space direction="vertical" size="large" style={{ display: "flex" }}>
-          <Breadcrumb items={breadcrumbItem} />
+          <div className="breadcrumb__project">
+            <Breadcrumb items={breadcrumbItem} />
+          </div>
           <Tabs
             onTabClick={handleTabChange}
             activeKey={queryParams.currentTab}

@@ -1,21 +1,21 @@
-import { Button, Modal, Table, Tabs, TabsProps, Typography } from "antd";
-import { ColumnsType } from "antd/es/table";
-import moment from "moment";
-import _ from "lodash";
-import React, { Dispatch, SetStateAction, useMemo, useState } from "react";
 import { TasksType, UserInfo } from "./Dashboard";
-import TaskInfo from "../tasksPage/TaskInfo";
+import { setPriority } from "../../utils/setPriority";
 import TaskForm from "../tasksPage/TaskForm";
 import TaskHistory from "../tasksPage/TaskHistory";
-import { useTranslation } from "react-i18next";
+import TaskInfo from "../tasksPage/TaskInfo";
+import { Button, Modal, Table, Tabs, TabsProps, Typography } from "antd";
 import { NoticeType } from "antd/es/message/interface";
+import { ColumnsType } from "antd/es/table";
+import _ from "lodash";
+import moment from "moment";
+import React, { Dispatch, SetStateAction, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   DoubleRightOutlined,
   DownOutlined,
   PauseOutlined,
   UpOutlined,
 } from "@ant-design/icons";
-import { setPriority } from "../../utils/setPriority";
 
 const { Title, Text } = Typography;
 
@@ -288,6 +288,7 @@ const TasksList: React.FC<TasksListPropsType> = ({
           maskClosable={false}
           style={{ top: "50px" }}
           footer={[]}
+          className="task__modal__responsive"
         >
           {/* phần modal thông tin task */}
           {openInfo && (

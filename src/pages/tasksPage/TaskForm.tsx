@@ -394,7 +394,10 @@ const TaskForm = (props: ITaskForm) => {
             {loading ? (
               <div className="" style={{ height: "19px" }}></div>
             ) : (
-              <Breadcrumb items={breadcrumbItem} style={{ fontSize: "12px" }} />
+              <Breadcrumb
+                items={breadcrumbItem}
+                style={{ fontSize: "12px", zIndex: 11 }}
+              />
             )}
 
             {currentUser &&
