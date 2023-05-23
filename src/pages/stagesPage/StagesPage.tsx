@@ -350,10 +350,10 @@ const StagesPage: React.FC<PropTypes> = (props: PropTypes) => {
     return stagesData.stages.map((stage: IStages) => ({
       key: stage._id,
       name: stage.name,
-      startDate: moment(stage.startDate).format("YYYY-MM-DD"),
-      endDateExpected: moment(stage.endDateExpected).format("YYYY-MM-DD"),
+      startDate: moment(stage.startDate).format("DD-MM-YYYY"),
+      endDateExpected: moment(stage.endDateExpected).format("DD-MM-YYYY"),
       endDateActual: stage.endDateActual
-        ? moment(stage.endDateActual).format("YYYY-MM-DD")
+        ? moment(stage.endDateActual).format("DD-MM-YYYY")
         : "",
     }));
   }, [stagesData?.stages]);

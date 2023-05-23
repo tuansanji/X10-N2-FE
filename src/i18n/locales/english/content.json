@@ -16,6 +16,8 @@
   "desDeleteComment": "Are you sure to delete this comment?",
   "titleDeleteStage": "Delete the stages",
   "desDeleteStage": "Are you sure to delete this stages?",
+  "titleDeleteProject": "Delete the project",
+  "desDeleteProject": "Are you sure to delete this project?",
   "dashboardProjectsListTitle": "Your Projects",
   "dashbaordTasksListTitle": "Your Tasks",
   "profileUser": {

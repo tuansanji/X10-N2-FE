@@ -201,10 +201,13 @@
     }
   }
 
-  .task_deadline {
+  .task_deadline--container {
     margin-top: 8px;
-    span:last-child {
-      margin-left: 4px;
+
+    .task_deadline--content {
+      @include flex(row, null, center, null, 8px);
+      width: fit-content;
+      padding: 2px 4px;
     }
   }
 }

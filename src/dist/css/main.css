@@ -833,11 +833,16 @@ img.img-tiny {
   width: 32px;
   margin-right: auto;
 }
-.task_info .task_deadline {
+.task_info .task_deadline--container {
   margin-top: 8px;
 }
-.task_info .task_deadline span:last-child {
-  margin-left: 4px;
+.task_info .task_deadline--container .task_deadline--content {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  width: fit-content;
+  padding: 2px 4px;
 }
 
 .task__history {
@@ -1503,9 +1508,10 @@ img.img-tiny {
   flex-direction: row;
   justify-content: space-between;
 }
-.dashboard .projects_list .projects_list_item .project_name_action .anticon {
-  margin-left: 8px;
-  cursor: pointer;
+.dashboard .projects_list .projects_list_item .project_name_action {
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
 }
 .dashboard .tasks_list .tasks_list_header {
   padding: 16px 0;

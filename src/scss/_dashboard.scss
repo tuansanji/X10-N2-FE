@@ -29,10 +29,7 @@
       }
 
       .project_name_action {
-        .anticon {
-          margin-left: 8px;
-          cursor: pointer;
-        }
+        @include flex(row, null, null, null, 8px);
       }
     }
   }
