@@ -71,17 +71,21 @@ const Action: React.FC<DeleteConfirmPropsType> = ({
   const user = useAppSelector((state: RootState) => state.auth.userInfo);
   const { t, i18n } = useTranslation(["content", "base"]);
   const dispatch = useAppDispatch();
-
+  console.log("user:", user);
+  console.log("Record:", record);
+  console.log("Is Edit:", isEdit);
+  console.log("Is Delete:", isDelete);
   //Chỉ Leader và manager mới thực hiện được edit/delete
   useEffect(() => {
     record.members.forEach((member: any) => {
       if (
-        (member.data._id === user._id && member.role === "manager") ||
-        member.role === "leader"
+        member.data.email === user.email &&
+        member.role !== "member" &&
+        member.role !== "supervisor"
       ) {
         setIsEdit(true);
       }
-      if (member.data._id === user._id && member.role === "manager") {
+      if (member.data.email === user.email && member.role === "manager") {
         setIsDelete(true);
       }
     });
