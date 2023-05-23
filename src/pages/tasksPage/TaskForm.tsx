@@ -286,6 +286,7 @@ const TaskForm = (props: ITaskForm) => {
             });
             setTasksList?.(newList);
           }
+
           showMessage(
             "success",
             changeMsgLanguage(res?.message, "Chỉnh sửa thành công"),

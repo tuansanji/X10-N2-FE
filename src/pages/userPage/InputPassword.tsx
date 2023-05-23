@@ -1,8 +1,8 @@
 import { IDataEdit } from "./UserDetails";
 import { EyeInvisibleOutlined, EyeTwoTone } from "@ant-design/icons";
-import { Input, InputRef } from "antd";
+import { Input } from "antd";
 import TextArea from "antd/es/input/TextArea";
-import React, { Dispatch, SetStateAction, useRef, useState } from "react";
+import React, { Dispatch, SetStateAction } from "react";
 import { useTranslation } from "react-i18next";
 interface IProp {
   currentPassword: string;
