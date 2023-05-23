@@ -206,6 +206,7 @@
 
     .task_deadline--content {
       @include flex(row, null, center, null, 8px);
+      border-radius: 8px;
       width: fit-content;
       padding: 2px 4px;
     }
