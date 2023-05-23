@@ -5,7 +5,7 @@ import { RootState } from "../../redux/store";
 import taskApi from "../../services/api/taskApi";
 import { BookOutlined, CloseOutlined, SearchOutlined } from "@ant-design/icons";
 import { Button, Input, InputRef, Menu, Select, Skeleton } from "antd";
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { memo, useEffect, useMemo, useRef, useState } from "react";
 import Highlighter from "react-highlight-words";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
@@ -189,7 +189,6 @@ const Sidebar = () => {
     >
       <div className="sidebar__title ">
         <h4>{t("title")}</h4>
-
         <div
           className={
             !statusMenu ? "btn btn_sidebar" : " btn btn_sidebar active"
@@ -324,7 +323,10 @@ const Sidebar = () => {
         <Input
           ref={inputSearchRef}
           style={{ display: "flex", gap: "6px" }}
-          onChange={(e) => setSearchValue(e.target.value)}
+          value={searchValue}
+          onChange={(e) => {
+            setSearchValue(e.target.value);
+          }}
           placeholder={t("sidebar:placeholder")}
           prefix={<BookOutlined />}
         />
