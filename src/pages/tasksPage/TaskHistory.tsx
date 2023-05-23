@@ -31,6 +31,7 @@ const TaskHistory: React.FC<IProps> = ({ taskCurrentId }) => {
   const [loading, setLoading] = useState(true);
   const [modalDetail, setModalDetail] = useState<boolean>(false);
   const [activityDetail, setActivityDetail] = useState<IActivities | any>(null);
+  const [width, setWidth] = useState(window.innerWidth);
 
   const params = useParams();
   const { t, i18n } = useTranslation(["content", "base"]);
@@ -136,7 +137,16 @@ const TaskHistory: React.FC<IProps> = ({ taskCurrentId }) => {
   const handleCancel = () => {
     setModalDetail(false);
   };
-
+  // phần xác định chiều rộng màn hình hiện tại để làm đóng mở sidebar
+  useEffect(() => {
+    const handleResize = () => {
+      setWidth(window.innerWidth);
+    };
+    window.addEventListener("resize", handleResize);
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
   return (
     <div className="task__history">
       <Modal
@@ -151,24 +161,25 @@ const TaskHistory: React.FC<IProps> = ({ taskCurrentId }) => {
         maskClosable={false}
         style={{ top: "50px", minHeight: "500px" }}
         footer={[]}
+        className="modal__activity--detail"
       >
         {activityDetail && (
           <>
             {activityDetail?.action?.actionType !== "comment" ? (
               <>
                 <Row key={uuid()}>
-                  <Col span={11}>
+                  <Col span={width < 700 ? 24 : 11}>
                     <strong className="title__activity">
                       {t("base:before")}
                     </strong>
                     <ActivityForm activity={activityDetail?.action?.from} />
                   </Col>
-                  <Col span={1}>
+                  <Col span={width < 700 ? 4 : 1}>
                     <div className="arrow__wrapper--2">
                       <div className="arrow-1"></div>
                     </div>
                   </Col>
-                  <Col span={11}>
+                  <Col span={width < 700 ? 24 : 12}>
                     <strong className="title__activity">
                       {t("base:after")}
                     </strong>
@@ -185,7 +196,12 @@ const TaskHistory: React.FC<IProps> = ({ taskCurrentId }) => {
                 />
                 <div className="comment-container">
                   <p className="title">
-                    {activityDetail?.userId?.fullName}
+                    {activityDetail?.userId?.fullName.length < 13
+                      ? activityDetail?.userId?.fullName
+                      : `${activityDetail?.userId?.fullName.substring(
+                          0,
+                          13
+                        )}...`}
                     <span>
                       {moment(
                         activityDetail?.action?.to?.comment?.createdDate

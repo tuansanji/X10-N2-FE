@@ -1,14 +1,19 @@
-import { IStages } from "./StagesPage";
-import { UseMessageApiReturnType } from "../../components/support/Message";
-import stageApi from "../../services/api/stageApi";
-import { changeMsgLanguage } from "../../utils/changeMsgLanguage";
-import { ProjectType } from "../projectPage/ProjectDetail";
-import { CloseOutlined, LoadingOutlined } from "@ant-design/icons";
-import dayjs from "dayjs";
-import "dayjs/locale/zh-cn";
-import { Dispatch, SetStateAction, useMemo, useState } from "react";
-import { useTranslation } from "react-i18next";
-import { useParams } from "react-router";
+import { IStages } from './StagesPage';
+import { UseMessageApiReturnType } from '../../components/support/Message';
+import stageApi from '../../services/api/stageApi';
+import { changeMsgLanguage } from '../../utils/changeMsgLanguage';
+import { ProjectType } from '../projectPage/ProjectDetail';
+import { CloseOutlined, LoadingOutlined } from '@ant-design/icons';
+import dayjs from 'dayjs';
+import 'dayjs/locale/zh-cn';
+import {
+  Dispatch,
+  SetStateAction,
+  useMemo,
+  useState
+  } from 'react';
+import { useTranslation } from 'react-i18next';
+import { useParams } from 'react-router';
 
 import {
   Breadcrumb,
@@ -62,7 +67,7 @@ const FormStages: React.FC<IForm> = ({
   const [form] = Form.useForm();
   const params = useParams();
   const [loading, setLoading] = useState(false);
-  const { t } = useTranslation(["content", "base"]);
+  const { t } = useTranslation(["content", "base", "message"]);
 
   // hàm xử lí form
   const onFinish = (stages: IStagesCreate) => {
@@ -146,20 +151,18 @@ const FormStages: React.FC<IForm> = ({
         startDate: dayjs(
           editStages?.stages && "startDate" in editStages.stages
             ? editStages.stages.startDate
-            : "",
-          "YYYY-MM-DD"
+            : ""
         ),
         endDateExpected: dayjs(
           editStages?.stages && "endDateExpected" in editStages.stages
             ? editStages.stages.endDateExpected
-            : "",
-          "YYYY-MM-DD"
+            : ""
         ),
         endDateActual:
           editStages?.stages &&
           "endDateActual" in editStages.stages &&
           editStages.stages.endDateActual
-            ? dayjs(editStages.stages.endDateActual, "YYYY-MM-DD")
+            ? dayjs(editStages.stages.endDateActual)
             : "",
       }
     : {};
@@ -175,6 +178,7 @@ const FormStages: React.FC<IForm> = ({
     ],
     [editStages]
   );
+
   return (
     <>
       <div className="modal">
@@ -211,7 +215,7 @@ const FormStages: React.FC<IForm> = ({
               rules={[
                 {
                   required: true,
-                  message: "Please input your stage name!",
+                  message: t("message:stage.Please input your stage name"),
                 },
               ]}
             >
@@ -226,7 +230,7 @@ const FormStages: React.FC<IForm> = ({
                   rules={[
                     {
                       required: true,
-                      message: " Please fill it out completely",
+                      message: t("message:stage.Please fill it out completely"),
                     },
                   ]}
                 >
@@ -250,7 +254,7 @@ const FormStages: React.FC<IForm> = ({
                   rules={[
                     {
                       required: true,
-                      message: " Please fill it out completely",
+                      message: t("message:stage.Please fill it out completely"),
                     },
                   ]}
                 >

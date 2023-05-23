@@ -3,12 +3,18 @@ import { useAppDispatch, useAppSelector } from "../../redux/hook";
 import { changeMenu } from "../../redux/slice/menuSlice";
 import { RootState } from "../../redux/store";
 import taskApi from "../../services/api/taskApi";
-import { BookOutlined, CloseOutlined, SearchOutlined } from "@ant-design/icons";
 import { Button, Input, InputRef, Menu, Select, Skeleton } from "antd";
 import React, { memo, useEffect, useMemo, useRef, useState } from "react";
 import Highlighter from "react-highlight-words";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
+import {
+  BookOutlined,
+  CloseOutlined,
+  LeftOutlined,
+  RightOutlined,
+  SearchOutlined,
+} from "@ant-design/icons";
 
 import type { MenuProps } from "antd";
 type MenuItem = Required<MenuProps>["items"][number];
@@ -70,6 +76,8 @@ const Sidebar = () => {
   const currentTaskId = useAppSelector((state: RootState) => state.menu.taskId);
 
   const [search, setSearch] = useState<boolean>(false);
+  const [width, setWidth] = useState(window.innerWidth);
+
   const [searchValue, setSearchValue] = useState<string>("");
   const [filterProject, setFilterProject] = useState<string>("all");
   const [filterType, setFilterType] = useState<string>("allType");
@@ -147,6 +155,11 @@ const Sidebar = () => {
         ?.map((task: ITaskData, index) =>
           getItem(
             <Link
+              onClick={() => {
+                if (width < 768) {
+                  !statusMenu && toggleCollapsed();
+                }
+              }}
               key={task._id}
               to={`/project/${task.project.id}/${task.stage.id}/${task._id}`}
             >
@@ -178,53 +191,55 @@ const Sidebar = () => {
   const handleChangeProject = (value: string) => {
     setFilterProject(value);
   };
+  // phần xác định chiều rộng màn hình hiện tại để làm đóng mở sidebar
+  useEffect(() => {
+    const handleResize = () => {
+      setWidth(window.innerWidth);
+    };
+    window.addEventListener("resize", handleResize);
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
+  useEffect(() => {
+    if (window.innerWidth < 768) {
+      !statusMenu && toggleCollapsed();
+    }
+  }, []);
 
   return (
     <aside
       className={`container_sidebar`}
       style={{
-        left: statusMenu ? "-324px" : "0px",
+        left: statusMenu
+          ? `${width && width > 768 ? "-324px" : `calc(-${width}px + 16px)`}`
+          : "0px",
+        // left: !statusMenu ? `calc(-100% + 16px)` : "0px",
         boxShadow: statusMenu ? "rgba(0, 0, 0, 0.4) 0px 0px 10px" : "none",
       }}
     >
       <div className="sidebar__title ">
         <h4>{t("title")}</h4>
         <div
-          className={
-            !statusMenu ? "btn btn_sidebar" : " btn btn_sidebar active"
-          }
+          className={!statusMenu ? "btn btn_sidebar" : "btn btn_sidebar active"}
           onClick={toggleCollapsed}
         >
           {!statusMenu ? (
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth={2}
-              stroke="currentColor"
-              className="w-6 h-6"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M15.75 19.5L8.25 12l7.5-7.5"
-              />
-            </svg>
+            <LeftOutlined
+              style={{
+                fontWeight: 600,
+                fontSize: "24px",
+                strokeWidth: "30",
+              }}
+            />
           ) : (
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth={1.5}
-              stroke="currentColor"
-              className="w-6 h-6 "
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M8.25 4.5l7.5 7.5-7.5 7.5"
-              />
-            </svg>
+            <RightOutlined
+              style={{
+                fontWeight: 600,
+                fontSize: "24px",
+                strokeWidth: "30",
+              }}
+            />
           )}
         </div>
       </div>
@@ -232,7 +247,7 @@ const Sidebar = () => {
         <div className="sidebar__action--select">
           <Select
             defaultValue="all"
-            style={{ width: 100 }}
+            style={{ width: width > 768 ? 100 : 120 }}
             dropdownStyle={{
               minWidth: "200px",
             }}
@@ -252,7 +267,7 @@ const Sidebar = () => {
           />{" "}
           <Select
             defaultValue="allType"
-            style={{ width: 100 }}
+            style={{ width: width > 768 ? 100 : 120 }}
             onChange={handleChangeStatus}
             dropdownStyle={{
               minWidth: "200px",

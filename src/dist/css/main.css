@@ -265,16 +265,18 @@ html {
   align-items: center;
   gap: 15px;
 }
-.header_auth-user .ant-typography {
+.header_auth-user .dropdown__user {
   text-overflow: ellipsis;
   overflow: hidden;
   white-space: nowrap;
   flex: 1;
   text-decoration: none;
   font-weight: 600;
+  cursor: pointer;
+}
+.header_auth-user .ant-typography {
   font-size: 16px;
   color: red;
-  cursor: pointer;
 }
 .header_auth-user .header__img {
   flex-shrink: 0;
@@ -289,25 +291,41 @@ html {
   object-fit: cover;
 }
 
+@media screen and (max-width: 767.98px) {
+  .app_header .header_logo {
+    width: auto;
+    align-items: center;
+    display: flex;
+    gap: 12px;
+    flex-shrink: 0;
+  }
+  .app_header .header_logo span {
+    font-size: 19px;
+  }
+  .app_header .header__img {
+    height: 30px;
+    width: 30px;
+  }
+  .app_header .header_auth-user {
+    font-size: 14px;
+  }
+}
 @media screen and (max-width: 470px) {
   .app_header {
     padding: 0 10px;
   }
-  .header_logo {
-    align-items: center;
-    display: flex;
-    gap: 12px;
-    width: 100px;
-    flex-shrink: 0;
+  .app_header .header_logo {
+    gap: 4px;
   }
-  .header_logo span {
-    font-size: 20px;
-  }
-  .header_auth {
+  .app_header .header_auth {
     padding-right: 0;
   }
-  /* .ant-menu.ant-menu-root.ant-menu-inline {
-    } */
+  .app_header .header_auth-user {
+    gap: 6px;
+  }
+  .app_header .header_auth-user > * {
+    font-size: 18px;
+  }
 }
 .loading_pages {
   position: fixed;
@@ -327,6 +345,11 @@ html {
   align-items: flex-start;
   position: relative;
   width: 100%;
+}
+@media only screen and (max-width: 480px) {
+  .comment_content {
+    padding: 0;
+  }
 }
 .comment_content img.img_user {
   position: relative;
@@ -420,6 +443,13 @@ html {
   padding: 15px;
   gap: 20px;
 }
+@media only screen and (max-width: 480px) {
+  .comments_container .comment_list-chat .comment_action {
+    gap: 10px;
+    padding-right: 4px;
+    padding-left: 10px;
+  }
+}
 .comments_container .comment_list-chat .btn_action {
   width: 100px;
   flex-shrink: 0;
@@ -427,12 +457,23 @@ html {
   align-items: center;
   justify-content: center;
 }
+@media only screen and (max-width: 480px) {
+  .comments_container .comment_list-chat .btn_action {
+    width: 62px;
+  }
+}
 
 .comment_list-chat .comment_action img.img_user {
   width: 50px;
   height: 50px;
   border-radius: 50%;
   box-shadow: rgba(0, 0, 0, 0.4) 0px 0px 10px;
+}
+@media only screen and (max-width: 480px) {
+  .comment_list-chat .comment_action img.img_user {
+    height: 40px;
+    width: 40px;
+  }
 }
 .comment_list-chat .comment_action img:not(.img_user) {
   max-height: 150px;
@@ -494,6 +535,7 @@ img.img-tiny {
   right: 8%;
   display: flex;
   align-items: center;
+  justify-content: center;
   top: 50%;
   transform: translateY(-50%);
   height: 24px;
@@ -565,16 +607,42 @@ img.img-tiny {
   gap: 20px;
 }
 
+@media screen and (max-width: 768px) {
+  .container_sidebar {
+    width: 100%;
+  }
+  .container_sidebar .btn_sidebar.active {
+    right: -2.5%;
+    background-color: #ccc;
+  }
+  .sidebar__action--select {
+    display: flex;
+    gap: 20px;
+  }
+}
+@media screen and (max-width: 400px) {
+  .container_sidebar .btn_sidebar.active {
+    right: -5%;
+    background-color: #ccc;
+  }
+}
 /* css trang danh sách project */
 .project_page-header {
   padding: 30px;
   display: flex;
+  flex-wrap: wrap;
 }
 @media only screen and (max-width: 768px) {
   .project_page-header {
-    flex-direction: column;
     gap: 12px;
     padding-bottom: 0;
+    padding-top: 0;
+  }
+}
+@media only screen and (max-width: 480px) {
+  .project_page-header {
+    gap: 12px;
+    padding: 0 10px;
   }
 }
 .project_page-header .header_left {
@@ -617,6 +685,11 @@ img.img-tiny {
   color: #1677ff;
 }
 
+@media screen and (max-width: 768px) {
+  .breadcrumb__project {
+    padding-left: 10px;
+  }
+}
 .tasks_page {
   padding: 32px 32px 0 32px;
   height: 100%;
@@ -783,6 +856,11 @@ img.img-tiny {
   padding: 50px 30px;
   margin: 0 auto;
 }
+@media only screen and (max-width: 480px) {
+  .task_info--container {
+    padding: 0;
+  }
+}
 
 .form_task .ant-form-item.css-dev-only-do-not-override-htwhyh {
   margin-bottom: 0;
@@ -805,13 +883,6 @@ img.img-tiny {
 .form_task td ul,
 .form_task td ol {
   list-style-position: inside;
-}
-
-.task__info--container .ant-tabs.ant-tabs-top.css-dev-only-do-not-override-htwhyh {
-  position: sticky;
-  top: 0;
-  background-color: #fff;
-  z-index: 10;
 }
 
 .task_info .task_description {
@@ -857,14 +928,30 @@ img.img-tiny {
   max-height: 70vh;
   overflow-y: auto;
 }
+@media only screen and (max-width: 768px) {
+  .task__history--main {
+    width: 100%;
+  }
+}
 .task__history .title {
   font-weight: 700;
+}
+@media only screen and (max-width: 480px) {
+  .task__history .title {
+    font-size: 16px;
+  }
 }
 .task__history .history__des {
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 40px;
+}
+@media only screen and (max-width: 600px) {
+  .task__history .history__des {
+    flex-direction: column;
+    gap: 7px;
+  }
 }
 .task__history .history__des .fields__change {
   flex: 1;
@@ -884,6 +971,16 @@ img.img-tiny {
   flex-shrink: 0;
   justify-content: space-between;
 }
+@media only screen and (max-width: 900px) {
+  .task__history .history__user {
+    width: 300px;
+  }
+}
+@media only screen and (max-width: 600px) {
+  .task__history .history__user {
+    width: 100%;
+  }
+}
 .task__history .history__user p {
   color: #505f79;
   font-weight: 500;
@@ -891,10 +988,20 @@ img.img-tiny {
   letter-spacing: -0.006em;
   line-height: 1.42857143;
 }
+@media only screen and (max-width: 600px) {
+  .task__history .history__user p {
+    font-size: 14px;
+  }
+}
 .task__history .history__user time {
   font-size: 14px;
   color: #505f79;
   font-weight: 400;
+}
+@media only screen and (max-width: 600px) {
+  .task__history .history__user time {
+    font-size: 12px;
+  }
 }
 .task__history .history__status {
   max-width: 400px;
@@ -902,6 +1009,11 @@ img.img-tiny {
   display: flex;
   align-items: center;
   justify-content: space-between;
+}
+@media only screen and (max-width: 600px) {
+  .task__history .history__status {
+    width: 100%;
+  }
 }
 .task__history .history__status .comment {
   padding-right: 50px;
@@ -923,6 +1035,11 @@ img.img-tiny {
   width: 20%;
   display: flex;
   justify-content: center;
+}
+@media only screen and (max-width: 480px) {
+  .task__history .history__status .arrow__wrapper button {
+    font-size: 13px;
+  }
 }
 .task__history .history__status .arrow__wrapper .arrow-1 {
   width: 50%;
@@ -978,6 +1095,13 @@ img.img-tiny {
   position: relative;
   top: -9px;
   min-height: 30px;
+}
+@media only screen and (max-width: 480px) {
+  .action__btn {
+    flex-direction: column;
+    gap: 11px;
+    align-items: flex-start;
+  }
 }
 .action__btn .task__action--form {
   display: flex;
@@ -1054,6 +1178,31 @@ img.img-tiny {
   border: 4px solid rgba(5, 5, 5, 0.06);
 }
 
+.task__info--container .ant-tabs.ant-tabs-top.css-dev-only-do-not-override-htwhyh {
+  position: sticky;
+  top: 0;
+  background-color: #fff;
+  z-index: 10;
+}
+
+@media only screen and (max-width: 900px) {
+  .task__modal__responsive {
+    width: 90% !important;
+    overflow-y: auto;
+  }
+  .task__modal__responsive .ant-descriptions-item-label,
+  .task__modal__responsive .ant-descriptions-item-content {
+    font-size: 12px;
+    padding: 10px !important;
+  }
+}
+
+@media only screen and (max-width: 1024px) {
+  .modal__activity--detail {
+    width: 95% !important;
+  }
+}
+
 .stages_page .pagination {
   display: flex;
   justify-content: center;
@@ -1084,12 +1233,38 @@ img.img-tiny {
   align-items: center;
   box-shadow: rgba(0, 0, 0, 0.4) 0px 0px 10px;
 }
+@media only screen and (max-width: 768px) {
+  .stages_page .modal .form {
+    width: 90%;
+    padding: 40px 20px 50px;
+  }
+  .stages_page .modal .form h3 {
+    margin-bottom: 0;
+  }
+}
+
+@media only screen and (max-width: 500px) {
+  .responsive-modal {
+    width: 90% !important;
+  }
+}
 
 .stage__review {
   cursor: pointer;
   display: flex;
   gap: 30px;
   flex-direction: column;
+}
+@media only screen and (max-width: 500px) {
+  .stage__review {
+    gap: 20px;
+  }
+  .stage__review .comment_content {
+    padding: 0;
+  }
+  .stage__review .comment-container {
+    padding: 6px 10px;
+  }
 }
 .stage__review .load__more {
   font-weight: 600;
@@ -1109,6 +1284,11 @@ img.img-tiny {
   flex: 1;
   text-align: center;
 }
+@media only screen and (max-width: 500px) {
+  .stage__review--header h2 {
+    font-size: 19px;
+  }
+}
 .stage__review--content {
   box-shadow: rgba(0, 0, 0, 0.4) 0px -1px 0px;
 }
@@ -1117,6 +1297,11 @@ img.img-tiny {
   width: 100%;
   height: 500px;
   overflow-y: auto;
+}
+@media only screen and (max-width: 500px) {
+  .stage__review--content .review__list--comment {
+    padding-top: 15px;
+  }
 }
 
 @keyframes opacity {
