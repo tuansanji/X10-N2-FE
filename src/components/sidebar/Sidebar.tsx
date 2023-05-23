@@ -5,7 +5,7 @@ import { RootState } from "../../redux/store";
 import taskApi from "../../services/api/taskApi";
 import { BookOutlined, CloseOutlined, SearchOutlined } from "@ant-design/icons";
 import { Button, Input, InputRef, Menu, Select, Skeleton } from "antd";
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { memo, useEffect, useMemo, useRef, useState } from "react";
 import Highlighter from "react-highlight-words";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
@@ -61,7 +61,7 @@ interface ITaskData extends ITask {
 const Sidebar = () => {
   const dispatch = useAppDispatch();
   const { t } = useTranslation(["sidebar", "base", "content"]);
-  const inputRef = useRef<InputRef>(null);
+  const inputSearchRef = useRef<InputRef>(null);
 
   const statusMenu = useAppSelector((state: RootState) => state.menu?.status);
   const reloadSidebar = useAppSelector(
@@ -189,7 +189,6 @@ const Sidebar = () => {
     >
       <div className="sidebar__title ">
         <h4>{t("title")}</h4>
-
         <div
           className={
             !statusMenu ? "btn btn_sidebar" : " btn btn_sidebar active"
@@ -304,8 +303,8 @@ const Sidebar = () => {
             onClick={() => {
               setSearch(!search);
 
-              inputRef.current &&
-                inputRef.current!.focus({
+              inputSearchRef.current &&
+                inputSearchRef.current!.focus({
                   cursor: "start",
                 });
             }}
@@ -322,9 +321,12 @@ const Sidebar = () => {
         }}
       >
         <Input
-          ref={inputRef}
+          ref={inputSearchRef}
           style={{ display: "flex", gap: "6px" }}
-          onChange={(e) => setSearchValue(e.target.value)}
+          value={searchValue}
+          onChange={(e) => {
+            setSearchValue(e.target.value);
+          }}
           placeholder={t("sidebar:placeholder")}
           prefix={<BookOutlined />}
         />

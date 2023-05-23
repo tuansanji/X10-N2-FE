@@ -200,6 +200,7 @@ const UserDetails = () => {
   };
   //tắt modal
   const handleCancel = () => {
+    setCurrentPassword("");
     setOpen(false);
     setModalImage(false);
     setImagePreview(null);
@@ -226,7 +227,6 @@ const UserDetails = () => {
 
   return isLoading && !userInfo ? (
     <div style={{ paddingTop: "30px" }}>
-      {" "}
       <Skeleton active />
     </div>
   ) : (
@@ -340,6 +340,7 @@ const UserDetails = () => {
         <div style={{ padding: "13px 0" }}>
           {fieldUserEdit.field === "dob" && (
             <DatePicker
+              autoComplete="off"
               style={{ width: "50%" }}
               value={dayjs(fieldUserEdit?.data || userInfo?.dob)}
               onChange={handleChangeDay}

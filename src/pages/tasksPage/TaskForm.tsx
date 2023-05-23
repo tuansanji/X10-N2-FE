@@ -266,9 +266,19 @@ const TaskForm = (props: ITaskForm) => {
       taskApi
         .editTask(taskCurrent._id, task)
         .then((res: any) => {
+          if (res?.message === "No changes were made") {
+            showMessage(
+              "success",
+              changeMsgLanguage(res?.message, "Bạn chưa thay đổi gì"),
+              2
+            );
+            setEdit?.(false);
+            setStatusForm(false);
+            return;
+          }
           if (tasksList) {
             let newList = tasksList.map((task: TasksType) => {
-              if (task._id === res.task._id) {
+              if (task?._id === res?.task?._id) {
                 return res.task;
               } else {
                 return task;
@@ -276,6 +286,7 @@ const TaskForm = (props: ITaskForm) => {
             });
             setTasksList?.(newList);
           }
+
           showMessage(
             "success",
             changeMsgLanguage(res?.message, "Chỉnh sửa thành công"),
@@ -288,6 +299,7 @@ const TaskForm = (props: ITaskForm) => {
           setCountReloadTasks((prev) => prev + 1);
         })
         .catch((err) => {
+          console.log(err);
           showMessage(
             "error",
             changeMsgLanguage(err.response.data?.message, "Chỉnh sửa thất bại"),

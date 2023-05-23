@@ -97,7 +97,14 @@ const TaskHistory: React.FC<IProps> = ({ taskCurrentId }) => {
                   <div className="history__status">
                     <div className="fields__change">
                       {Object.keys(step?.action?.to)
-                        .filter((item) => item !== "assignee")
+                        .filter((item, index) => {
+                          if (
+                            step?.action?.to?.assignee ===
+                            step?.action?.from?.assignee
+                          ) {
+                            return item !== "assignee";
+                          } else return true;
+                        })
                         .map((activity, index) => (
                           <span key={index}>
                             {index !== 0 && ", "}
