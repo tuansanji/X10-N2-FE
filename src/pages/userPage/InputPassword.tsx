@@ -73,6 +73,8 @@ const InputPassword = ({ currentPassword, setCurrentPassword }: IProp) => {
 
       {/* input thực tế */}
       <Input.Password
+        autoFocus={true}
+        value={currentPassword}
         onChange={(e) => {
           const value = e.target.value;
           if (

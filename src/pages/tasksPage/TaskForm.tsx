@@ -116,6 +116,7 @@ const TaskForm = (props: ITaskForm) => {
     tasksList,
     setTasksList,
   } = props;
+  const [width, setWidth] = useState(window.innerWidth);
   const [description, setDescription] = useState<string>("");
   const [reloadData, setReloadData] = useState<number>(1);
   const [loading, setLoading] = useState<boolean>(true);
@@ -127,6 +128,7 @@ const TaskForm = (props: ITaskForm) => {
     stages: "",
     task: "",
   });
+
   const params = useParams();
   const [form] = Form.useForm();
   const user = useAppSelector((state: RootState) => state.auth?.userInfo);
@@ -383,7 +385,16 @@ const TaskForm = (props: ITaskForm) => {
       form.setFieldsValue(initialValues);
     }
   }, [initialValues, currentUser]);
-
+  // phần xác định chiều rộng màn hình hiện tại để làm đóng mở sidebar
+  useEffect(() => {
+    const handleResize = () => {
+      setWidth(window.innerWidth);
+    };
+    window.addEventListener("resize", handleResize);
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
   return loadingAll ? (
     <Skeleton active />
   ) : (
@@ -446,7 +457,7 @@ const TaskForm = (props: ITaskForm) => {
         <Descriptions
           title={title}
           bordered
-          column={2}
+          column={width < 600 && !taskInfo.status ? 1 : 2}
           labelStyle={{
             width: "15%",
             textAlign: "start",

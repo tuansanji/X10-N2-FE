@@ -114,6 +114,11 @@
       @include maxWidth($mobile-width) {
         width: 62px;
       }
+      button {
+        @include maxWidth($mobile-width) {
+          width: 100%;
+        }
+      }
       width: 100px;
       flex-shrink: 0;
       display: flex;
