@@ -25,24 +25,12 @@ import TaskForm from "../tasksPage/TaskForm";
 import TaskHistory from "../tasksPage/TaskHistory";
 import { useTranslation } from "react-i18next";
 import { NoticeType } from "antd/es/message/interface";
-import {
-  DoubleRightOutlined,
-  DownOutlined,
-  PauseOutlined,
-  SearchOutlined,
-  SortAscendingOutlined,
-  UpOutlined,
-} from "@ant-design/icons";
+import { SearchOutlined, SortAscendingOutlined } from "@ant-design/icons";
 import { setPriority } from "../../utils/setPriority";
 import { CheckboxValueType } from "antd/es/checkbox/Group";
 import { CheckboxChangeEvent } from "antd/es/checkbox";
 import { useAppDispatch, useAppSelector } from "../../redux/hook";
-import {
-  deleteQuery,
-  deleteSubQuery,
-  setQuery,
-} from "../../redux/slice/paramsSlice";
-import axios from "axios";
+import { deleteSubQuery, setQuery } from "../../redux/slice/paramsSlice";
 import taskApi from "../../services/api/taskApi";
 
 const { Title, Text } = Typography;
@@ -68,14 +56,6 @@ interface TasksTableData {
   title: string;
 }
 
-const prioList: any = {
-  highest: 5,
-  high: 4,
-  medium: 3,
-  low: 2,
-  lowest: 1,
-};
-
 const TasksList: React.FC<TasksListPropsType> = ({
   tasksList,
   showMessage,
@@ -94,9 +74,6 @@ const TasksList: React.FC<TasksListPropsType> = ({
   const [checkAll, setCheckAll] = useState<boolean>(false);
   const [indeterminate, setIndeterminate] = useState<boolean>(true);
   const [filterStatus, setFilterStatus] = useState<any[]>([]);
-  const [prioSort, setPrioSort] = useState<boolean>(false);
-  const [deadlineSort, setDeadlineSort] = useState<boolean>(false);
-  const [sortValue, setSortValue] = useState<string>("");
   const queryParams = useAppSelector((state: any) => state.queryParams);
   const [tableLoading, setTableLoading] = useState<boolean>(false);
 
@@ -120,20 +97,19 @@ const TasksList: React.FC<TasksListPropsType> = ({
     dispatch(
       setQuery({
         ...queryParams,
-        pageParams: { ...queryParams.pageParams, status: filter },
+        taskTableParams: { ...queryParams.taskTableParams, status: filter },
       })
     );
   };
 
   const handleStatusFilter = (list: CheckboxValueType[]) => {
-    console.log("Tasks Status:", list);
     setFilterStatus(list);
     setIndeterminate(!!list.length && list.length < plainOptions.length);
     setCheckAll(list.length === plainOptions.length);
     dispatch(
       setQuery({
         ...queryParams,
-        pageParams: { ...queryParams.pageParams, status: list },
+        taskTableParams: { ...queryParams.taskTableParams, status: list },
       })
     );
   };
@@ -144,13 +120,13 @@ const TasksList: React.FC<TasksListPropsType> = ({
     let value = event.target.value;
     if (value === "") {
       dispatch(
-        deleteSubQuery({ firstLevel: "pageParams", secondLevel: "title" })
+        deleteSubQuery({ firstLevel: "taskTableParams", secondLevel: "title" })
       );
     } else {
       dispatch(
         setQuery({
           ...queryParams,
-          pageParams: { ...queryParams.pageParams, title: value },
+          taskTableParams: { ...queryParams.taskTableParams, title: value },
         })
       );
     }
@@ -161,7 +137,7 @@ const TasksList: React.FC<TasksListPropsType> = ({
     dispatch(
       setQuery({
         ...queryParams,
-        pageParams: { ...queryParams.pageParams, assignee: value },
+        taskTableParams: { ...queryParams.taskTableParams, assignee: value },
       })
     );
   };
@@ -169,12 +145,12 @@ const TasksList: React.FC<TasksListPropsType> = ({
 
   //Xử lý event khi sort dữ liệu
   const handleSortPrio = () => {
-    let sortValue = queryParams.pageParams.sort;
+    let sortValue = queryParams.taskTableParams.sort;
     if (sortValue === "prioAsc") {
       dispatch(
         setQuery({
           ...queryParams,
-          pageParams: { ...queryParams.pageParams, sort: "prioDesc" },
+          taskTableParams: { ...queryParams.taskTableParams, sort: "prioDesc" },
         })
       );
       return;
@@ -182,7 +158,7 @@ const TasksList: React.FC<TasksListPropsType> = ({
       dispatch(
         setQuery({
           ...queryParams,
-          pageParams: { ...queryParams.pageParams, sort: "prioAsc" },
+          taskTableParams: { ...queryParams.taskTableParams, sort: "prioAsc" },
         })
       );
       return;
@@ -190,7 +166,7 @@ const TasksList: React.FC<TasksListPropsType> = ({
       dispatch(
         setQuery({
           ...queryParams,
-          pageParams: { ...queryParams.pageParams, sort: "prioDesc" },
+          taskTableParams: { ...queryParams.taskTableParams, sort: "prioDesc" },
         })
       );
       return;
@@ -198,19 +174,25 @@ const TasksList: React.FC<TasksListPropsType> = ({
   };
 
   const handleSortDeadline = () => {
-    let sortValue = queryParams.pageParams.sort;
+    let sortValue = queryParams.taskTableParams.sort;
     if (sortValue === "deadlineAsc") {
       dispatch(
         setQuery({
           ...queryParams,
-          pageParams: { ...queryParams.pageParams, sort: "deadlineDesc" },
+          taskTableParams: {
+            ...queryParams.taskTableParams,
+            sort: "deadlineDesc",
+          },
         })
       );
     } else if (sortValue === "deadlineDesc") {
       dispatch(
         setQuery({
           ...queryParams,
-          pageParams: { ...queryParams.pageParams, sort: "deadlineAsc" },
+          taskTableParams: {
+            ...queryParams.taskTableParams,
+            sort: "deadlineAsc",
+          },
         })
       );
       return;
@@ -218,7 +200,10 @@ const TasksList: React.FC<TasksListPropsType> = ({
       dispatch(
         setQuery({
           ...queryParams,
-          pageParams: { ...queryParams.pageParams, sort: "deadlineDesc" },
+          taskTableParams: {
+            ...queryParams.taskTableParams,
+            sort: "deadlineDesc",
+          },
         })
       );
       return;
@@ -228,7 +213,7 @@ const TasksList: React.FC<TasksListPropsType> = ({
 
   //Xử lý event khi chuyển trang
   const handlePageChange = async (page: number, pageSize: number) => {
-    const { total, ...rest } = queryParams.pageParams;
+    const { total, ...rest } = queryParams.taskTableParams;
     setTableLoading(true);
     taskApi
       .getTasksByUser({ ...rest, page })
@@ -237,7 +222,11 @@ const TasksList: React.FC<TasksListPropsType> = ({
         dispatch(
           setQuery({
             ...queryParams,
-            pageParams: { ...queryParams.pageParams, page, total: res.total },
+            taskTableParams: {
+              ...queryParams.taskTableParams,
+              page,
+              total: res.total,
+            },
           })
         );
         setTableLoading(false);
@@ -251,8 +240,8 @@ const TasksList: React.FC<TasksListPropsType> = ({
 
   // Gọi API khi filter, sort
   useEffect(() => {
-    if (queryParams.pageParams) {
-      const { total, page, ...rest } = queryParams.pageParams;
+    if (queryParams.taskTableParams) {
+      const { total, page, ...rest } = queryParams.taskTableParams;
       setTableLoading(true);
       taskApi
         .getTasksByUser(rest)
@@ -262,8 +251,8 @@ const TasksList: React.FC<TasksListPropsType> = ({
           dispatch(
             setQuery({
               ...queryParams,
-              pageParams: {
-                ...queryParams.pageParams,
+              taskTableParams: {
+                ...queryParams.taskTableParams,
                 total: res.total,
                 page: res.currentPage,
               },
@@ -276,15 +265,17 @@ const TasksList: React.FC<TasksListPropsType> = ({
           setTableLoading(false);
         });
     }
-  }, [queryParams.pageParams?.status, queryParams.pageParams?.sort]);
+  }, [queryParams.taskTableParams?.status, queryParams.taskTableParams?.sort]);
 
+  //Gọi API khi search tên task, assignee
   useEffect(() => {
-    if (queryParams.pageParams) {
-      console.log("Title:", queryParams.pageParams.title);
-      console.log("Assignee:", queryParams.pageParams.assignee);
-      const { total, ...rest } = queryParams.pageParams;
+    if (queryParams.taskTableParams) {
+      const { total, page, ...rest } = queryParams.taskTableParams;
       timeOutRef.current = setTimeout(() => {
-        if (queryParams.pageParams.title || queryParams.pageParams.assignee) {
+        if (
+          queryParams.taskTableParams.title ||
+          queryParams.taskTableParams.assignee
+        ) {
           setTableLoading(true);
           taskApi
             .getTasksByUser(rest)
@@ -294,8 +285,8 @@ const TasksList: React.FC<TasksListPropsType> = ({
               dispatch(
                 setQuery({
                   ...queryParams,
-                  pageParams: {
-                    ...queryParams.pageParams,
+                  taskTableParams: {
+                    ...queryParams.taskTableParams,
                     total: res.total,
                     page: res.currentPage,
                   },
@@ -313,7 +304,10 @@ const TasksList: React.FC<TasksListPropsType> = ({
     return () => {
       clearTimeout(timeOutRef.current);
     };
-  }, [queryParams.pageParams?.title, queryParams.pageParams?.assignee]);
+  }, [
+    queryParams.taskTableParams?.title,
+    queryParams.taskTableParams?.assignee,
+  ]);
 
   const showTaskDetail = (record: TasksTableData) => {
     let filteredTask = tasksList.filter((task: TasksType) => {
@@ -394,7 +388,7 @@ const TasksList: React.FC<TasksListPropsType> = ({
       filterDropdown: () => (
         <div style={{ padding: 8 }} onKeyDown={(e) => e.stopPropagation()}>
           <Search
-            value={queryParams.pageParams?.title}
+            value={queryParams.taskTableParams?.title}
             allowClear
             placeholder="Search Tasks"
             onChange={handleSearchTasks}
@@ -528,7 +522,7 @@ const TasksList: React.FC<TasksListPropsType> = ({
       filterDropdown: () => (
         <div style={{ padding: 8 }} onKeyDown={(e) => e.stopPropagation()}>
           <Search
-            value={queryParams.pageParams?.assignee || ""}
+            value={queryParams.taskTableParams?.assignee || ""}
             allowClear
             placeholder="Search Assignee"
             onChange={handleSearchAssignee}
@@ -662,8 +656,8 @@ const TasksList: React.FC<TasksListPropsType> = ({
           pagination={{
             position: ["bottomCenter"],
             pageSize: 10,
-            total: queryParams.pageParams?.total,
-            current: queryParams.pageParams?.page,
+            total: queryParams.taskTableParams?.total,
+            current: queryParams.taskTableParams?.page,
             onChange: handlePageChange,
           }}
         />

@@ -28,7 +28,6 @@ import ProjectsList from "./ProjectsList";
 import taskApi from "../../services/api/taskApi";
 import TasksList from "./TasksList";
 import { useTranslation } from "react-i18next";
-import { FilterValue } from "antd/es/table/interface";
 import { setQuery } from "../../redux/slice/paramsSlice";
 
 const { Title } = Typography;
@@ -79,7 +78,6 @@ const Dashboard: React.FC = () => {
   const [projectPagination, setProjectPagination] = useState<PageType>({
     pageIndex: 1,
     total: null as unknown as number,
-    initialTotal: null as unknown as number,
   });
   const queryParams = useAppSelector((state: any) => state.queryParams);
 
@@ -98,7 +96,6 @@ const Dashboard: React.FC = () => {
           ...projectPagination,
           total: res.data.total,
           pageIndex: res.data.currentPage,
-          initialTotal: res.data.total,
         });
       } catch (error) {
         dispatch(getAllProjectError());
@@ -116,7 +113,7 @@ const Dashboard: React.FC = () => {
         dispatch(
           setQuery({
             ...queryParams,
-            pageParams: {
+            taskTableParams: {
               total: res.total,
               page: res.currentPage,
               sort: "deadlineDesc",

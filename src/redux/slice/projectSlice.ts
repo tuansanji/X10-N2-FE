@@ -31,6 +31,7 @@ export const projectSlice = createSlice({
       state.error = false;
     },
     getAllProjectError: (state) => {
+      
       state.isFetching = false;
       state.error = true;
     },

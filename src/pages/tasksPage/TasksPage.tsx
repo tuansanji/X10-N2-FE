@@ -16,10 +16,6 @@ import { Link, useParams, useSearchParams } from "react-router-dom";
 import * as Scroll from "react-scroll";
 import {
   ClockCircleOutlined,
-  DoubleRightOutlined,
-  DownOutlined,
-  UpOutlined,
-  PauseOutlined,
   LoadingOutlined,
   SearchOutlined,
   DownloadOutlined,
@@ -182,7 +178,6 @@ const TasksPage = () => {
   const [allTasks, setAllTasks] = useState<ITask[]>([]);
   const { t, i18n } = useTranslation(["content", "base"]);
   const [tasksColumns, setTasksColumns] = useState<ColumnData[]>([]);
-  const [dragLoading, setDragLoading] = useState<boolean>(false);
   const [historyOrForm, setHistoryOrForm] = useState<boolean>(false);
   const [breadcrumb, setBreadcrumb] = useState({
     project: "",
@@ -194,7 +189,7 @@ const TasksPage = () => {
   const [countReloadTasks, setCountReloadTasks] = useState<number>(1);
   const [edit, setEdit] = useState<boolean>(false);
   const [tasksURL, setTasksURL] = useState<any>();
-
+  const token = useAppSelector((state: RootState) => state.auth.userInfo.token);
   const { responseData, isLoading } = useAxios(
     "get",
     `/project/members/all/${params.projectId}`,

@@ -11,10 +11,9 @@ import {
   Tooltip,
   Typography,
   Input,
-  Modal,
   Checkbox,
 } from "antd";
-import { ColumnsType, TableProps } from "antd/es/table";
+import { ColumnsType } from "antd/es/table";
 import axios from "axios";
 import React, {
   Dispatch,
@@ -34,17 +33,15 @@ import projectApi from "../../services/api/projectApi";
 import {
   deleteProject,
   getAllProjectError,
-  getAllProjectStart,
   getAllProjectSuccess,
 } from "../../redux/slice/projectSlice";
 import { NoticeType } from "antd/es/message/interface";
 import { useTranslation } from "react-i18next";
 import { changeMsgLanguage } from "../../utils/changeMsgLanguage";
-import useIsBoss from "../../hooks/useIsBoss";
-import { PageType, UserInfo } from "./Dashboard";
+import { PageType } from "./Dashboard";
 import { useDispatch } from "react-redux";
-import { SorterResult } from "antd/es/table/interface";
 import { CheckboxValueType } from "antd/es/checkbox/Group";
+import { setQuery } from "../../redux/slice/paramsSlice";
 
 const { Text } = Typography;
 const { Search } = Input;
@@ -84,12 +81,10 @@ const Action: React.FC<DeleteConfirmPropsType> = ({
   setSearchResult,
 }) => {
   const [confirmLoading, setConfirmLoading] = useState<boolean>(false);
-  const [open, setOpen] = useState<boolean>(false);
   const [isEdit, setIsEdit] = useState<boolean>(false);
   const [isDelete, setIsDelete] = useState<boolean>(false);
   const user = useAppSelector((state: RootState) => state.auth.userInfo);
-  const { t, i18n } = useTranslation(["content", "base"]);
-
+  const { t } = useTranslation(["content", "base"]);
   const dispatch = useAppDispatch();
 
   //Chỉ Leader và manager mới thực hiện được edit/delete
@@ -175,16 +170,16 @@ const ProjectsList: React.FC<ProjectsListType> = ({
 }) => {
   const dispatch = useDispatch();
   const [loadingSearch, setLoadingSearch] = useState<boolean>(false);
-  const [searchText, setSearchText] = useState("");
   const timeOutRef = useRef<any>(null);
   const token = useAppSelector((state: RootState) => state.auth.userInfo.token);
   const [searchResult, setSearchResult] = useState<any[]>([]);
   const { showMessage, contextHolder }: UseMessageApiReturnType =
     useMessageApi();
-  const { t, i18n } = useTranslation(["content", "base"]);
+  const { t } = useTranslation(["content", "base"]);
   const [filterValue, setFilterValue] = useState<CheckboxValueType[]>([]);
   const [checkAll, setCheckAll] = useState<boolean>(false);
   const [indeterminate, setIndeterminate] = useState<boolean>(true);
+  const queryParams = useAppSelector((state: any) => state.queryParams);
 
   const plainOptions = [
     {
@@ -205,74 +200,97 @@ const ProjectsList: React.FC<ProjectsListType> = ({
     },
   ];
 
+  //Xử lý event khi click filter status
   const selectFilter = async (status: CheckboxValueType[]) => {
     setIndeterminate(!!status.length && status.length < plainOptions.length);
     setFilterValue(status);
     setCheckAll(status.length === plainOptions.length);
-    setLoadingSearch(true);
-    if (status && status.length > 0) {
-      try {
-        const response = await axios({
-          method: "get",
-          url: `${process.env.REACT_APP_BACKEND_URL}/project/search`,
-          params: {
-            status,
-          },
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setSearchResult(response.data.projects);
-        setProjectPagination({
-          ...projectPagination,
-          total: response.data.total,
-          pageIndex: response.data.currentPage,
-        });
-        setLoadingSearch(false);
-      } catch (err: any) {
-        showMessage("error", err.response.data?.message, 2);
-        setLoadingSearch(false);
-      }
-    } else if (status.length === 0) {
-      setSearchResult(listProject.projects);
-      setProjectPagination({
-        ...projectPagination,
-        total: projectPagination.initialTotal as number,
-        pageIndex: 1,
-      });
-      setLoadingSearch(false);
-    }
+    dispatch(
+      setQuery({
+        ...queryParams,
+        projectTableParams: {
+          ...queryParams.projectTableParams,
+          status,
+        },
+      })
+    );
   };
 
   const onCheckAllChange = async (e: any) => {
-    if (e.target.checked) {
-      setFilterValue(plainOptions.map((option: any) => option.value));
-    } else {
-      setFilterValue([]);
-    }
-    setSearchResult(listProject.projects);
+    let filter = e.target.check
+      ? plainOptions.map((option: any) => option.value)
+      : [];
+    setFilterValue(filter);
     setIndeterminate(false);
     setCheckAll(e.target.checked);
-    setProjectPagination({
-      ...projectPagination,
-      total: projectPagination.initialTotal as number,
-      pageIndex: 1,
-    });
+    dispatch(
+      setQuery({
+        ...queryParams,
+        projectTableParams: {
+          ...queryParams.projectTableParams,
+          status: filter,
+        },
+      })
+    );
   };
+  //Kết thúc xử lý
 
-  //Gọi api search project name
+  //handle search input
+  const handleSearchProject = (event: any) => {
+    let value = event.target.value;
+    dispatch(
+      setQuery({
+        ...queryParams,
+        projectTableParams: {
+          ...queryParams.projectTableParams,
+          name: value,
+        },
+      })
+    );
+  };
+  //Kết thúc xử lý
+
+  //Gọi API khi filter status thay đổi
   useEffect(() => {
-    const searchProject = async () => {
-      if (searchText) {
+    const filterProject = async () => {
+      if (queryParams.projectTableParams) {
         setLoadingSearch(true);
         try {
           const response = await axios({
             method: "get",
             url: `${process.env.REACT_APP_BACKEND_URL}/project/search`,
-            params: {
-              name: searchText,
-            },
+            params: queryParams.projectTableParams,
             headers: { Authorization: `Bearer ${token}` },
           });
-          setSearchResult(response.data.projects);
+          dispatch(getAllProjectSuccess(response.data));
+          setProjectPagination({
+            ...projectPagination,
+            total: response.data.total,
+            pageIndex: response.data.currentPage,
+          });
+          setLoadingSearch(false);
+        } catch (err: any) {
+          showMessage("error", err.response.data?.message, 2);
+          setLoadingSearch(false);
+        }
+      }
+    };
+    filterProject();
+  }, [queryParams.projectTableParams?.status]);
+
+  //Gọi api search project name
+  useEffect(() => {
+    const searchProject = async () => {
+      if (queryParams.projectTableParams?.name) {
+        setLoadingSearch(true);
+        try {
+          const response = await axios({
+            method: "get",
+            url: `${process.env.REACT_APP_BACKEND_URL}/project/search`,
+            params: queryParams.projectTableParams,
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          dispatch(getAllProjectSuccess(response.data));
           setProjectPagination({
             ...projectPagination,
             total: response.data.total,
@@ -289,21 +307,31 @@ const ProjectsList: React.FC<ProjectsListType> = ({
     return () => {
       clearTimeout(timeOutRef.current);
     };
-  }, [searchText]);
+  }, [queryParams.projectTableParams?.name]);
 
-  //handle search input
-  const handleSearchProject = (event: any) => {
-    if (event.target.value === "") {
-      setSearchResult(listProject.projects);
+  const handlePageChange = async (page: number) => {
+    setLoadingSearch(true);
+    try {
+      const response = await axios({
+        method: "get",
+        url: `${process.env.REACT_APP_BACKEND_URL}/project/search`,
+        headers: { Authorization: `Bearer ${token}` },
+        params: { ...queryParams.projectTableParams, page },
+      });
+      dispatch(getAllProjectSuccess(response.data));
+      setLoadingSearch(false);
       setProjectPagination({
         ...projectPagination,
-        total: projectPagination.initialTotal as number,
-        pageIndex: 1,
+        total: response.data.total,
+        pageIndex: response.data.currentPage,
       });
+    } catch (err: any) {
+      showMessage("error", err.response.data?.message, 2);
+      setLoadingSearch(false);
     }
-    setSearchText(event.target.value);
   };
 
+  //Truyền Project Info khi click vào project
   const handleEditProject = (record: ProjectsDataType) => {
     let projectDetail = listProject.projects.filter((project: any) => {
       return project._id === record.key;
@@ -311,31 +339,6 @@ const ProjectsList: React.FC<ProjectsListType> = ({
     setProjectDetail(projectDetail[0]);
     setOpenEditProject(true);
   };
-
-  const handlePageChange = async (page: number) => {
-    // console.log("Search Value:", searchText);
-    // console.log("Filter Value:", filterValue);
-    // console.log("Pagination:", projectPagination);
-    // dispatch(getAllProjectStart());
-    // try {
-    //   const res = await axios({
-    //     method: "get",
-    //     url: `${process.env.REACT_APP_BACKEND_URL}/project/all`,
-    //     headers: { Authorization: `Bearer ${token}` },
-    //     params: { page, limit: 10 },
-    //   });
-    //   dispatch(getAllProjectSuccess(res.data));
-    //   setProjectPagination({
-    //     ...projectPagination,
-    //     total: res.data.total,
-    //     pageIndex: res.data.currentPage,
-    //   });
-    // } catch (error) {
-    //   dispatch(getAllProjectError());
-    // }
-  };
-
-  //Gọi api khi chuyển page, filter
 
   const columns: ColumnsType<ProjectsDataType> = [
     {
@@ -361,7 +364,7 @@ const ProjectsList: React.FC<ProjectsListType> = ({
         <div style={{ padding: 8 }} onKeyDown={(e) => e.stopPropagation()}>
           <Search
             allowClear
-            value={searchText}
+            value={queryParams.projectTableParams?.name}
             placeholder="Search Project"
             onChange={handleSearchProject}
           />
@@ -461,23 +464,7 @@ const ProjectsList: React.FC<ProjectsListType> = ({
 
   const data: ProjectsDataType[] = useMemo(() => {
     let newProject: ProjectsDataType[] = [];
-    if (searchResult && searchResult.length > 0) {
-      newProject = [
-        ...searchResult.map((project: any, index: number) => {
-          return {
-            key: project._id,
-            name: project.name,
-            status: project.status,
-            members: project.members,
-          };
-        }),
-      ];
-    } else if (
-      searchResult.length === 0 &&
-      (searchText || filterValue.length > 0)
-    ) {
-      newProject = [];
-    } else if (listProject.projects && listProject.projects.length > 0) {
+    if (listProject.projects && listProject.projects.length > 0) {
       newProject = [
         ...listProject.projects.map((project: any) => {
           return {
@@ -492,7 +479,7 @@ const ProjectsList: React.FC<ProjectsListType> = ({
       newProject = [];
     }
     return newProject;
-  }, [listProject, searchResult]);
+  }, [listProject]);
 
   return (
     <>
