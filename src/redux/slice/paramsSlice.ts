@@ -13,9 +13,13 @@ export const queryParamsSlice = createSlice({
     deleteQuery: (state, action) => {
       delete state[action.payload];
     },
+    deleteSubQuery: (state, action) => {
+      delete state[action.payload.firstLevel][action.payload.secondLevel];
+    },
   },
 });
 
-export const { setQuery, deleteQuery } = queryParamsSlice.actions;
+export const { setQuery, deleteQuery, deleteSubQuery } =
+  queryParamsSlice.actions;
 
 export default queryParamsSlice.reducer;

@@ -52,6 +52,26 @@
         cursor: pointer;
         color: #1677ff;
       }
+      .table_header_container {
+        @include flex(row, space-between, center);
+        .icon_container {
+          @include flex(row, center, center);
+          cursor: pointer;
+          height: 24px;
+          width: 24px;
+        }
+      }
+      .table_header_filter {
+        @include flex(column);
+      }
     }
+  }
+}
+
+.table_filter_dropdown {
+  @include flex(column);
+  padding: 8px 4px;
+  .ant-checkbox-wrapper {
+    margin-inline-start: 8px;
   }
 }

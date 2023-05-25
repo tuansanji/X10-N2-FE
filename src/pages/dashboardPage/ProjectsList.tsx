@@ -12,8 +12,9 @@ import {
   Typography,
   Input,
   Modal,
+  Checkbox,
 } from "antd";
-import { ColumnsType } from "antd/es/table";
+import { ColumnsType, TableProps } from "antd/es/table";
 import axios from "axios";
 import React, {
   Dispatch,
@@ -30,12 +31,20 @@ import useMessageApi, {
 import { useAppDispatch, useAppSelector } from "../../redux/hook";
 import { RootState } from "../../redux/store";
 import projectApi from "../../services/api/projectApi";
-import { deleteProject } from "../../redux/slice/projectSlice";
+import {
+  deleteProject,
+  getAllProjectError,
+  getAllProjectStart,
+  getAllProjectSuccess,
+} from "../../redux/slice/projectSlice";
 import { NoticeType } from "antd/es/message/interface";
 import { useTranslation } from "react-i18next";
 import { changeMsgLanguage } from "../../utils/changeMsgLanguage";
 import useIsBoss from "../../hooks/useIsBoss";
-import { UserInfo } from "./Dashboard";
+import { PageType, UserInfo } from "./Dashboard";
+import { useDispatch } from "react-redux";
+import { SorterResult } from "antd/es/table/interface";
+import { CheckboxValueType } from "antd/es/checkbox/Group";
 
 const { Text } = Typography;
 const { Search } = Input;
@@ -44,6 +53,8 @@ interface ProjectsListType {
   listProject: any;
   setProjectDetail: Dispatch<any>;
   setOpenEditProject: Dispatch<SetStateAction<boolean>>;
+  projectPagination: PageType;
+  setProjectPagination: Dispatch<SetStateAction<PageType>>;
 }
 
 interface ProjectsDataType {
@@ -57,12 +68,20 @@ interface DeleteConfirmPropsType {
   record: ProjectsDataType;
   showMessage: (type: NoticeType, content: string, duration?: number) => void;
   handleEditProject: (record: ProjectsDataType) => void;
+  projectPagination: PageType;
+  setProjectPagination: Dispatch<SetStateAction<PageType>>;
+  searchResult: any[];
+  setSearchResult: Dispatch<SetStateAction<any[]>>;
 }
 
 const Action: React.FC<DeleteConfirmPropsType> = ({
   record,
   showMessage,
   handleEditProject,
+  projectPagination,
+  setProjectPagination,
+  searchResult,
+  setSearchResult,
 }) => {
   const [confirmLoading, setConfirmLoading] = useState<boolean>(false);
   const [open, setOpen] = useState<boolean>(false);
@@ -70,14 +89,12 @@ const Action: React.FC<DeleteConfirmPropsType> = ({
   const [isDelete, setIsDelete] = useState<boolean>(false);
   const user = useAppSelector((state: RootState) => state.auth.userInfo);
   const { t, i18n } = useTranslation(["content", "base"]);
+
   const dispatch = useAppDispatch();
-  console.log("user:", user);
-  console.log("Record:", record);
-  console.log("Is Edit:", isEdit);
-  console.log("Is Delete:", isDelete);
+
   //Chỉ Leader và manager mới thực hiện được edit/delete
   useEffect(() => {
-    record.members.forEach((member: any) => {
+    record?.members?.forEach((member: any) => {
       if (
         member.data.email === user.email &&
         member.role !== "member" &&
@@ -100,7 +117,18 @@ const Action: React.FC<DeleteConfirmPropsType> = ({
           changeMsgLanguage(res?.message, "Xóa thành công"),
           2
         );
+        if (searchResult && searchResult.length > 0) {
+          const newResult = searchResult.filter((item: any) => {
+            return item._id !== project.key;
+          });
+          setSearchResult(newResult);
+        }
         dispatch(deleteProject(project));
+        setProjectPagination?.({
+          total: (projectPagination?.total as number) - 1,
+          initialTotal: (projectPagination?.initialTotal as number) - 1,
+          pageIndex: projectPagination?.pageIndex as number,
+        });
         setConfirmLoading(false);
       })
       .catch((err: any) => {
@@ -142,7 +170,10 @@ const ProjectsList: React.FC<ProjectsListType> = ({
   listProject,
   setProjectDetail,
   setOpenEditProject,
+  projectPagination,
+  setProjectPagination,
 }) => {
+  const dispatch = useDispatch();
   const [loadingSearch, setLoadingSearch] = useState<boolean>(false);
   const [searchText, setSearchText] = useState("");
   const timeOutRef = useRef<any>(null);
@@ -151,7 +182,81 @@ const ProjectsList: React.FC<ProjectsListType> = ({
   const { showMessage, contextHolder }: UseMessageApiReturnType =
     useMessageApi();
   const { t, i18n } = useTranslation(["content", "base"]);
-  const [validateAction, setValidateAction] = useState<boolean>(false);
+  const [filterValue, setFilterValue] = useState<CheckboxValueType[]>([]);
+  const [checkAll, setCheckAll] = useState<boolean>(false);
+  const [indeterminate, setIndeterminate] = useState<boolean>(true);
+
+  const plainOptions = [
+    {
+      label: "Preparing",
+      value: "preparing",
+    },
+    {
+      label: "On Going",
+      value: "ongoing",
+    },
+    {
+      label: "Completed",
+      value: "completed",
+    },
+    {
+      label: "Suspended",
+      value: "suspended",
+    },
+  ];
+
+  const selectFilter = async (status: CheckboxValueType[]) => {
+    setIndeterminate(!!status.length && status.length < plainOptions.length);
+    setFilterValue(status);
+    setCheckAll(status.length === plainOptions.length);
+    setLoadingSearch(true);
+    if (status && status.length > 0) {
+      try {
+        const response = await axios({
+          method: "get",
+          url: `${process.env.REACT_APP_BACKEND_URL}/project/search`,
+          params: {
+            status,
+          },
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setSearchResult(response.data.projects);
+        setProjectPagination({
+          ...projectPagination,
+          total: response.data.total,
+          pageIndex: response.data.currentPage,
+        });
+        setLoadingSearch(false);
+      } catch (err: any) {
+        showMessage("error", err.response.data?.message, 2);
+        setLoadingSearch(false);
+      }
+    } else if (status.length === 0) {
+      setSearchResult(listProject.projects);
+      setProjectPagination({
+        ...projectPagination,
+        total: projectPagination.initialTotal as number,
+        pageIndex: 1,
+      });
+      setLoadingSearch(false);
+    }
+  };
+
+  const onCheckAllChange = async (e: any) => {
+    if (e.target.checked) {
+      setFilterValue(plainOptions.map((option: any) => option.value));
+    } else {
+      setFilterValue([]);
+    }
+    setSearchResult(listProject.projects);
+    setIndeterminate(false);
+    setCheckAll(e.target.checked);
+    setProjectPagination({
+      ...projectPagination,
+      total: projectPagination.initialTotal as number,
+      pageIndex: 1,
+    });
+  };
 
   //Gọi api search project name
   useEffect(() => {
@@ -168,6 +273,11 @@ const ProjectsList: React.FC<ProjectsListType> = ({
             headers: { Authorization: `Bearer ${token}` },
           });
           setSearchResult(response.data.projects);
+          setProjectPagination({
+            ...projectPagination,
+            total: response.data.total,
+            pageIndex: response.data.currentPage,
+          });
           setLoadingSearch(false);
         } catch (err: any) {
           showMessage("error", err.response.data?.message, 2);
@@ -184,7 +294,12 @@ const ProjectsList: React.FC<ProjectsListType> = ({
   //handle search input
   const handleSearchProject = (event: any) => {
     if (event.target.value === "") {
-      setSearchResult([]);
+      setSearchResult(listProject.projects);
+      setProjectPagination({
+        ...projectPagination,
+        total: projectPagination.initialTotal as number,
+        pageIndex: 1,
+      });
     }
     setSearchText(event.target.value);
   };
@@ -197,6 +312,31 @@ const ProjectsList: React.FC<ProjectsListType> = ({
     setOpenEditProject(true);
   };
 
+  const handlePageChange = async (page: number) => {
+    // console.log("Search Value:", searchText);
+    // console.log("Filter Value:", filterValue);
+    // console.log("Pagination:", projectPagination);
+    // dispatch(getAllProjectStart());
+    // try {
+    //   const res = await axios({
+    //     method: "get",
+    //     url: `${process.env.REACT_APP_BACKEND_URL}/project/all`,
+    //     headers: { Authorization: `Bearer ${token}` },
+    //     params: { page, limit: 10 },
+    //   });
+    //   dispatch(getAllProjectSuccess(res.data));
+    //   setProjectPagination({
+    //     ...projectPagination,
+    //     total: res.data.total,
+    //     pageIndex: res.data.currentPage,
+    //   });
+    // } catch (error) {
+    //   dispatch(getAllProjectError());
+    // }
+  };
+
+  //Gọi api khi chuyển page, filter
+
   const columns: ColumnsType<ProjectsDataType> = [
     {
       title: `${t("content:name")}`,
@@ -208,6 +348,10 @@ const ProjectsList: React.FC<ProjectsListType> = ({
             record={record}
             showMessage={showMessage}
             handleEditProject={handleEditProject}
+            projectPagination={projectPagination}
+            setProjectPagination={setProjectPagination}
+            searchResult={searchResult}
+            setSearchResult={setSearchResult}
           />
         );
       },
@@ -216,7 +360,6 @@ const ProjectsList: React.FC<ProjectsListType> = ({
       filterDropdown: () => (
         <div style={{ padding: 8 }} onKeyDown={(e) => e.stopPropagation()}>
           <Search
-            loading={loadingSearch}
             allowClear
             value={searchText}
             placeholder="Search Project"
@@ -235,7 +378,23 @@ const ProjectsList: React.FC<ProjectsListType> = ({
         { text: "Completed", value: "completed" },
         { text: "Suspended", value: "suspended" },
       ],
-      onFilter: (value: any, record) => record.status.indexOf(value) === 0,
+      filterDropdown: () => (
+        <div className="table_filter_dropdown">
+          <Checkbox
+            checked={checkAll}
+            onChange={onCheckAllChange}
+            indeterminate={indeterminate}
+          >
+            All
+          </Checkbox>
+          <Checkbox.Group
+            style={{ display: "flex", flexDirection: "column" }}
+            options={plainOptions}
+            onChange={selectFilter}
+            value={filterValue}
+          />
+        </div>
+      ),
       render: (_, { status }) => {
         let bgColor: string = "";
         switch (status) {
@@ -301,30 +460,37 @@ const ProjectsList: React.FC<ProjectsListType> = ({
   ];
 
   const data: ProjectsDataType[] = useMemo(() => {
-    let newProject =
-      searchResult && searchResult.length > 0
-        ? [
-            ...searchResult.map((project: any, index: number) => {
-              return {
-                key: project._id,
-                name: project.name,
-                status: project.status,
-                members: project.members,
-              };
-            }),
-          ]
-        : listProject.projects && listProject.projects.length > 0
-        ? [
-            ...listProject.projects.map((project: any) => {
-              return {
-                key: project._id,
-                name: project.name,
-                status: project.status,
-                members: project.members,
-              };
-            }),
-          ]
-        : [];
+    let newProject: ProjectsDataType[] = [];
+    if (searchResult && searchResult.length > 0) {
+      newProject = [
+        ...searchResult.map((project: any, index: number) => {
+          return {
+            key: project._id,
+            name: project.name,
+            status: project.status,
+            members: project.members,
+          };
+        }),
+      ];
+    } else if (
+      searchResult.length === 0 &&
+      (searchText || filterValue.length > 0)
+    ) {
+      newProject = [];
+    } else if (listProject.projects && listProject.projects.length > 0) {
+      newProject = [
+        ...listProject.projects.map((project: any) => {
+          return {
+            key: project._id,
+            name: project.name,
+            status: project.status,
+            members: project.members,
+          };
+        }),
+      ];
+    } else {
+      newProject = [];
+    }
     return newProject;
   }, [listProject, searchResult]);
 
@@ -335,9 +501,14 @@ const ProjectsList: React.FC<ProjectsListType> = ({
         <Table
           columns={columns}
           dataSource={data}
+          loading={loadingSearch}
           bordered
           pagination={{
-            position: listProject.projects.length >= 10 ? ["bottomCenter"] : [],
+            position: ["bottomCenter"],
+            total: projectPagination.total,
+            pageSize: 10,
+            current: projectPagination.pageIndex,
+            onChange: handlePageChange,
           }}
         />
       </div>

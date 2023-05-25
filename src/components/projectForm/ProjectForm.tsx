@@ -3,7 +3,13 @@ import { addNewProject, editProject } from "../../redux/slice/projectSlice";
 import axios from "axios";
 import dayjs from "dayjs";
 import _ from "lodash";
-import React, { Dispatch, useEffect, useMemo, useState } from "react";
+import React, {
+  Dispatch,
+  SetStateAction,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import { useSelector, useDispatch } from "react-redux";
 import useMessageApi, { UseMessageApiReturnType } from "../support/Message";
 import {
@@ -19,6 +25,7 @@ import {
 } from "antd";
 import { useTranslation } from "react-i18next";
 import { changeMsgLanguage } from "../../utils/changeMsgLanguage";
+import { PageType } from "../../pages/dashboardPage/Dashboard";
 
 const { Title } = Typography;
 const { TextArea } = Input;
@@ -28,12 +35,22 @@ interface PropsType {
   useCase: "create" | "edit" | "info";
   data?: object;
   key?: any;
-  closeModal?: React.Dispatch<React.SetStateAction<boolean>>;
+  closeModal: React.Dispatch<React.SetStateAction<boolean>>;
   projectDetail?: any;
   setProjectDetail?: Dispatch<any>;
+  projectPagination?: PageType;
+  setProjectPagination?: Dispatch<SetStateAction<PageType>>;
 }
 
-const ProjectForm: React.FC<PropsType> = (props) => {
+const ProjectForm: React.FC<PropsType> = ({
+  title,
+  useCase,
+  closeModal,
+  projectDetail,
+  setProjectDetail,
+  projectPagination,
+  setProjectPagination,
+}) => {
   const [form] = Form.useForm();
   const dispatch = useDispatch();
   const token = useSelector((state: any) => state.auth.userInfo.token);
@@ -52,17 +69,17 @@ const ProjectForm: React.FC<PropsType> = (props) => {
   ];
 
   const initialValue = useMemo(() => {
-    return (
-      props.projectDetail && {
-        name: props.projectDetail?.name,
-        status: props.projectDetail?.status.toUpperCase(),
-        startDate: dayjs(props.projectDetail?.startDate),
-        estimatedEndDate: dayjs(props.projectDetail?.estimatedEndDate),
-        code: props.projectDetail?.code,
-        description: props.projectDetail?.description,
-      }
-    );
-  }, [props.projectDetail]);
+    return projectDetail
+      ? {
+          name: projectDetail?.name,
+          status: projectDetail?.status.toUpperCase(),
+          startDate: dayjs(projectDetail?.startDate),
+          estimatedEndDate: dayjs(projectDetail?.estimatedEndDate),
+          code: projectDetail?.code,
+          description: projectDetail?.description,
+        }
+      : {};
+  }, [projectDetail]);
 
   useEffect(() => {
     form.resetFields();
@@ -84,11 +101,16 @@ const ProjectForm: React.FC<PropsType> = (props) => {
           changeMsgLanguage(response.data?.message, "Tạo mới thành công"),
           2
         );
+        setProjectPagination?.({
+          total: (projectPagination?.total as number) + 1,
+          initialTotal: (projectPagination?.initialTotal as number) + 1,
+          pageIndex: projectPagination?.pageIndex as number,
+        });
         setIsLoading(false);
-        if (props.closeModal) {
-          props.closeModal(false);
-          form.resetFields();
-        }
+        setStartDate("");
+        setEndDate("");
+        form.resetFields();
+        closeModal(false);
       }
     } catch (err: any) {
       showMessage(
@@ -96,6 +118,7 @@ const ProjectForm: React.FC<PropsType> = (props) => {
         changeMsgLanguage(err.response.data?.message, "Tạo mới thất bại"),
         2
       );
+      form.resetFields();
       setIsLoading(false);
     }
   };
@@ -105,7 +128,7 @@ const ProjectForm: React.FC<PropsType> = (props) => {
     try {
       setIsLoading(true);
       const response = await axios.post(
-        `${process.env.REACT_APP_BACKEND_URL}/project/update/${props.projectDetail._id}`,
+        `${process.env.REACT_APP_BACKEND_URL}/project/update/${projectDetail._id}`,
         { ...data },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -116,8 +139,8 @@ const ProjectForm: React.FC<PropsType> = (props) => {
         2
       );
       setIsLoading(false);
-      if (props.closeModal) {
-        props.closeModal(false);
+      if (closeModal) {
+        closeModal(false);
       }
     } catch (err: any) {
       showMessage(
@@ -130,7 +153,7 @@ const ProjectForm: React.FC<PropsType> = (props) => {
   };
 
   const handleSubmit = (value: any) => {
-    if (props.useCase === "create") {
+    if (useCase === "create") {
       handleCreate(value);
     } else {
       handleEdit(value);
@@ -140,9 +163,8 @@ const ProjectForm: React.FC<PropsType> = (props) => {
   return (
     <div className="project-form">
       {contextHolder}
-      <Title level={3}>{props.title}</Title>
+      <Title level={3}>{title}</Title>
       <Form
-        disabled={props.useCase === "info" ? true : false}
         initialValues={initialValue}
         size="large"
         layout="vertical"
@@ -165,7 +187,7 @@ const ProjectForm: React.FC<PropsType> = (props) => {
         </Form.Item>
 
         {/* Code Name and Status Field: Chỉ hiển thị khi show Info và Edit */}
-        <Form.Item hidden={props.useCase === "create" && true}>
+        <Form.Item hidden={useCase === "create" && true}>
           <Row>
             <Col span={11}>
               <Form.Item
@@ -233,12 +255,12 @@ const ProjectForm: React.FC<PropsType> = (props) => {
         </Row>
 
         {/* Submit Buttons Field */}
-        <Form.Item hidden={props.useCase !== "create" && true}>
+        <Form.Item hidden={useCase !== "create" && true}>
           <Button type="primary" htmlType="submit">
             {isLoading && <LoadingOutlined />} Create Project
           </Button>
         </Form.Item>
-        <Form.Item hidden={props.useCase !== "edit" && true}>
+        <Form.Item hidden={useCase !== "edit" && true}>
           <Button type="primary" htmlType="submit">
             {isLoading && <LoadingOutlined />} Confirm Edit
           </Button>

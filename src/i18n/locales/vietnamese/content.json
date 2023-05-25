@@ -85,7 +85,6 @@
   },
   "task": {
     "jobCode": "Tự động tạo",
-
     "includes": "Nhiệm vụ không tồn tại",
     "activity": "Hoạt động",
     "update": "cập nhật",
@@ -95,7 +94,9 @@
     "create": "tạo",
     "cancel": "hủy bỏ",
     "type": "Loại công việc",
-    "task name": "Tên công việc"
+    "task name": "Tên công việc",
+    "export": "Tải xuống danh sách",
+    "import": "Tải danh sách lên"
   },
   "member": {
     "add member": "Thêm thành viên",

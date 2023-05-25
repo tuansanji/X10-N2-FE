@@ -1,8 +1,24 @@
-import { Button, Modal, Table, Tabs, TabsProps, Typography } from "antd";
+import {
+  Button,
+  Checkbox,
+  Input,
+  Modal,
+  Table,
+  Tabs,
+  TabsProps,
+  Typography,
+} from "antd";
 import { ColumnsType } from "antd/es/table";
 import moment from "moment";
 import _ from "lodash";
-import React, { Dispatch, SetStateAction, useMemo, useState } from "react";
+import React, {
+  Dispatch,
+  SetStateAction,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { TasksType, UserInfo } from "./Dashboard";
 import TaskInfo from "../tasksPage/TaskInfo";
 import TaskForm from "../tasksPage/TaskForm";
@@ -13,11 +29,24 @@ import {
   DoubleRightOutlined,
   DownOutlined,
   PauseOutlined,
+  SearchOutlined,
+  SortAscendingOutlined,
   UpOutlined,
 } from "@ant-design/icons";
 import { setPriority } from "../../utils/setPriority";
+import { CheckboxValueType } from "antd/es/checkbox/Group";
+import { CheckboxChangeEvent } from "antd/es/checkbox";
+import { useAppDispatch, useAppSelector } from "../../redux/hook";
+import {
+  deleteQuery,
+  deleteSubQuery,
+  setQuery,
+} from "../../redux/slice/paramsSlice";
+import axios from "axios";
+import taskApi from "../../services/api/taskApi";
 
 const { Title, Text } = Typography;
+const { Search } = Input;
 
 interface TasksListPropsType {
   tasksList: TasksType[];
@@ -52,6 +81,8 @@ const TasksList: React.FC<TasksListPropsType> = ({
   showMessage,
   setTasksList,
 }) => {
+  const dispatch = useAppDispatch();
+  const timeOutRef = useRef<any>(null);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [statusForm, setStatusForm] = useState<boolean>(false);
   const [edit, setEdit] = useState<boolean>(false);
@@ -60,6 +91,229 @@ const TasksList: React.FC<TasksListPropsType> = ({
   const [historyOrForm, setHistoryOrForm] = useState<boolean>(false);
   const [countReloadTasks, setCountReloadTasks] = useState<number>(1);
   const { t, i18n } = useTranslation(["content", "base"]);
+  const [checkAll, setCheckAll] = useState<boolean>(false);
+  const [indeterminate, setIndeterminate] = useState<boolean>(true);
+  const [filterStatus, setFilterStatus] = useState<any[]>([]);
+  const [prioSort, setPrioSort] = useState<boolean>(false);
+  const [deadlineSort, setDeadlineSort] = useState<boolean>(false);
+  const [sortValue, setSortValue] = useState<string>("");
+  const queryParams = useAppSelector((state: any) => state.queryParams);
+  const [tableLoading, setTableLoading] = useState<boolean>(false);
+
+  const plainOptions = [
+    { label: "Open", value: "open" },
+    { label: "In Progress", value: "inprogress" },
+    { label: "Review", value: "review" },
+    { label: "Re-Open", value: "reopen" },
+    { label: "Done", value: "done" },
+    { label: "Cancel", value: "cancel" },
+  ];
+
+  //Xử lý event khi click filter status
+  const onCheckAllChange = (e: CheckboxChangeEvent) => {
+    let filter = e.target.checked
+      ? plainOptions.map((option: any) => option.value)
+      : [];
+    setFilterStatus(filter);
+    setIndeterminate(false);
+    setCheckAll(e.target.checked);
+    dispatch(
+      setQuery({
+        ...queryParams,
+        pageParams: { ...queryParams.pageParams, status: filter },
+      })
+    );
+  };
+
+  const handleStatusFilter = (list: CheckboxValueType[]) => {
+    console.log("Tasks Status:", list);
+    setFilterStatus(list);
+    setIndeterminate(!!list.length && list.length < plainOptions.length);
+    setCheckAll(list.length === plainOptions.length);
+    dispatch(
+      setQuery({
+        ...queryParams,
+        pageParams: { ...queryParams.pageParams, status: list },
+      })
+    );
+  };
+  //Kết thúc xử lý
+
+  //Xử lý event khi search tên tasks và assignee
+  const handleSearchTasks = (event: any) => {
+    let value = event.target.value;
+    if (value === "") {
+      dispatch(
+        deleteSubQuery({ firstLevel: "pageParams", secondLevel: "title" })
+      );
+    } else {
+      dispatch(
+        setQuery({
+          ...queryParams,
+          pageParams: { ...queryParams.pageParams, title: value },
+        })
+      );
+    }
+  };
+
+  const handleSearchAssignee = (event: any) => {
+    let value = event.target.value;
+    dispatch(
+      setQuery({
+        ...queryParams,
+        pageParams: { ...queryParams.pageParams, assignee: value },
+      })
+    );
+  };
+  //kết thúc xử lý
+
+  //Xử lý event khi sort dữ liệu
+  const handleSortPrio = () => {
+    let sortValue = queryParams.pageParams.sort;
+    if (sortValue === "prioAsc") {
+      dispatch(
+        setQuery({
+          ...queryParams,
+          pageParams: { ...queryParams.pageParams, sort: "prioDesc" },
+        })
+      );
+      return;
+    } else if (sortValue === "prioDesc") {
+      dispatch(
+        setQuery({
+          ...queryParams,
+          pageParams: { ...queryParams.pageParams, sort: "prioAsc" },
+        })
+      );
+      return;
+    } else {
+      dispatch(
+        setQuery({
+          ...queryParams,
+          pageParams: { ...queryParams.pageParams, sort: "prioDesc" },
+        })
+      );
+      return;
+    }
+  };
+
+  const handleSortDeadline = () => {
+    let sortValue = queryParams.pageParams.sort;
+    if (sortValue === "deadlineAsc") {
+      dispatch(
+        setQuery({
+          ...queryParams,
+          pageParams: { ...queryParams.pageParams, sort: "deadlineDesc" },
+        })
+      );
+    } else if (sortValue === "deadlineDesc") {
+      dispatch(
+        setQuery({
+          ...queryParams,
+          pageParams: { ...queryParams.pageParams, sort: "deadlineAsc" },
+        })
+      );
+      return;
+    } else {
+      dispatch(
+        setQuery({
+          ...queryParams,
+          pageParams: { ...queryParams.pageParams, sort: "deadlineDesc" },
+        })
+      );
+      return;
+    }
+  };
+  //kết thúc xử lý
+
+  //Xử lý event khi chuyển trang
+  const handlePageChange = async (page: number, pageSize: number) => {
+    const { total, ...rest } = queryParams.pageParams;
+    setTableLoading(true);
+    taskApi
+      .getTasksByUser({ ...rest, page })
+      .then((res: any) => {
+        setTasksList(res.tasks);
+        dispatch(
+          setQuery({
+            ...queryParams,
+            pageParams: { ...queryParams.pageParams, page, total: res.total },
+          })
+        );
+        setTableLoading(false);
+      })
+      .catch((err: any) => {
+        setTasksList([]);
+        showMessage("error", err.response.data?.message, 2);
+        setTableLoading(false);
+      });
+  };
+
+  // Gọi API khi filter, sort
+  useEffect(() => {
+    if (queryParams.pageParams) {
+      const { total, page, ...rest } = queryParams.pageParams;
+      setTableLoading(true);
+      taskApi
+        .getTasksByUser(rest)
+        .then((res: any) => {
+          setTasksList(res.tasks);
+          setTableLoading(false);
+          dispatch(
+            setQuery({
+              ...queryParams,
+              pageParams: {
+                ...queryParams.pageParams,
+                total: res.total,
+                page: res.currentPage,
+              },
+            })
+          );
+        })
+        .catch((err: any) => {
+          setTasksList([]);
+          showMessage("error", err.response.data?.message, 2);
+          setTableLoading(false);
+        });
+    }
+  }, [queryParams.pageParams?.status, queryParams.pageParams?.sort]);
+
+  useEffect(() => {
+    if (queryParams.pageParams) {
+      console.log("Title:", queryParams.pageParams.title);
+      console.log("Assignee:", queryParams.pageParams.assignee);
+      const { total, ...rest } = queryParams.pageParams;
+      timeOutRef.current = setTimeout(() => {
+        if (queryParams.pageParams.title || queryParams.pageParams.assignee) {
+          setTableLoading(true);
+          taskApi
+            .getTasksByUser(rest)
+            .then((res: any) => {
+              setTasksList(res.tasks);
+              setTableLoading(false);
+              dispatch(
+                setQuery({
+                  ...queryParams,
+                  pageParams: {
+                    ...queryParams.pageParams,
+                    total: res.total,
+                    page: res.currentPage,
+                  },
+                })
+              );
+            })
+            .catch((err: any) => {
+              setTasksList([]);
+              showMessage("error", err.response.data?.message, 2);
+              setTableLoading(false);
+            });
+        }
+      }, 500);
+    }
+    return () => {
+      clearTimeout(timeOutRef.current);
+    };
+  }, [queryParams.pageParams?.title, queryParams.pageParams?.assignee]);
 
   const showTaskDetail = (record: TasksTableData) => {
     let filteredTask = tasksList.filter((task: TasksType) => {
@@ -137,6 +391,17 @@ const TasksList: React.FC<TasksListPropsType> = ({
         );
       },
       width: "16%",
+      filterDropdown: () => (
+        <div style={{ padding: 8 }} onKeyDown={(e) => e.stopPropagation()}>
+          <Search
+            value={queryParams.pageParams?.title}
+            allowClear
+            placeholder="Search Tasks"
+            onChange={handleSearchTasks}
+          />
+        </div>
+      ),
+      filterIcon: <SearchOutlined />,
     },
     {
       title: `${t("content:form.status")}`,
@@ -188,11 +453,37 @@ const TasksList: React.FC<TasksListPropsType> = ({
         { text: "Done", value: "done" },
         { text: "Cancel", value: "cancel" },
       ],
-      onFilter: (value: any, record) => record.status.indexOf(value) === 0,
+      filterDropdown: () => (
+        <div
+          className="table_filter_dropdown"
+          onKeyDown={(e) => e.stopPropagation()}
+        >
+          <Checkbox
+            checked={checkAll}
+            onChange={onCheckAllChange}
+            indeterminate={indeterminate}
+          >
+            All
+          </Checkbox>
+          <Checkbox.Group
+            style={{ display: "flex", flexDirection: "column" }}
+            options={plainOptions}
+            onChange={handleStatusFilter}
+            value={filterStatus}
+          />
+        </div>
+      ),
       width: "16%",
     },
     {
-      title: `${t("content:form.priority")}`,
+      title: (
+        <div className="table_header_container">
+          {`${t("content:form.priority")}`}
+          <div className="icon_container" onClick={handleSortPrio}>
+            <SortAscendingOutlined />
+          </div>
+        </div>
+      ),
       dataIndex: "priority",
       key: "priority",
       render: (text, record: TasksTableData) => {
@@ -204,13 +495,17 @@ const TasksList: React.FC<TasksListPropsType> = ({
           </div>
         );
       },
-      sorter: (a, b) => {
-        return prioList[a.priority] - prioList[b.priority];
-      },
       width: "16%",
     },
     {
-      title: `${t("content:form.deadline")}`,
+      title: (
+        <div className="table_header_container">
+          {`${t("content:form.deadline")}`}
+          <div className="icon_container" onClick={handleSortDeadline}>
+            <SortAscendingOutlined />
+          </div>
+        </div>
+      ),
       dataIndex: "deadline",
       key: "deadline",
       render: (_, record: TasksTableData) => {
@@ -219,12 +514,6 @@ const TasksList: React.FC<TasksListPropsType> = ({
             {moment(record.deadline).format("DD/MM/YYYY")}
           </Title>
         );
-      },
-      defaultSortOrder: "descend",
-      sorter: (a, b) => {
-        let d1 = Number(new Date(a.deadline));
-        let d2 = Number(new Date(b.deadline));
-        return d2 - d1;
       },
       width: "16%",
     },
@@ -236,6 +525,17 @@ const TasksList: React.FC<TasksListPropsType> = ({
         return <Title level={5}>{record.assignee?.fullName}</Title>;
       },
       width: "16%",
+      filterDropdown: () => (
+        <div style={{ padding: 8 }} onKeyDown={(e) => e.stopPropagation()}>
+          <Search
+            value={queryParams.pageParams?.assignee || ""}
+            allowClear
+            placeholder="Search Assignee"
+            onChange={handleSearchAssignee}
+          />
+        </div>
+      ),
+      filterIcon: <SearchOutlined />,
     },
   ];
   const data: TasksTableData[] = useMemo(() => {
@@ -355,11 +655,16 @@ const TasksList: React.FC<TasksListPropsType> = ({
           )}
         </Modal>
         <Table
+          loading={tableLoading}
           bordered
           dataSource={data}
           columns={columns}
           pagination={{
-            position: tasksList.length >= 10 ? ["bottomCenter"] : [],
+            position: ["bottomCenter"],
+            pageSize: 10,
+            total: queryParams.pageParams?.total,
+            current: queryParams.pageParams?.page,
+            onChange: handlePageChange,
           }}
         />
       </div>

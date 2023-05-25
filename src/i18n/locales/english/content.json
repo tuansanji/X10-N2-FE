@@ -94,7 +94,9 @@
     "create": "create",
     "cancel": "cancel",
     "type": "Type",
-    "task name": "Task Name"
+    "task name": "Task Name",
+    "export": "Export tasks",
+    "import": "Import tasks"
   },
   "member": {
     "add member": "Add Members",

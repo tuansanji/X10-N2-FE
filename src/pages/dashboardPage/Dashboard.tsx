@@ -28,6 +28,8 @@ import ProjectsList from "./ProjectsList";
 import taskApi from "../../services/api/taskApi";
 import TasksList from "./TasksList";
 import { useTranslation } from "react-i18next";
+import { FilterValue } from "antd/es/table/interface";
+import { setQuery } from "../../redux/slice/paramsSlice";
 
 const { Title } = Typography;
 
@@ -54,6 +56,12 @@ export interface TasksType {
   createdDate: Date;
 }
 
+export interface PageType {
+  pageIndex: number;
+  total: number;
+  initialTotal?: number;
+}
+
 const Dashboard: React.FC = () => {
   const [openCreateProject, setOpenCreateProject] = useState<boolean>(false);
   const dispatch = useDispatch();
@@ -68,6 +76,12 @@ const Dashboard: React.FC = () => {
   const [projectDetail, setProjectDetail] = useState<any>();
   const [tasksList, setTasksList] = useState<TasksType[]>([]);
   const { t, i18n } = useTranslation(["content", "base"]);
+  const [projectPagination, setProjectPagination] = useState<PageType>({
+    pageIndex: 1,
+    total: null as unknown as number,
+    initialTotal: null as unknown as number,
+  });
+  const queryParams = useAppSelector((state: any) => state.queryParams);
 
   useEffect(() => {
     (async () => {
@@ -80,6 +94,12 @@ const Dashboard: React.FC = () => {
           }
         );
         dispatch(getAllProjectSuccess(res.data));
+        setProjectPagination({
+          ...projectPagination,
+          total: res.data.total,
+          pageIndex: res.data.currentPage,
+          initialTotal: res.data.total,
+        });
       } catch (error) {
         dispatch(getAllProjectError());
       }
@@ -89,10 +109,20 @@ const Dashboard: React.FC = () => {
   useEffect(() => {
     setFetchingTasks(true);
     taskApi
-      .getTasksByUser()
+      .getTasksByUser({ sort: "deadlineDesc" })
       .then((res: any) => {
         setTasksList(res.tasks);
         setFetchingTasks(false);
+        dispatch(
+          setQuery({
+            ...queryParams,
+            pageParams: {
+              total: res.total,
+              page: res.currentPage,
+              sort: "deadlineDesc",
+            },
+          })
+        );
       })
       .catch((err: any) => {
         setFetchingTasks(false);
@@ -110,6 +140,8 @@ const Dashboard: React.FC = () => {
           title={`${t("content:form.create project")}`}
           useCase="create"
           closeModal={setOpenCreateProject}
+          projectPagination={projectPagination}
+          setProjectPagination={setProjectPagination}
         />
       </Modal>
 
@@ -146,6 +178,8 @@ const Dashboard: React.FC = () => {
             listProject={listProject}
             setOpenEditProject={setOpenEditProject}
             setProjectDetail={setProjectDetail}
+            projectPagination={projectPagination}
+            setProjectPagination={setProjectPagination}
           />
         </Col>
         <Divider type="vertical" />

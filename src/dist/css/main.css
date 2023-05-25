@@ -650,18 +650,20 @@ img.img-tiny {
   border-radius: 10px;
   background-color: #2e3239;
 }
-.tasks_page .ant-divider {
-  margin: 16px 0;
-}
-.tasks_page .tool_bar {
+.tasks_page .ant-space .tool_bar .tool_bar_left,
+.tasks_page .ant-space .tool_bar .tool_bar_right {
   display: flex;
   flex-direction: row;
   gap: 16px;
 }
+.tasks_page .ant-divider {
+  margin: 16px 0;
+}
 .tasks_page .ant-input-search {
   width: 300px;
 }
-.tasks_page button:first-child {
+.tasks_page button:first-child,
+.tasks_page button:nth-child(2) {
   margin-right: auto;
 }
 .tasks_page .tasks_board {
@@ -1532,6 +1534,34 @@ img.img-tiny {
 .dashboard .tasks_list .tasks_container .task_name {
   cursor: pointer;
   color: #1677ff;
+}
+.dashboard .tasks_list .tasks_container .table_header_container {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+}
+.dashboard .tasks_list .tasks_container .table_header_container .icon_container {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  height: 24px;
+  width: 24px;
+}
+.dashboard .tasks_list .tasks_container .table_header_filter {
+  display: flex;
+  flex-direction: column;
+}
+
+.table_filter_dropdown {
+  display: flex;
+  flex-direction: column;
+  padding: 8px 4px;
+}
+.table_filter_dropdown .ant-checkbox-wrapper {
+  margin-inline-start: 8px;
 }
 
 .notfound__page {
