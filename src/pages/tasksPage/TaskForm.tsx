@@ -41,6 +41,7 @@ import {
   Select,
   Skeleton,
 } from "antd";
+import { setQuery } from "../../redux/slice/paramsSlice";
 
 export interface ITask {
   _id: string;
@@ -133,6 +134,7 @@ const TaskForm = (props: ITaskForm) => {
   const dispatch = useDispatch();
   const { isBoss } = useIsBoss([], 2, taskCurrent?.project?.id);
   const { t, i18n } = useTranslation(["content", "base"]);
+  const queryParams = useAppSelector((state: any) => state.queryParams);
   moment.locale(i18n.language);
 
   // lấy all user trong project
@@ -180,8 +182,29 @@ const TaskForm = (props: ITaskForm) => {
             return task._id !== taskInfo.data?._id;
           });
           setTasksList?.(newList);
+          dispatch(
+            setQuery({
+              ...queryParams,
+              taskTableParams: {
+                ...queryParams.taskTableParams,
+                total: queryParams.taskTableParams.total - 1,
+              },
+            })
+          );
         }
-
+        if (tasksColumns && allTasks) {
+          let newTasks = allTasks.filter((task: any) => {
+            return task._id !== taskInfo.data?._id;
+          });
+          setAllTasks?.(newTasks);
+          let newState = tasksColumns.map((column: any) => {
+            column.items = newTasks.filter((task: any) => {
+              return task.status === column.id;
+            });
+            return column;
+          });
+          setTasksColumns?.(newState);
+        }
         showMessage(
           "success",
           changeMsgLanguage(res?.message, "Xóa thành công"),

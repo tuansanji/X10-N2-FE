@@ -1,6 +1,7 @@
 import {
   DeleteOutlined,
   EditOutlined,
+  EllipsisOutlined,
   SearchOutlined,
 } from "@ant-design/icons";
 import {
@@ -12,6 +13,8 @@ import {
   Typography,
   Input,
   Checkbox,
+  Dropdown,
+  MenuProps,
 } from "antd";
 import { ColumnsType } from "antd/es/table";
 import axios from "axios";
@@ -47,7 +50,6 @@ const { Text } = Typography;
 const { Search } = Input;
 
 interface ProjectsListType {
-  listProject: any;
   setProjectDetail: Dispatch<any>;
   setOpenEditProject: Dispatch<SetStateAction<boolean>>;
   projectPagination: PageType;
@@ -86,6 +88,32 @@ const Action: React.FC<DeleteConfirmPropsType> = ({
   const user = useAppSelector((state: RootState) => state.auth.userInfo);
   const { t } = useTranslation(["content", "base"]);
   const dispatch = useAppDispatch();
+  const [openDropdown, setOpenDropdown] = useState<boolean>(false);
+
+  const items = [
+    {
+      key: "1",
+      label: (
+        <div className="dropdown_button">
+          <Button
+            disabled={!isEdit}
+            onClick={() => handleEditProject(record)}
+            icon={<EditOutlined />}
+          />
+          <Popconfirm
+            placement="topRight"
+            title={`${t("content:titleDeleteProject")}`}
+            description={`${t("content:desDeleteProject")}`}
+            onConfirm={() => handleDeleteProject(record)}
+            okText={t("base:ok")}
+            cancelText={t("base:cancel")}
+          >
+            <Button icon={<DeleteOutlined />} disabled={!isDelete} />
+          </Popconfirm>
+        </div>
+      ),
+    },
+  ];
 
   //Chỉ Leader và manager mới thực hiện được edit/delete
   useEffect(() => {
@@ -121,7 +149,6 @@ const Action: React.FC<DeleteConfirmPropsType> = ({
         dispatch(deleteProject(project));
         setProjectPagination?.({
           total: (projectPagination?.total as number) - 1,
-          initialTotal: (projectPagination?.initialTotal as number) - 1,
           pageIndex: projectPagination?.pageIndex as number,
         });
         setConfirmLoading(false);
@@ -135,26 +162,23 @@ const Action: React.FC<DeleteConfirmPropsType> = ({
       });
   };
 
+  const handleOpenChange = (flag: boolean) => {
+    setOpenDropdown(flag);
+  };
+
   return (
     <>
       <div className="project_name_column">
         <Link to={`project/${record.key}`}>{record.name}</Link>
         <div className="project_name_action">
-          <Button
-            disabled={!isEdit}
-            onClick={() => handleEditProject(record)}
-            icon={<EditOutlined />}
-          />
-          <Popconfirm
-            placement="topRight"
-            title={`${t("content:titleDeleteProject")}`}
-            description={`${t("content:desDeleteProject")}`}
-            onConfirm={() => handleDeleteProject(record)}
-            okText={t("base:ok")}
-            cancelText={t("base:cancel")}
+          <Dropdown
+            menu={{ items }}
+            trigger={["click"]}
+            open={openDropdown}
+            onOpenChange={handleOpenChange}
           >
-            <Button icon={<DeleteOutlined />} disabled={!isDelete} />
-          </Popconfirm>
+            <Button icon={<EllipsisOutlined />} />
+          </Dropdown>
         </div>
       </div>
     </>
@@ -162,7 +186,6 @@ const Action: React.FC<DeleteConfirmPropsType> = ({
 };
 
 const ProjectsList: React.FC<ProjectsListType> = ({
-  listProject,
   setProjectDetail,
   setOpenEditProject,
   projectPagination,
@@ -180,6 +203,9 @@ const ProjectsList: React.FC<ProjectsListType> = ({
   const [checkAll, setCheckAll] = useState<boolean>(false);
   const [indeterminate, setIndeterminate] = useState<boolean>(true);
   const queryParams = useAppSelector((state: any) => state.queryParams);
+  const listProject = useAppSelector(
+    (state: any) => state.project?.listProject
+  );
 
   const plainOptions = [
     {
@@ -262,6 +288,16 @@ const ProjectsList: React.FC<ProjectsListType> = ({
             params: queryParams.projectTableParams,
             headers: { Authorization: `Bearer ${token}` },
           });
+          if (response.data.projects.length === 0) {
+            showMessage(
+              "error",
+              changeMsgLanguage(
+                "No projects were found",
+                "Không tìm thấy kết quả"
+              ),
+              2
+            );
+          }
           dispatch(getAllProjectSuccess(response.data));
           setProjectPagination({
             ...projectPagination,
@@ -270,7 +306,14 @@ const ProjectsList: React.FC<ProjectsListType> = ({
           });
           setLoadingSearch(false);
         } catch (err: any) {
-          showMessage("error", err.response.data?.message, 2);
+          showMessage(
+            "error",
+            changeMsgLanguage(
+              err.response.data?.message,
+              "Không tìm thấy kết quả"
+            ),
+            2
+          );
           setLoadingSearch(false);
         }
       }
@@ -281,26 +324,41 @@ const ProjectsList: React.FC<ProjectsListType> = ({
   //Gọi api search project name
   useEffect(() => {
     const searchProject = async () => {
-      if (queryParams.projectTableParams?.name) {
-        setLoadingSearch(true);
-        try {
-          const response = await axios({
-            method: "get",
-            url: `${process.env.REACT_APP_BACKEND_URL}/project/search`,
-            params: queryParams.projectTableParams,
-            headers: { Authorization: `Bearer ${token}` },
-          });
-          dispatch(getAllProjectSuccess(response.data));
-          setProjectPagination({
-            ...projectPagination,
-            total: response.data.total,
-            pageIndex: response.data.currentPage,
-          });
-          setLoadingSearch(false);
-        } catch (err: any) {
-          showMessage("error", err.response.data?.message, 2);
-          setLoadingSearch(false);
+      setLoadingSearch(true);
+      try {
+        const response = await axios({
+          method: "get",
+          url: `${process.env.REACT_APP_BACKEND_URL}/project/search`,
+          params: queryParams.projectTableParams,
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (response.data.projects.length === 0) {
+          showMessage(
+            "error",
+            changeMsgLanguage(
+              "No projects were found",
+              "Không tìm thấy kết quả"
+            ),
+            2
+          );
         }
+        dispatch(getAllProjectSuccess(response.data));
+        setProjectPagination({
+          ...projectPagination,
+          total: response.data.total,
+          pageIndex: response.data.currentPage,
+        });
+        setLoadingSearch(false);
+      } catch (err: any) {
+        showMessage(
+          "error",
+          changeMsgLanguage(
+            err.response.data?.message,
+            "Không tìm thấy kết quả"
+          ),
+          2
+        );
+        setLoadingSearch(false);
       }
     };
     timeOutRef.current = setTimeout(searchProject, 500);
@@ -326,7 +384,14 @@ const ProjectsList: React.FC<ProjectsListType> = ({
         pageIndex: response.data.currentPage,
       });
     } catch (err: any) {
-      showMessage("error", err.response.data?.message, 2);
+      showMessage(
+        "error",
+        changeMsgLanguage(
+          err.response.data?.message,
+          "Gặp sự cố khi chuyển trang"
+        ),
+        2
+      );
       setLoadingSearch(false);
     }
   };
@@ -347,24 +412,25 @@ const ProjectsList: React.FC<ProjectsListType> = ({
       key: "name",
       render: (_, record: ProjectsDataType, index: number) => {
         return (
-          <Action
-            record={record}
-            showMessage={showMessage}
-            handleEditProject={handleEditProject}
-            projectPagination={projectPagination}
-            setProjectPagination={setProjectPagination}
-            searchResult={searchResult}
-            setSearchResult={setSearchResult}
-          />
+          <>
+            <Action
+              record={record}
+              showMessage={showMessage}
+              handleEditProject={handleEditProject}
+              projectPagination={projectPagination}
+              setProjectPagination={setProjectPagination}
+              searchResult={searchResult}
+              setSearchResult={setSearchResult}
+            />
+          </>
         );
       },
-      width: "60%",
+
       filterIcon: <SearchOutlined />,
       filterDropdown: () => (
         <div style={{ padding: 8 }} onKeyDown={(e) => e.stopPropagation()}>
           <Search
             allowClear
-            value={queryParams.projectTableParams?.name}
             placeholder="Search Project"
             onChange={handleSearchProject}
           />
@@ -400,6 +466,7 @@ const ProjectsList: React.FC<ProjectsListType> = ({
       ),
       render: (_, { status }) => {
         let bgColor: string = "";
+        let fontColor: string = "";
         switch (status) {
           case "ongoing":
             bgColor = "#F0E155";
@@ -412,6 +479,7 @@ const ProjectsList: React.FC<ProjectsListType> = ({
             break;
           case "preparing":
             bgColor = "#2E55DE";
+            fontColor = "#f2f3f7";
             break;
           default:
             bgColor = "transparent";
@@ -424,14 +492,13 @@ const ProjectsList: React.FC<ProjectsListType> = ({
               shape="round"
               style={{ backgroundColor: bgColor }}
             >
-              <Text className="btn_status" strong>
+              <Text className="btn_status" strong style={{ color: fontColor }}>
                 {status.toUpperCase()}
               </Text>
             </Button>
           </>
         );
       },
-      width: "20%",
     },
     {
       title: `${t("content:form.members")}`,
@@ -458,7 +525,6 @@ const ProjectsList: React.FC<ProjectsListType> = ({
           </>
         );
       },
-      width: "20%",
     },
   ];
 
@@ -486,6 +552,7 @@ const ProjectsList: React.FC<ProjectsListType> = ({
       {contextHolder}
       <div className="projects_list_item">
         <Table
+          className="projects_table"
           columns={columns}
           dataSource={data}
           loading={loadingSearch}

@@ -38,6 +38,7 @@ import {
   Tooltip,
   Row,
   Col,
+  Upload,
 } from "antd";
 import type { TabsProps } from "antd";
 import { useAxios } from "../../hooks";
@@ -184,17 +185,21 @@ const TasksPage = () => {
     stages: "",
   });
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const [uploadModal, setUploadModal] = useState<boolean>(false);
   const [statusForm, setStatusForm] = useState<boolean>(false);
   const [openInfo, setOpenInfo] = useState<boolean>(false);
   const [countReloadTasks, setCountReloadTasks] = useState<number>(1);
   const [edit, setEdit] = useState<boolean>(false);
   const [tasksURL, setTasksURL] = useState<any>();
-  const token = useAppSelector((state: RootState) => state.auth.userInfo.token);
   const { responseData, isLoading } = useAxios(
     "get",
     `/project/members/all/${params.projectId}`,
     []
   );
+  const [fileName, setFileName] = useState<string>();
+  const [selectedFile, setSelectedFile] = useState<any>(null);
+  const [isUpload, setIsUpload] = useState<boolean>(false);
+  const [fileList, setFileList] = useState<any[]>([]);
 
   //Handle tải file danh sách công việc
   useEffect(() => {
@@ -705,6 +710,32 @@ const TasksPage = () => {
     },
   ];
 
+  const handleUpload = (info: any) => {
+    let newFileList = [...info.fileList];
+    newFileList = newFileList.slice(-1);
+    setFileList(newFileList);
+    if (info.file.status === "uploading") {
+      setIsUpload(true);
+    }
+    if (info.file.status !== "uploading") {
+      if (info.file.status === "done") {
+        let newState = tasksColumns.map((column: any) => {
+          column.items = info.file.response.tasks.filter((task: any) => {
+            return task.status === column.id;
+          });
+          return column;
+        });
+        setAllTasks(info.file.response.tasks);
+        setTasksColumns(newState);
+        showMessage("success", info.file.response.message, 2);
+        setIsUpload(false);
+      } else if (info.file.status === "error") {
+        showMessage("error", info.file.response.message);
+        setIsUpload(false);
+      }
+    }
+  };
+
   return (
     <div className="tasks_page">
       {contextHolder}
@@ -780,6 +811,10 @@ const TasksPage = () => {
                   />
                 ) : (
                   <TaskForm
+                    allTasks={allTasks}
+                    setAllTasks={setAllTasks}
+                    setTasksColumns={setTasksColumns}
+                    tasksColumns={tasksColumns}
                     setCountReloadTasks={setCountReloadTasks}
                     handleEditTask={handleEditTask}
                     edit={edit}
@@ -803,6 +838,8 @@ const TasksPage = () => {
           </div>
         )}
       </Modal>
+
+      {/* Nội dung chính của page */}
       <Space direction="vertical" size="large">
         <Breadcrumb items={breadcrumItems} />
         <Row className="tool_bar" justify="space-between">
@@ -816,7 +853,21 @@ const TasksPage = () => {
               </a>
             </Tooltip>
             <Tooltip title={t("content:task.import")}>
-              <Button size="large" icon={<UploadOutlined />} />
+              <Upload
+                name="tasks"
+                accept=".xlsx, .xls, .csv"
+                showUploadList={false}
+                onChange={handleUpload}
+                action={`${process.env.REACT_APP_BACKEND_URL}/stage/tasks/${params.stagesId}/import`}
+                headers={{ Authorization: `Bearer ${user.token}` }}
+                fileList={fileList}
+              >
+                <Button
+                  loading={isUpload}
+                  size="large"
+                  icon={<UploadOutlined />}
+                />
+              </Upload>
             </Tooltip>
           </Col>
           <Col className="tool_bar_right">

@@ -65,9 +65,7 @@ const Dashboard: React.FC = () => {
   const [openCreateProject, setOpenCreateProject] = useState<boolean>(false);
   const dispatch = useDispatch();
   const token = useAppSelector((state: RootState) => state.auth.userInfo.token);
-  const listProject = useAppSelector(
-    (state: any) => state.project?.listProject
-  );
+  const projects = useAppSelector((state: any) => state.project);
   const { showMessage, contextHolder }: UseMessageApiReturnType =
     useMessageApi();
   const [openEditProject, setOpenEditProject] = useState<boolean>(false);
@@ -122,12 +120,14 @@ const Dashboard: React.FC = () => {
         );
       })
       .catch((err: any) => {
+        setTasksList([]);
         setFetchingTasks(false);
       });
   }, []);
 
   return (
     <>
+      {/* Modal Form Tạo Project */}
       <Modal
         open={openCreateProject}
         footer={null}
@@ -142,6 +142,7 @@ const Dashboard: React.FC = () => {
         />
       </Modal>
 
+      {/* Modal Form Edit Project */}
       <Modal
         open={openEditProject}
         footer={null}
@@ -157,8 +158,10 @@ const Dashboard: React.FC = () => {
         />
       </Modal>
       {contextHolder}
+
+      {/* Main content */}
       <Row className="dashboard" justify="space-between">
-        <Col className="projects_list" span={10}>
+        <Col className="projects_list" xl={10} sm={24}>
           <div className="projects_list_header">
             <Title level={4}>{t("content:dashboardProjectsListTitle")}</Title>
             <Tooltip title="Create new project">
@@ -171,16 +174,20 @@ const Dashboard: React.FC = () => {
               />
             </Tooltip>
           </div>
-          <ProjectsList
-            listProject={listProject}
-            setOpenEditProject={setOpenEditProject}
-            setProjectDetail={setProjectDetail}
-            projectPagination={projectPagination}
-            setProjectPagination={setProjectPagination}
-          />
+          {projects.isFetching ? (
+            <Skeleton />
+          ) : (
+            <ProjectsList
+              setOpenEditProject={setOpenEditProject}
+              setProjectDetail={setProjectDetail}
+              projectPagination={projectPagination}
+              setProjectPagination={setProjectPagination}
+            />
+          )}
         </Col>
-        <Divider type="vertical" />
-        <Col className="tasks_list" span={12}>
+
+        <Divider type="horizontal" className="horizontal_divider" />
+        <Col className="tasks_list" xl={12} sm={24}>
           <div className="tasks_list_header">
             <Title level={4}>{t("content:dashbaordTasksListTitle")}</Title>
           </div>

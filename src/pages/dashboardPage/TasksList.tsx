@@ -6,6 +6,7 @@ import {
   Table,
   Tabs,
   TabsProps,
+  Tooltip,
   Typography,
 } from "antd";
 import { ColumnsType } from "antd/es/table";
@@ -32,6 +33,7 @@ import { CheckboxChangeEvent } from "antd/es/checkbox";
 import { useAppDispatch, useAppSelector } from "../../redux/hook";
 import { deleteSubQuery, setQuery } from "../../redux/slice/paramsSlice";
 import taskApi from "../../services/api/taskApi";
+import { changeMsgLanguage } from "../../utils/changeMsgLanguage";
 
 const { Title, Text } = Typography;
 const { Search } = Input;
@@ -118,18 +120,12 @@ const TasksList: React.FC<TasksListPropsType> = ({
   //Xử lý event khi search tên tasks và assignee
   const handleSearchTasks = (event: any) => {
     let value = event.target.value;
-    if (value === "") {
-      dispatch(
-        deleteSubQuery({ firstLevel: "taskTableParams", secondLevel: "title" })
-      );
-    } else {
-      dispatch(
-        setQuery({
-          ...queryParams,
-          taskTableParams: { ...queryParams.taskTableParams, title: value },
-        })
-      );
-    }
+    dispatch(
+      setQuery({
+        ...queryParams,
+        taskTableParams: { ...queryParams.taskTableParams, title: value },
+      })
+    );
   };
 
   const handleSearchAssignee = (event: any) => {
@@ -233,7 +229,14 @@ const TasksList: React.FC<TasksListPropsType> = ({
       })
       .catch((err: any) => {
         setTasksList([]);
-        showMessage("error", err.response.data?.message, 2);
+        showMessage(
+          "error",
+          changeMsgLanguage(
+            err.response.data?.message,
+            "Gặp sự cố khi chuyển trang"
+          ),
+          2
+        );
         setTableLoading(false);
       });
   };
@@ -261,7 +264,14 @@ const TasksList: React.FC<TasksListPropsType> = ({
         })
         .catch((err: any) => {
           setTasksList([]);
-          showMessage("error", err.response.data?.message, 2);
+          showMessage(
+            "error",
+            changeMsgLanguage(
+              err.response.data?.message,
+              "Không tìm thấy kết quả"
+            ),
+            2
+          );
           setTableLoading(false);
         });
     }
@@ -272,33 +282,35 @@ const TasksList: React.FC<TasksListPropsType> = ({
     if (queryParams.taskTableParams) {
       const { total, page, ...rest } = queryParams.taskTableParams;
       timeOutRef.current = setTimeout(() => {
-        if (
-          queryParams.taskTableParams.title ||
-          queryParams.taskTableParams.assignee
-        ) {
-          setTableLoading(true);
-          taskApi
-            .getTasksByUser(rest)
-            .then((res: any) => {
-              setTasksList(res.tasks);
-              setTableLoading(false);
-              dispatch(
-                setQuery({
-                  ...queryParams,
-                  taskTableParams: {
-                    ...queryParams.taskTableParams,
-                    total: res.total,
-                    page: res.currentPage,
-                  },
-                })
-              );
-            })
-            .catch((err: any) => {
-              setTasksList([]);
-              showMessage("error", err.response.data?.message, 2);
-              setTableLoading(false);
-            });
-        }
+        setTableLoading(true);
+        taskApi
+          .getTasksByUser(rest)
+          .then((res: any) => {
+            setTasksList(res.tasks);
+            setTableLoading(false);
+            dispatch(
+              setQuery({
+                ...queryParams,
+                taskTableParams: {
+                  ...queryParams.taskTableParams,
+                  total: res.total,
+                  page: res.currentPage,
+                },
+              })
+            );
+          })
+          .catch((err: any) => {
+            setTasksList([]);
+            showMessage(
+              "error",
+              changeMsgLanguage(
+                err.response.data?.message,
+                "Không tìm thấy kết quả"
+              ),
+              2
+            );
+            setTableLoading(false);
+          });
       }, 500);
     }
     return () => {
@@ -364,9 +376,9 @@ const TasksList: React.FC<TasksListPropsType> = ({
       dataIndex: "code",
       key: "code",
       render: (_, record: TasksTableData) => {
-        return <Title level={5}>{record.code}</Title>;
+        return <Text strong>{record.code}</Text>;
       },
-      width: "16%",
+      responsive: ["xxl"],
     },
     {
       title: `${t("content:name")}`,
@@ -375,6 +387,7 @@ const TasksList: React.FC<TasksListPropsType> = ({
       render: (_, record: TasksTableData) => {
         return (
           <Text
+            strong
             className="task_name"
             onClick={() => {
               showTaskDetail(record);
@@ -384,11 +397,9 @@ const TasksList: React.FC<TasksListPropsType> = ({
           </Text>
         );
       },
-      width: "16%",
       filterDropdown: () => (
         <div style={{ padding: 8 }} onKeyDown={(e) => e.stopPropagation()}>
           <Search
-            value={queryParams.taskTableParams?.title}
             allowClear
             placeholder="Search Tasks"
             onChange={handleSearchTasks}
@@ -396,6 +407,7 @@ const TasksList: React.FC<TasksListPropsType> = ({
         </div>
       ),
       filterIcon: <SearchOutlined />,
+      width: "20%",
     },
     {
       title: `${t("content:form.status")}`,
@@ -404,10 +416,12 @@ const TasksList: React.FC<TasksListPropsType> = ({
       render: (_, record: TasksTableData) => {
         let bgColor: string = "";
         let statusLabel: string = "";
+        let fontColor: string = "";
         switch (record.status) {
           case "open":
             bgColor = "#2E55DE";
             statusLabel = "Open";
+            fontColor = "#f2f3f7";
             break;
           case "inprogress":
             bgColor = "#F0E155";
@@ -435,7 +449,9 @@ const TasksList: React.FC<TasksListPropsType> = ({
             shape="round"
             style={{ backgroundColor: bgColor }}
           >
-            <Text strong>{statusLabel}</Text>
+            <Text style={{ color: fontColor }} strong>
+              {statusLabel}
+            </Text>
           </Button>
         );
       },
@@ -467,7 +483,6 @@ const TasksList: React.FC<TasksListPropsType> = ({
           />
         </div>
       ),
-      width: "16%",
     },
     {
       title: (
@@ -485,11 +500,10 @@ const TasksList: React.FC<TasksListPropsType> = ({
         return (
           <div className="task_priority">
             <span>{priority}</span>
-            <Title level={5}>{_.capitalize(record.priority)}</Title>
+            <Text strong>{_.capitalize(record.priority)}</Text>
           </div>
         );
       },
-      width: "16%",
     },
     {
       title: (
@@ -504,12 +518,9 @@ const TasksList: React.FC<TasksListPropsType> = ({
       key: "deadline",
       render: (_, record: TasksTableData) => {
         return (
-          <Title level={5}>
-            {moment(record.deadline).format("DD/MM/YYYY")}
-          </Title>
+          <Text strong>{moment(record.deadline).format("DD/MM/YYYY")}</Text>
         );
       },
-      width: "16%",
     },
     {
       title: `${t("content:form.assignee")}`,
@@ -518,7 +529,7 @@ const TasksList: React.FC<TasksListPropsType> = ({
       render: (_, record: TasksTableData) => {
         return <Title level={5}>{record.assignee?.fullName}</Title>;
       },
-      width: "16%",
+
       filterDropdown: () => (
         <div style={{ padding: 8 }} onKeyDown={(e) => e.stopPropagation()}>
           <Search
@@ -649,6 +660,7 @@ const TasksList: React.FC<TasksListPropsType> = ({
           )}
         </Modal>
         <Table
+          className="tasks_table"
           loading={tableLoading}
           bordered
           dataSource={data}
