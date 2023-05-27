@@ -1133,6 +1133,16 @@ img.img-tiny {
 .task__form--description {
   max-height: 700px;
   overflow-y: auto;
+  overflow-x: auto;
+  padding-right: 25px;
+}
+@media only screen and (max-width: 500px) {
+  .task__form--description {
+    padding-right: 10px;
+  }
+}
+.task__form--description img {
+  max-width: 100% !important;
 }
 .task__form--description::-webkit-scrollbar-track {
   -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);

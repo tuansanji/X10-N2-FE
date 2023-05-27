@@ -133,7 +133,8 @@ const Comment: React.FC<IComment> = ({
                       event.preventDefault();
                     }
                   }}
-                  rows={4}
+                  maxLength={500}
+                  autoSize={{ minRows: 4, maxRows: 8 }}
                 />
               </Modal>
               <span className="">

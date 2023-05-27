@@ -12,13 +12,13 @@ const Header = () => {
   const [language, setLanguage] = useState(1);
   const user = useSelector((state: any) => state.auth);
   const dispatch = useDispatch();
-  const handleLogout = () => {
-    dispatch(setLogout("Log Out"));
-  };
   const { t, i18n } = useTranslation(["base"]);
 
   // const currentLanguage = locales[i18n.language as keyof typeof locales];
 
+  const handleLogout = () => {
+    dispatch(setLogout("Log Out"));
+  };
   useEffect(() => {
     if (localStorage.getItem("language")) {
       i18n.changeLanguage(
