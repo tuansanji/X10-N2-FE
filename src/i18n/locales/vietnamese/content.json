@@ -4,7 +4,6 @@
   "startingDate": "Ngày bắt đầu",
   "endDateExpected": "Ngày kết thúc dự kiến",
   "endDateActual": "Ngày kết thúc thực tế",
-  "endDate": "Ngày kết thúc thực tế",
 
   "action": "Hành động",
   "createStage": "Tạo mới giai đoạn",
@@ -83,7 +82,8 @@
     "project name": "Tên dự án",
     "all": "Tất cả",
     "asc": "Tăng dần",
-    "desc": "Giảm dần"
+    "desc": "Giảm dần",
+    "endDate": "Ngày kết thúc thực tế"
   },
   "task": {
     "jobCode": "Tự động tạo",
