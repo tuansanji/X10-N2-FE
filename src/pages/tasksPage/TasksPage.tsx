@@ -109,6 +109,9 @@ const prioList: any = {
 
 const TaskItem: React.FC<TaskItemProp> = ({ task, handleOpenInfoTask }) => {
   const [bgColor, setBgColor] = useState<string>("");
+  let priority = setPriority(task.priority);
+
+  //set highligh cho deadline
   useEffect(() => {
     const now = new Date();
     const deadline = new Date(task.deadline);
@@ -124,7 +127,6 @@ const TaskItem: React.FC<TaskItemProp> = ({ task, handleOpenInfoTask }) => {
     }
   }, [task]);
 
-  let priority = setPriority(task.priority);
   return (
     <>
       <div
@@ -185,7 +187,6 @@ const TasksPage = () => {
     stages: "",
   });
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
-  const [uploadModal, setUploadModal] = useState<boolean>(false);
   const [statusForm, setStatusForm] = useState<boolean>(false);
   const [openInfo, setOpenInfo] = useState<boolean>(false);
   const [countReloadTasks, setCountReloadTasks] = useState<number>(1);
@@ -196,8 +197,6 @@ const TasksPage = () => {
     `/project/members/all/${params.projectId}`,
     []
   );
-  const [fileName, setFileName] = useState<string>();
-  const [selectedFile, setSelectedFile] = useState<any>(null);
   const [isUpload, setIsUpload] = useState<boolean>(false);
   const [fileList, setFileList] = useState<any[]>([]);
 

@@ -14,7 +14,7 @@ import {
   Input,
   Checkbox,
   Dropdown,
-  MenuProps,
+  Skeleton,
 } from "antd";
 import { ColumnsType } from "antd/es/table";
 import axios from "axios";
@@ -35,7 +35,6 @@ import { RootState } from "../../redux/store";
 import projectApi from "../../services/api/projectApi";
 import {
   deleteProject,
-  getAllProjectError,
   getAllProjectSuccess,
 } from "../../redux/slice/projectSlice";
 import { NoticeType } from "antd/es/message/interface";
@@ -45,6 +44,8 @@ import { PageType } from "./Dashboard";
 import { useDispatch } from "react-redux";
 import { CheckboxValueType } from "antd/es/checkbox/Group";
 import { setQuery } from "../../redux/slice/paramsSlice";
+import { setStatusLabel } from "../../utils/setStatusLabel";
+import { useAxios } from "../../hooks";
 
 const { Text } = Typography;
 const { Search } = Input;
@@ -172,6 +173,7 @@ const Action: React.FC<DeleteConfirmPropsType> = ({
         <Link to={`project/${record.key}`}>{record.name}</Link>
         <div className="project_name_action">
           <Dropdown
+            className="dropdown_action"
             menu={{ items }}
             trigger={["click"]}
             open={openDropdown}
@@ -179,6 +181,23 @@ const Action: React.FC<DeleteConfirmPropsType> = ({
           >
             <Button icon={<EllipsisOutlined />} />
           </Dropdown>
+          <div className="action_button">
+            <Button
+              disabled={!isEdit}
+              onClick={() => handleEditProject(record)}
+              icon={<EditOutlined />}
+            />
+            <Popconfirm
+              placement="topRight"
+              title={`${t("content:titleDeleteProject")}`}
+              description={`${t("content:desDeleteProject")}`}
+              onConfirm={() => handleDeleteProject(record)}
+              okText={t("base:ok")}
+              cancelText={t("base:cancel")}
+            >
+              <Button icon={<DeleteOutlined />} disabled={!isDelete} />
+            </Popconfirm>
+          </div>
         </div>
       </div>
     </>
@@ -264,66 +283,25 @@ const ProjectsList: React.FC<ProjectsListType> = ({
   //handle search input
   const handleSearchProject = (event: any) => {
     let value = event.target.value;
-    dispatch(
-      setQuery({
-        ...queryParams,
-        projectTableParams: {
-          ...queryParams.projectTableParams,
-          name: value,
-        },
-      })
-    );
+    clearTimeout(timeOutRef.current);
+    timeOutRef.current = setTimeout(() => {
+      dispatch(
+        setQuery({
+          ...queryParams,
+          projectTableParams: {
+            ...queryParams.projectTableParams,
+            name: value,
+          },
+        })
+      );
+    }, 500);
   };
   //Kết thúc xử lý
 
-  //Gọi API khi filter status thay đổi
+  //Gọi API khi search, filter thay đổi
+
   useEffect(() => {
     const filterProject = async () => {
-      if (queryParams.projectTableParams) {
-        setLoadingSearch(true);
-        try {
-          const response = await axios({
-            method: "get",
-            url: `${process.env.REACT_APP_BACKEND_URL}/project/search`,
-            params: queryParams.projectTableParams,
-            headers: { Authorization: `Bearer ${token}` },
-          });
-          if (response.data.projects.length === 0) {
-            showMessage(
-              "error",
-              changeMsgLanguage(
-                "No projects were found",
-                "Không tìm thấy kết quả"
-              ),
-              2
-            );
-          }
-          dispatch(getAllProjectSuccess(response.data));
-          setProjectPagination({
-            ...projectPagination,
-            total: response.data.total,
-            pageIndex: response.data.currentPage,
-          });
-          setLoadingSearch(false);
-        } catch (err: any) {
-          showMessage(
-            "error",
-            changeMsgLanguage(
-              err.response.data?.message,
-              "Không tìm thấy kết quả"
-            ),
-            2
-          );
-          setLoadingSearch(false);
-        }
-      }
-    };
-    filterProject();
-  }, [queryParams.projectTableParams?.status]);
-
-  //Gọi api search project name
-  useEffect(() => {
-    const searchProject = async () => {
       setLoadingSearch(true);
       try {
         const response = await axios({
@@ -361,12 +339,14 @@ const ProjectsList: React.FC<ProjectsListType> = ({
         setLoadingSearch(false);
       }
     };
-    timeOutRef.current = setTimeout(searchProject, 500);
-    return () => {
-      clearTimeout(timeOutRef.current);
-    };
-  }, [queryParams.projectTableParams?.name]);
+    filterProject();
+  }, [
+    queryParams.projectTableParams?.status,
+    queryParams.projectTableParams?.name,
+    token,
+  ]);
 
+  //Xử lý event khi chuyển trang
   const handlePageChange = async (page: number) => {
     setLoadingSearch(true);
     try {
@@ -465,26 +445,7 @@ const ProjectsList: React.FC<ProjectsListType> = ({
         </div>
       ),
       render: (_, { status }) => {
-        let bgColor: string = "";
-        let fontColor: string = "";
-        switch (status) {
-          case "ongoing":
-            bgColor = "#F0E155";
-            break;
-          case "completed":
-            bgColor = "#44CB39";
-            break;
-          case "suspended":
-            bgColor = "#EC2B2B";
-            break;
-          case "preparing":
-            bgColor = "#2E55DE";
-            fontColor = "#f2f3f7";
-            break;
-          default:
-            bgColor = "transparent";
-            break;
-        }
+        const { bgColor, statusLabel, fontColor } = setStatusLabel(status);
         return (
           <>
             <Button
@@ -493,7 +454,7 @@ const ProjectsList: React.FC<ProjectsListType> = ({
               style={{ backgroundColor: bgColor }}
             >
               <Text className="btn_status" strong style={{ color: fontColor }}>
-                {status.toUpperCase()}
+                {statusLabel}
               </Text>
             </Button>
           </>
@@ -508,7 +469,7 @@ const ProjectsList: React.FC<ProjectsListType> = ({
         return (
           <>
             <Avatar.Group
-              maxCount={5}
+              maxCount={4}
               maxStyle={{ cursor: "pointer", backgroundColor: "#4e5658" }}
             >
               {record.members?.map((member: any) => {
@@ -551,20 +512,24 @@ const ProjectsList: React.FC<ProjectsListType> = ({
     <>
       {contextHolder}
       <div className="projects_list_item">
-        <Table
-          className="projects_table"
-          columns={columns}
-          dataSource={data}
-          loading={loadingSearch}
-          bordered
-          pagination={{
-            position: ["bottomCenter"],
-            total: projectPagination.total,
-            pageSize: 10,
-            current: projectPagination.pageIndex,
-            onChange: handlePageChange,
-          }}
-        />
+        {loadingSearch ? (
+          <Skeleton />
+        ) : (
+          <Table
+            className="projects_table"
+            columns={columns}
+            dataSource={data}
+            loading={loadingSearch}
+            bordered
+            pagination={{
+              position: ["bottomCenter"],
+              total: projectPagination.total,
+              pageSize: 10,
+              current: projectPagination.pageIndex,
+              onChange: handlePageChange,
+            }}
+          />
+        )}
       </div>
     </>
   );

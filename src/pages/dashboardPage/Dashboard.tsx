@@ -1,13 +1,4 @@
-import { useEffect, useState } from "react";
-import {
-  getAllProjectError,
-  getAllProjectStart,
-  getAllProjectSuccess,
-} from "../../redux/slice/projectSlice";
-import _ from "lodash";
-import axios from "axios";
-import { useDispatch } from "react-redux";
-import { RootState } from "../../redux/store";
+import { useState } from "react";
 import { useAppSelector } from "../../redux/hook";
 import {
   Col,
@@ -25,10 +16,8 @@ import useMessageApi, {
   UseMessageApiReturnType,
 } from "../../components/support/Message";
 import ProjectsList from "./ProjectsList";
-import taskApi from "../../services/api/taskApi";
 import TasksList from "./TasksList";
 import { useTranslation } from "react-i18next";
-import { setQuery } from "../../redux/slice/paramsSlice";
 
 const { Title } = Typography;
 
@@ -63,13 +52,10 @@ export interface PageType {
 
 const Dashboard: React.FC = () => {
   const [openCreateProject, setOpenCreateProject] = useState<boolean>(false);
-  const dispatch = useDispatch();
-  const token = useAppSelector((state: RootState) => state.auth.userInfo.token);
-  const projects = useAppSelector((state: any) => state.project);
   const { showMessage, contextHolder }: UseMessageApiReturnType =
     useMessageApi();
   const [openEditProject, setOpenEditProject] = useState<boolean>(false);
-  const [fetchingTasks, setFetchingTasks] = useState<boolean>(false);
+
   const [projectDetail, setProjectDetail] = useState<any>();
   const [tasksList, setTasksList] = useState<TasksType[]>([]);
   const { t, i18n } = useTranslation(["content", "base"]);
@@ -77,53 +63,6 @@ const Dashboard: React.FC = () => {
     pageIndex: 1,
     total: null as unknown as number,
   });
-  const queryParams = useAppSelector((state: any) => state.queryParams);
-
-  useEffect(() => {
-    (async () => {
-      dispatch(getAllProjectStart());
-      try {
-        const res = await axios.get(
-          `${process.env.REACT_APP_BACKEND_URL}/project/all`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
-        dispatch(getAllProjectSuccess(res.data));
-        setProjectPagination({
-          ...projectPagination,
-          total: res.data.total,
-          pageIndex: res.data.currentPage,
-        });
-      } catch (error) {
-        dispatch(getAllProjectError());
-      }
-    })();
-  }, [token]);
-
-  useEffect(() => {
-    setFetchingTasks(true);
-    taskApi
-      .getTasksByUser({ sort: "deadlineDesc" })
-      .then((res: any) => {
-        setTasksList(res.tasks);
-        setFetchingTasks(false);
-        dispatch(
-          setQuery({
-            ...queryParams,
-            taskTableParams: {
-              total: res.total,
-              page: res.currentPage,
-              sort: "deadlineDesc",
-            },
-          })
-        );
-      })
-      .catch((err: any) => {
-        setTasksList([]);
-        setFetchingTasks(false);
-      });
-  }, []);
 
   return (
     <>
@@ -174,16 +113,13 @@ const Dashboard: React.FC = () => {
               />
             </Tooltip>
           </div>
-          {projects.isFetching ? (
-            <Skeleton />
-          ) : (
-            <ProjectsList
-              setOpenEditProject={setOpenEditProject}
-              setProjectDetail={setProjectDetail}
-              projectPagination={projectPagination}
-              setProjectPagination={setProjectPagination}
-            />
-          )}
+
+          <ProjectsList
+            setOpenEditProject={setOpenEditProject}
+            setProjectDetail={setProjectDetail}
+            projectPagination={projectPagination}
+            setProjectPagination={setProjectPagination}
+          />
         </Col>
 
         <Divider type="horizontal" className="horizontal_divider" />
@@ -191,15 +127,11 @@ const Dashboard: React.FC = () => {
           <div className="tasks_list_header">
             <Title level={4}>{t("content:dashbaordTasksListTitle")}</Title>
           </div>
-          {fetchingTasks ? (
-            <Skeleton />
-          ) : (
-            <TasksList
-              tasksList={tasksList}
-              setTasksList={setTasksList}
-              showMessage={showMessage}
-            />
-          )}
+          <TasksList
+            tasksList={tasksList}
+            setTasksList={setTasksList}
+            showMessage={showMessage}
+          />
         </Col>
       </Row>
     </>

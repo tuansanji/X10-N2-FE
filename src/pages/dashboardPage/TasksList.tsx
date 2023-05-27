@@ -3,6 +3,7 @@ import {
   Checkbox,
   Input,
   Modal,
+  Skeleton,
   Table,
   Tabs,
   TabsProps,
@@ -33,6 +34,8 @@ import taskApi from "../../services/api/taskApi";
 import { changeMsgLanguage } from "../../utils/changeMsgLanguage";
 import moment from "moment";
 import { useTranslation } from "react-i18next";
+import { useSortPrio } from "../../hooks/useSortPrio";
+import { setStatusLabel } from "../../utils/setStatusLabel";
 
 const { Title, Text } = Typography;
 const { Search } = Input;
@@ -63,7 +66,9 @@ const TasksList: React.FC<TasksListPropsType> = ({
   setTasksList,
 }) => {
   const dispatch = useAppDispatch();
-  const timeOutRef = useRef<any>(null);
+  const titleTimer = useRef<any>(null);
+  const assigneeTimer = useRef<any>(null);
+  const sortPrio = useSortPrio();
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [statusForm, setStatusForm] = useState<boolean>(false);
   const [edit, setEdit] = useState<boolean>(false);
@@ -119,99 +124,46 @@ const TasksList: React.FC<TasksListPropsType> = ({
   //Xử lý event khi search tên tasks và assignee
   const handleSearchTasks = (event: any) => {
     let value = event.target.value;
-    dispatch(
-      setQuery({
-        ...queryParams,
-        taskTableParams: { ...queryParams.taskTableParams, title: value },
-      })
-    );
+    clearTimeout(titleTimer.current);
+    titleTimer.current = setTimeout(() => {
+      dispatch(
+        setQuery({
+          ...queryParams,
+          taskTableParams: { ...queryParams.taskTableParams, title: value },
+        })
+      );
+    }, 500);
   };
 
   const handleSearchAssignee = (event: any) => {
     let value = event.target.value;
-    dispatch(
-      setQuery({
-        ...queryParams,
-        taskTableParams: { ...queryParams.taskTableParams, assignee: value },
-      })
-    );
+    clearTimeout(assigneeTimer.current);
+    assigneeTimer.current = setTimeout(() => {
+      dispatch(
+        setQuery({
+          ...queryParams,
+          taskTableParams: { ...queryParams.taskTableParams, assignee: value },
+        })
+      );
+    }, 500);
   };
   //kết thúc xử lý
 
   //Xử lý event khi sort dữ liệu
   const handleSortPrio = () => {
-    let sortValue = queryParams.taskTableParams.sort;
-    if (sortValue === "prioAsc") {
-      dispatch(
-        setQuery({
-          ...queryParams,
-          taskTableParams: { ...queryParams.taskTableParams, sort: "prioDesc" },
-        })
-      );
-      return;
-    } else if (sortValue === "prioDesc") {
-      dispatch(
-        setQuery({
-          ...queryParams,
-          taskTableParams: { ...queryParams.taskTableParams, sort: "prioAsc" },
-        })
-      );
-      return;
-    } else {
-      dispatch(
-        setQuery({
-          ...queryParams,
-          taskTableParams: { ...queryParams.taskTableParams, sort: "prioDesc" },
-        })
-      );
-      return;
-    }
+    sortPrio("prioAsc", "prioDesc");
   };
 
   const handleSortDeadline = () => {
-    let sortValue = queryParams.taskTableParams.sort;
-    if (sortValue === "deadlineAsc") {
-      dispatch(
-        setQuery({
-          ...queryParams,
-          taskTableParams: {
-            ...queryParams.taskTableParams,
-            sort: "deadlineDesc",
-          },
-        })
-      );
-    } else if (sortValue === "deadlineDesc") {
-      dispatch(
-        setQuery({
-          ...queryParams,
-          taskTableParams: {
-            ...queryParams.taskTableParams,
-            sort: "deadlineAsc",
-          },
-        })
-      );
-      return;
-    } else {
-      dispatch(
-        setQuery({
-          ...queryParams,
-          taskTableParams: {
-            ...queryParams.taskTableParams,
-            sort: "deadlineDesc",
-          },
-        })
-      );
-      return;
-    }
+    sortPrio("deadlineAsc", "deadlineDesc");
   };
   //kết thúc xử lý
 
   //Xử lý event khi chuyển trang
   const handlePageChange = async (page: number, pageSize: number) => {
-    const { total, ...rest } = queryParams.taskTableParams;
     setTableLoading(true);
     taskApi
-      .getTasksByUser({ ...rest, page })
+      .getTasksByUser({ ...queryParams.taskTableParams, page })
       .then((res: any) => {
         setTasksList(res.tasks);
         dispatch(
@@ -242,80 +194,38 @@ const TasksList: React.FC<TasksListPropsType> = ({
 
   // Gọi API khi filter, sort
   useEffect(() => {
-    if (queryParams.taskTableParams) {
-      const { total, page, ...rest } = queryParams.taskTableParams;
-      setTableLoading(true);
-      taskApi
-        .getTasksByUser(rest)
-        .then((res: any) => {
-          setTasksList(res.tasks);
-          setTableLoading(false);
-          dispatch(
-            setQuery({
-              ...queryParams,
-              taskTableParams: {
-                ...queryParams.taskTableParams,
-                total: res.total,
-                page: res.currentPage,
-              },
-            })
-          );
-        })
-        .catch((err: any) => {
-          setTasksList([]);
-          showMessage(
-            "error",
-            changeMsgLanguage(
-              err.response.data?.message,
-              "Không tìm thấy kết quả"
-            ),
-            2
-          );
-          setTableLoading(false);
-        });
-    }
-  }, [queryParams.taskTableParams?.status, queryParams.taskTableParams?.sort]);
-
-  //Gọi API khi search tên task, assignee
-  useEffect(() => {
-    if (queryParams.taskTableParams) {
-      const { total, page, ...rest } = queryParams.taskTableParams;
-      timeOutRef.current = setTimeout(() => {
-        setTableLoading(true);
-        taskApi
-          .getTasksByUser(rest)
-          .then((res: any) => {
-            setTasksList(res.tasks);
-            setTableLoading(false);
-            dispatch(
-              setQuery({
-                ...queryParams,
-                taskTableParams: {
-                  ...queryParams.taskTableParams,
-                  total: res.total,
-                  page: res.currentPage,
-                },
-              })
-            );
+    setTableLoading(true);
+    taskApi
+      .getTasksByUser(queryParams.taskTableParams)
+      .then((res: any) => {
+        setTasksList(res.tasks);
+        setTableLoading(false);
+        dispatch(
+          setQuery({
+            ...queryParams,
+            taskTableParams: {
+              ...queryParams.taskTableParams,
+              total: res.total,
+              page: Number(res.currentPage),
+            },
           })
-          .catch((err: any) => {
-            setTasksList([]);
-            showMessage(
-              "error",
-              changeMsgLanguage(
-                err.response.data?.message,
-                "Không tìm thấy kết quả"
-              ),
-              2
-            );
-            setTableLoading(false);
-          });
-      }, 500);
-    }
-    return () => {
-      clearTimeout(timeOutRef.current);
-    };
+        );
+      })
+      .catch((err: any) => {
+        setTasksList([]);
+        showMessage(
+          "error",
+          changeMsgLanguage(
+            err.response.data?.message,
+            "Không tìm thấy kết quả"
+          ),
+          2
+        );
+        setTableLoading(false);
+      });
   }, [
+    queryParams.taskTableParams?.status,
+    queryParams.taskTableParams?.sort,
     queryParams.taskTableParams?.title,
     queryParams.taskTableParams?.assignee,
   ]);
@@ -413,35 +323,9 @@ const TasksList: React.FC<TasksListPropsType> = ({
       dataIndex: "status",
       key: "status",
       render: (_, record: TasksTableData) => {
-        let bgColor: string = "";
-        let statusLabel: string = "";
-        let fontColor: string = "";
-        switch (record.status) {
-          case "open":
-            bgColor = "#2E55DE";
-            statusLabel = "Open";
-            fontColor = "#f2f3f7";
-            break;
-          case "inprogress":
-            bgColor = "#F0E155";
-            statusLabel = "In Progress";
-            break;
-          case "review":
-            bgColor = "#E6883f";
-            statusLabel = "Review";
-            break;
-          case "reopen":
-            bgColor = "#8544d4";
-            statusLabel = "Re-Open";
-            break;
-          case "done":
-            bgColor = "#44CB39";
-            statusLabel = "Done";
-            break;
-          case "cancel":
-            bgColor = "#EC2B2B";
-            statusLabel = "Cancel";
-        }
+        const { bgColor, statusLabel, fontColor } = setStatusLabel(
+          record.status
+        );
         return (
           <Button
             type="primary"
@@ -659,20 +543,24 @@ const TasksList: React.FC<TasksListPropsType> = ({
             </div>
           )}
         </Modal>
-        <Table
-          className="tasks_table"
-          loading={tableLoading}
-          bordered
-          dataSource={data}
-          columns={columns}
-          pagination={{
-            position: ["bottomCenter"],
-            pageSize: 10,
-            total: queryParams.taskTableParams?.total,
-            current: queryParams.taskTableParams?.page,
-            onChange: handlePageChange,
-          }}
-        />
+        {tableLoading ? (
+          <Skeleton />
+        ) : (
+          <Table
+            className="tasks_table"
+            loading={tableLoading}
+            bordered
+            dataSource={data}
+            columns={columns}
+            pagination={{
+              position: ["bottomCenter"],
+              pageSize: 10,
+              total: queryParams.taskTableParams?.total,
+              current: queryParams.taskTableParams?.page,
+              onChange: handlePageChange,
+            }}
+          />
+        )}
       </div>
     </>
   );

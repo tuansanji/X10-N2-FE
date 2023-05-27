@@ -1682,6 +1682,23 @@ img.img-tiny {
   display: flex;
   flex-direction: row;
   gap: 8px;
+  display: none;
+}
+@media screen and (min-width: 700px) and (max-width: 1200px) {
+  .dashboard .projects_list .projects_list_item .project_name_action .dropdown_action {
+    display: none;
+  }
+  .dashboard .projects_list .projects_list_item .project_name_action .action_button {
+    display: flex;
+  }
+}
+@media screen and (min-width: 1400px) {
+  .dashboard .projects_list .projects_list_item .project_name_action .action_button {
+    display: flex;
+  }
+  .dashboard .projects_list .projects_list_item .project_name_action .dropdown_action {
+    display: none;
+  }
 }
 .dashboard .projects_list .tasks_table,
 .dashboard .projects_list .projects_table {
