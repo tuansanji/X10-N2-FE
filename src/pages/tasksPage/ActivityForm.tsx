@@ -88,8 +88,8 @@ const ActivityForm = ({ activity }: Props) => {
             : ""}
         </Descriptions.Item>
         <Descriptions.Item label={t("content:endDateActual")} span={1}>
-          {activity?.endDateActual
-            ? moment(activity?.endDateActual).format("DD MMMM, YYYY - hh:mm A")
+          {activity?.endDate
+            ? moment(activity?.endDate).format("DD MMMM, YYYY - hh:mm A")
             : ""}
         </Descriptions.Item>
 
