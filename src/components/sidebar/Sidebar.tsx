@@ -8,6 +8,7 @@ import React, { memo, useEffect, useMemo, useRef, useState } from "react";
 import Highlighter from "react-highlight-words";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
+import { v4 as uuid } from "uuid";
 import {
   BookOutlined,
   CloseOutlined,
@@ -152,8 +153,8 @@ const Sidebar = () => {
             (t.code &&
               t?.code.toLowerCase().includes(searchValue.toLowerCase()))
         )
-        ?.map((task: ITaskData, index) =>
-          getItem(
+        ?.map((task: ITaskData, index) => {
+          return getItem(
             <Link
               onClick={() => {
                 if (width < 768) {
@@ -161,6 +162,7 @@ const Sidebar = () => {
                 }
               }}
               key={task._id}
+              // key={uuid()}
               to={`/project/${task.project.id}/${task.stage.id}/${task._id}`}
             >
               {/* {task?.title} */}
@@ -175,12 +177,13 @@ const Sidebar = () => {
             </Link>,
             task?._id,
             IconIssues(task?.type)
-          )
-        )
+          );
+        })
     : [];
 
   const items: MenuProps["items"] = [
-    ...(listTask || []),
+    ...(listTask.length > 0 ? listTask : [getItem(t("base:empty"), "28")]),
+
     { type: "divider" },
     getItem(t("contact"), "grp", null, [getItem("Mindx", "14")], "group"),
   ];
@@ -201,11 +204,53 @@ const Sidebar = () => {
       window.removeEventListener("resize", handleResize);
     };
   }, []);
+  // phần tự động đóng sidebar khi ở màn hình nhỏ
   useEffect(() => {
     if (window.innerWidth < 768) {
       !statusMenu && toggleCollapsed();
     }
   }, []);
+
+  // options task type
+  const typeOptions = [
+    {
+      label: t("sidebar:type"),
+      options: [
+        {
+          label: t("sidebar:typeAll"),
+          value: "allType",
+        },
+        {
+          label: (
+            <div className="task__type--main">
+              {t("content:form.assignment")}
+              <div
+                className="task_type"
+                style={{
+                  backgroundColor: "#44CB39",
+                }}
+              ></div>
+            </div>
+          ),
+          value: "assignment",
+        },
+        {
+          label: (
+            <div className="task__type--main">
+              {t("content:form.issue")}
+              <div
+                className="task_type"
+                style={{
+                  backgroundColor: "#EC2B2B",
+                }}
+              ></div>
+            </div>
+          ),
+          value: "issue",
+        },
+      ],
+    },
+  ];
 
   return (
     <aside
@@ -247,6 +292,7 @@ const Sidebar = () => {
         <div className="sidebar__action--select">
           <Select
             defaultValue="all"
+            value={filterProject}
             style={{ width: width > 768 ? 100 : 120 }}
             dropdownStyle={{
               minWidth: "200px",
@@ -267,50 +313,17 @@ const Sidebar = () => {
           />{" "}
           <Select
             defaultValue="allType"
+            value={filterType}
+            // value={`${t("content:task.type")}: ${
+            //   t<any>(`content:form.${filterType}`) ||
+            //   typeOptions[0].options[0].label
+            // }`}
             style={{ width: width > 768 ? 100 : 120 }}
             onChange={handleChangeStatus}
             dropdownStyle={{
               minWidth: "200px",
             }}
-            options={[
-              {
-                label: t("sidebar:type"),
-                options: [
-                  {
-                    label: t("sidebar:typeAll"),
-                    value: "allType",
-                  },
-                  {
-                    label: (
-                      <div className="task__type--main">
-                        {t("content:form.assignment")}
-                        <div
-                          className="task_type"
-                          style={{
-                            backgroundColor: "#44CB39",
-                          }}
-                        ></div>
-                      </div>
-                    ),
-                    value: "assignment",
-                  },
-                  {
-                    label: (
-                      <div className="task__type--main">
-                        {t("content:form.issue")}
-                        <div
-                          className="task_type"
-                          style={{
-                            backgroundColor: "#EC2B2B",
-                          }}
-                        ></div>
-                      </div>
-                    ),
-                    value: "issue",
-                  },
-                ],
-              },
-            ]}
+            options={typeOptions}
           />
         </div>
         <div className="sidebar__action--search">

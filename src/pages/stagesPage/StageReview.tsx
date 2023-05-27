@@ -1,16 +1,12 @@
 import Comment from "../../components/comment/Comment";
 import { useAxios } from "../../hooks";
 import useIsBoss from "../../hooks/useIsBoss";
-import { useAppSelector } from "../../redux/hook";
-import { RootState } from "../../redux/store";
-import projectApi from "../../services/api/projectApi";
 import stageApi from "../../services/api/stageApi";
 import { changeMsgLanguage } from "../../utils/changeMsgLanguage";
 import { MemberDataType } from "../Members/MemberList";
 import { Button, Input, Modal, Skeleton } from "antd";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useParams } from "react-router";
 import { v4 as uuid } from "uuid";
 
 import useMessageApi, {
@@ -145,6 +141,7 @@ const StageReview = ({ stageId }: IPropsReview) => {
           cancelText={t("base:cancel")}
         >
           <TextArea
+            autoFocus
             value={myReview}
             onChange={(e) => setMyReview(e.target.value)}
             onKeyDown={(event) => {
@@ -152,7 +149,9 @@ const StageReview = ({ stageId }: IPropsReview) => {
                 event.preventDefault();
               }
             }}
-            rows={4}
+            // rows={4}
+            maxLength={500}
+            autoSize={{ minRows: 4, maxRows: 8 }}
           />
         </Modal>
       </div>

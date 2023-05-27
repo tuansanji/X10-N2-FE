@@ -1,21 +1,16 @@
-import FormStages from './FormStages';
-import StageReview from './StageReview';
-import Loading from '../../components/support/Loading';
-import useIsBoss from '../../hooks/useIsBoss';
-import { useAppSelector } from '../../redux/hook';
-import stageApi from '../../services/api/stageApi';
-import { changeMsgLanguage } from '../../utils/changeMsgLanguage';
-import { ProjectType } from '../projectPage/ProjectDetail';
-import { DeleteFilled, EditFilled, EyeFilled } from '@ant-design/icons';
-import Search from 'antd/es/input/Search';
-import moment from 'moment';
-import React, {
-  useEffect,
-  useMemo,
-  useRef,
-  useState
-  } from 'react';
-import { useTranslation } from 'react-i18next';
+import FormStages from "./FormStages";
+import StageReview from "./StageReview";
+import Loading from "../../components/support/Loading";
+import useIsBoss from "../../hooks/useIsBoss";
+import { useAppSelector } from "../../redux/hook";
+import stageApi from "../../services/api/stageApi";
+import { changeMsgLanguage } from "../../utils/changeMsgLanguage";
+import { ProjectType } from "../projectPage/ProjectDetail";
+import { DeleteFilled, EditFilled, EyeFilled } from "@ant-design/icons";
+import Search from "antd/es/input/Search";
+import moment from "moment";
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   createSearchParams,
   useNavigate,
@@ -39,6 +34,7 @@ import useMessageApi, {
 import type { ColumnsType } from "antd/es/table";
 
 export interface IStages {
+  key?: string;
   _id?: string;
   name: string;
   startDate: Date;
@@ -83,10 +79,10 @@ const StagesPage: React.FC<PropTypes> = (props: PropTypes) => {
   });
   const [editStages, setEditStages] = useState<{
     status: boolean;
-    stages: IStages | {};
+    stages: IStages | any;
   }>({
     status: false,
-    stages: {},
+    stages: null,
   });
   const [searchParams, setSearchParams] = useSearchParams();
   const searchRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -351,7 +347,6 @@ const StagesPage: React.FC<PropTypes> = (props: PropTypes) => {
   // dữ liệu stages trong table
   const data: DataType[] = useMemo(() => {
     if (!stagesData?.stages) return [];
-
     return stagesData.stages.map((stage: IStages) => ({
       key: stage._id,
       name: stage.name,

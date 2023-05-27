@@ -238,9 +238,11 @@ const UserDetails = () => {
             <h2>{t("content:profileUser.title basic")}</h2>
             <p>{t("content:profileUser.sub title basic")}</p>
           </div>
-          <div className=" wrapper" onClick={() => setModalImage(true)}>
+          <div className="wrapper" onClick={() => setModalImage(true)}>
             <span>{t("content:profileUser.avatar")}</span>
-            <span>{t("content:profileUser.sub avatar")}</span>
+            <span className="sub_avatar">
+              {t("content:profileUser.sub avatar")}
+            </span>
             <div className="avatar">
               <img
                 src={imagePreview?.preview || userInfo?.avatar}

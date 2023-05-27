@@ -59,7 +59,7 @@ const TasksList: React.FC<TasksListPropsType> = ({
   const [taskCurrent, setTaskCurrent] = useState<any>(null);
   const [historyOrForm, setHistoryOrForm] = useState<boolean>(false);
   const [countReloadTasks, setCountReloadTasks] = useState<number>(1);
-  const { t, i18n } = useTranslation(["content", "base"]);
+  const { t } = useTranslation(["content", "base"]);
 
   const showTaskDetail = (record: TasksTableData) => {
     let filteredTask = tasksList.filter((task: TasksType) => {

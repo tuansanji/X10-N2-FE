@@ -176,7 +176,7 @@ const TasksPage = () => {
     useMessageApi();
   const [taskCurrent, setTaskCurrent] = useState<any>(null);
   const [allTasks, setAllTasks] = useState<ITask[]>([]);
-  const { t, i18n } = useTranslation(["content", "base"]);
+  const { t } = useTranslation(["content", "base"]);
   const [tasksColumns, setTasksColumns] = useState<ColumnData[]>([]);
   const [dragLoading, setDragLoading] = useState<boolean>(false);
   const [historyOrForm, setHistoryOrForm] = useState<boolean>(false);
@@ -184,6 +184,7 @@ const TasksPage = () => {
     project: "",
     stages: "",
   });
+  const [activeTab, setActiveTab] = useState("info");
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [statusForm, setStatusForm] = useState<boolean>(false);
   const [openInfo, setOpenInfo] = useState<boolean>(false);
@@ -270,9 +271,9 @@ const TasksPage = () => {
         setTasksColumns(newState);
       })
       .catch((err: any) => {
-        showMessage("error", err.response.data?.message, 2);
+        showMessage("error", err.response?.data?.message, 2);
       });
-  }, []);
+  }, [countReloadTasks]);
 
   const taskTypeOptions = [
     {
@@ -634,6 +635,7 @@ const TasksPage = () => {
     setEdit(false);
     setOpenInfo(false);
     setTaskCurrent(null);
+    setHistoryOrForm(false);
   };
 
   // mở tab thông tin task
@@ -645,6 +647,7 @@ const TasksPage = () => {
 
   // cuộn xuống phần tử khi nháy vào( sẽ cố gắng để thay đổi khi cuộn trang luôn)
   const handleTabLick = (tabLabel: string) => {
+    setActiveTab(tabLabel);
     if (tabLabel === "info") {
       setHistoryOrForm(false);
       const element = document.getElementById("form_task");
@@ -669,6 +672,7 @@ const TasksPage = () => {
       setHistoryOrForm(true);
     }
   };
+
   // phần tùy chọn modal task
   const items: TabsProps["items"] = [
     {
@@ -687,6 +691,14 @@ const TasksPage = () => {
       children: "",
     },
   ];
+
+  useEffect(() => {
+    if (activeTab) {
+      if (activeTab === "activity") {
+        setHistoryOrForm(true);
+      }
+    }
+  }, [activeTab, taskCurrent]);
 
   return (
     <div className="tasks_page">
@@ -730,6 +742,7 @@ const TasksPage = () => {
           <div className="task__info--container">
             <Tabs
               defaultActiveKey="1"
+              activeKey={activeTab}
               items={items}
               onTabClick={handleTabLick}
             />
