@@ -4,6 +4,8 @@
   "startingDate": "Ngày bắt đầu",
   "endDateExpected": "Ngày kết thúc dự kiến",
   "endDateActual": "Ngày kết thúc thực tế",
+  "endDate": "Ngày kết thúc thực tế",
+
   "action": "Hành động",
   "createStage": "Tạo mới giai đoạn",
   "editStage": "Chỉnh sửa giai đoạn",
