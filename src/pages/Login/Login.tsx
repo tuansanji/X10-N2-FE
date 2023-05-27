@@ -1,4 +1,9 @@
+import { images } from "../../assets/images/index";
+import { useAppDispatch, useAppSelector } from "../../redux/hook";
+import { requestLogin } from "../../redux/store";
+import { GoogleOutlined, LoadingOutlined } from "@ant-design/icons";
 import React, { useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import {
   Form,
   Button,
@@ -8,11 +13,6 @@ import {
   Checkbox,
   notification,
 } from "antd";
-import { LoadingOutlined, GoogleOutlined } from "@ant-design/icons";
-import { Link, useNavigate } from "react-router-dom";
-import { useAppDispatch, useAppSelector } from "../../redux/hook";
-import { images } from "../../assets/images/index";
-import { requestLogin } from "../../redux/store";
 import useMessageApi, {
   UseMessageApiReturnType,
 } from "../../components/support/Message";
@@ -34,7 +34,8 @@ const Login: React.FC = () => {
     dispatch(requestLogin(requestBody))
       .unwrap()
       .then(() => {
-        navigate("/");
+        // navigate("/");
+        navigate(-1);
       })
       .catch((err) => {
         showMessage("error", err, 2);
