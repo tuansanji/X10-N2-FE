@@ -28,9 +28,9 @@ const taskApi = {
     return axiosClient.get(url, { params });
   },
   //tất cả task mà user tạo và thực hiện
-  getTasksByUser() {
+  getTasksByUser(params?: any) {
     const url = `/task/related`;
-    return axiosClient.get(url);
+    return axiosClient.get(url, { params });
   },
   // phần comment
   getAllComment(taskId: string) {

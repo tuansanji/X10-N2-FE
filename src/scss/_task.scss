@@ -16,20 +16,25 @@
       height: 100%;
       @include webkit-scrollbar($borderRadius: 10px, $width: 8px, $height: 8px);
     }
+
+    .tool_bar {
+      .tool_bar_left,
+      .tool_bar_right {
+        @include flex(row, null, null, null, 16px);
+      }
+    }
   }
 
   .ant-divider {
     margin: 16px 0;
   }
 
-  .tool_bar {
-    @include flex($gap: 16px);
-  }
   .ant-input-search {
     width: 300px;
   }
 
-  button:first-child {
+  button:first-child,
+  button:nth-child(2) {
     margin-right: auto;
   }
 

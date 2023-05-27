@@ -58,17 +58,18 @@
 // Style cho page phụ Verfiy Register
 .register-verify {
   position: relative;
+
   img {
     @include backgroundImg;
   }
 
   .content {
+    @include formContainer;
     text-align: center;
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    margin-left: auto;
-    margin-right: auto;
+    padding-top: 32px;
+
+    .content_text {
+      font-size: 16px;
+    }
   }
 }

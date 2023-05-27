@@ -19,12 +19,10 @@ import { Link, useParams, useSearchParams } from "react-router-dom";
 import * as Scroll from "react-scroll";
 import {
   ClockCircleOutlined,
-  DoubleRightOutlined,
-  DownOutlined,
-  UpOutlined,
-  PauseOutlined,
   LoadingOutlined,
   SearchOutlined,
+  DownloadOutlined,
+  UploadOutlined,
 } from "@ant-design/icons";
 
 import useMessageApi, {
@@ -41,6 +39,9 @@ import {
   Tabs,
   Typography,
   Tooltip,
+  Row,
+  Col,
+  Upload,
 } from "antd";
 import type { TabsProps } from "antd";
 
@@ -108,6 +109,9 @@ const prioList: any = {
 
 const TaskItem: React.FC<TaskItemProp> = ({ task, handleOpenInfoTask }) => {
   const [bgColor, setBgColor] = useState<string>("");
+  let priority = setPriority(task.priority);
+
+  //set highligh cho deadline
   useEffect(() => {
     const now = new Date();
     const deadline = new Date(task.deadline);
@@ -123,7 +127,6 @@ const TaskItem: React.FC<TaskItemProp> = ({ task, handleOpenInfoTask }) => {
     }
   }, [task]);
 
-  let priority = setPriority(task.priority);
   return (
     <>
       <div
@@ -178,7 +181,6 @@ const TasksPage = () => {
   const [allTasks, setAllTasks] = useState<ITask[]>([]);
   const { t } = useTranslation(["content", "base"]);
   const [tasksColumns, setTasksColumns] = useState<ColumnData[]>([]);
-  const [dragLoading, setDragLoading] = useState<boolean>(false);
   const [historyOrForm, setHistoryOrForm] = useState<boolean>(false);
   const [breadcrumb, setBreadcrumb] = useState({
     project: "",
@@ -190,12 +192,29 @@ const TasksPage = () => {
   const [openInfo, setOpenInfo] = useState<boolean>(false);
   const [countReloadTasks, setCountReloadTasks] = useState<number>(1);
   const [edit, setEdit] = useState<boolean>(false);
-
+  const [tasksURL, setTasksURL] = useState<any>();
   const { responseData, isLoading } = useAxios(
     "get",
     `/project/members/all/${params.projectId}`,
     []
   );
+  const [isUpload, setIsUpload] = useState<boolean>(false);
+  const [fileList, setFileList] = useState<any[]>([]);
+
+  //Handle tải file danh sách công việc
+  useEffect(() => {
+    const getExportUrl = async () => {
+      const response = await axios({
+        method: "get",
+        url: `${process.env.REACT_APP_BACKEND_URL}/stage/tasks/${params.stagesId}/export`,
+        headers: { Authorization: `Bearer ${user.token}` },
+        responseType: "blob",
+      });
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      setTasksURL(url);
+    };
+    getExportUrl();
+  }, []);
 
   //Gọi API Lấy danh sách tasks => set vào các column
   //Lấy thông tin từ url để hiển thị tasks theo bộ lọc
@@ -271,7 +290,11 @@ const TasksPage = () => {
         setTasksColumns(newState);
       })
       .catch((err: any) => {
-        showMessage("error", err.response?.data?.message, 2);
+        showMessage(
+          "error",
+          changeMsgLanguage(err.response?.data?.message, "Có lỗi xảy ra"),
+          2
+        );
       });
   }, [countReloadTasks]);
 
@@ -318,6 +341,7 @@ const TasksPage = () => {
     [breadcrumb]
   );
 
+  //Lấy breadcrumb
   useEffect(() => {
     (async () => {
       try {
@@ -615,6 +639,7 @@ const TasksPage = () => {
         });
     }
   };
+
   // tạo task
   const handleCreateTask = () => {
     setIsModalOpen(true);
@@ -692,6 +717,38 @@ const TasksPage = () => {
     },
   ];
 
+  const handleUpload = (info: any) => {
+    let newFileList = [...info.fileList];
+    newFileList = newFileList.slice(-1);
+    setFileList(newFileList);
+    if (info.file.status === "uploading") {
+      setIsUpload(true);
+    }
+    if (info.file.status !== "uploading") {
+      if (info.file.status === "done") {
+        let newState = tasksColumns.map((column: any) => {
+          column.items = info.file.response.tasks.filter((task: any) => {
+            return task.status === column.id;
+          });
+          return column;
+        });
+        setAllTasks(info.file.response.tasks);
+        setTasksColumns(newState);
+        showMessage(
+          "success",
+          changeMsgLanguage(info.file.response.message, "Upload thành công"),
+          2
+        );
+        setIsUpload(false);
+      } else if (info.file.status === "error") {
+        showMessage(
+          "error",
+          changeMsgLanguage(info.file.response.message, "Xảy ra lỗi khi upload")
+        );
+        setIsUpload(false);
+      }
+    }
+  };
   useEffect(() => {
     if (activeTab) {
       if (activeTab === "activity") {
@@ -777,6 +834,10 @@ const TasksPage = () => {
                   />
                 ) : (
                   <TaskForm
+                    allTasks={allTasks}
+                    setAllTasks={setAllTasks}
+                    setTasksColumns={setTasksColumns}
+                    tasksColumns={tasksColumns}
                     setCountReloadTasks={setCountReloadTasks}
                     handleEditTask={handleEditTask}
                     edit={edit}
@@ -800,93 +861,120 @@ const TasksPage = () => {
           </div>
         )}
       </Modal>
+
+      {/* Nội dung chính của page */}
       <Space direction="vertical" size="large">
         <Breadcrumb items={breadcrumItems} />
-        <div className="tool_bar">
-          <Button size="large" type="primary" onClick={handleCreateTask}>
-            {t("content:form.create task")}
-          </Button>
-
-          <Select
-            size="large"
-            value={`${t("content:task.type")}: ${
-              t<any>(`content:form.${queryParams.type}`) ||
-              taskTypeOptions[0].options[0].label
-            }`}
-            options={taskTypeOptions}
-            dropdownMatchSelectWidth={false}
-            onChange={selectTaskTypes}
-          />
-          <Select
-            size="large"
-            value={
-              sortSelectValue?.includes("prio") ||
-              queryParams.sort?.includes("prio")
-                ? `${t("content:form.priority")}: ${t<any>(
-                    `content:form.${queryParams.sort
-                      ?.replace("prio", "")
-                      .toLowerCase()}`
-                  )}`
-                : sortSelectValue?.includes("deadline") ||
-                  queryParams.sort?.includes("deadline")
-                ? `${t("content:form.deadline")}: ${t<any>(
-                    `content:form.${queryParams.sort
-                      ?.replace("deadline", "")
-                      .toLowerCase()}`
-                  )}`
-                : `${t("content:form.deadline")}: ${
-                    priorityOptions[1].options[0].label
-                  }`
-            }
-            dropdownMatchSelectWidth={false}
-            options={priorityOptions}
-            onChange={sortPriority}
-          />
-          <Select
-            allowClear
-            mode="multiple"
-            style={{ width: "300px" }}
-            maxTagCount="responsive"
-            showSearch
-            size="large"
-            suffixIcon={<SearchOutlined />}
-            value={queryParams.member}
-            placeholder={`${t("content:member.member name")}`}
-            optionFilterProp="children"
-            filterOption={(input, option) =>
-              typeof option?.label === "string" &&
-              option.label.toLowerCase().includes(input.toLowerCase())
-            }
-            onChange={handleFilterMember}
-            onClear={cancelSelect}
-            dropdownRender={(menu) =>
-              isLoading ? (
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "center",
-                    padding: "10px 0",
-                  }}
-                >
-                  <LoadingOutlined />
-                </div>
-              ) : (
-                menu
-              )
-            }
-            options={responseData?.members?.map((item: IUser) => ({
-              label: `${item.data.fullName}`,
-              value: item.data.username,
-            }))}
-          />
-          <Search
-            size="large"
-            placeholder={`${t("content:task.task name")}`}
-            value={queryParams.search}
-            allowClear
-            onChange={handleInputChange}
-          />
-        </div>
+        <Row className="tool_bar" justify="space-between">
+          <Col className="tool_bar_left">
+            <Button size="large" type="primary" onClick={handleCreateTask}>
+              {t("content:form.create task")}
+            </Button>
+            <Tooltip title={t("content:task.export")}>
+              <a href={tasksURL} download="tasks.xlsx">
+                <Button size="large" icon={<DownloadOutlined />} />
+              </a>
+            </Tooltip>
+            <Tooltip title={t("content:task.import")}>
+              <Upload
+                name="tasks"
+                accept=".xlsx, .xls, .csv"
+                showUploadList={false}
+                onChange={handleUpload}
+                action={`${process.env.REACT_APP_BACKEND_URL}/stage/tasks/${params.stagesId}/import`}
+                headers={{ Authorization: `Bearer ${user.token}` }}
+                fileList={fileList}
+              >
+                <Button
+                  loading={isUpload}
+                  size="large"
+                  icon={<UploadOutlined />}
+                />
+              </Upload>
+            </Tooltip>
+          </Col>
+          <Col className="tool_bar_right">
+            <Select
+              size="large"
+              value={`${t("content:task.type")}: ${
+                t<any>(`content:form.${queryParams.type}`) ||
+                taskTypeOptions[0].options[0].label
+              }`}
+              options={taskTypeOptions}
+              dropdownMatchSelectWidth={false}
+              onChange={selectTaskTypes}
+            />
+            <Select
+              size="large"
+              value={
+                sortSelectValue?.includes("prio") ||
+                queryParams.sort?.includes("prio")
+                  ? `${t("content:form.priority")}: ${t<any>(
+                      `content:form.${queryParams.sort
+                        ?.replace("prio", "")
+                        .toLowerCase()}`
+                    )}`
+                  : sortSelectValue?.includes("deadline") ||
+                    queryParams.sort?.includes("deadline")
+                  ? `${t("content:form.deadline")}: ${t<any>(
+                      `content:form.${queryParams.sort
+                        ?.replace("deadline", "")
+                        .toLowerCase()}`
+                    )}`
+                  : `${t("content:form.deadline")}: ${
+                      priorityOptions[1].options[0].label
+                    }`
+              }
+              dropdownMatchSelectWidth={false}
+              options={priorityOptions}
+              onChange={sortPriority}
+            />
+            <Select
+              allowClear
+              mode="multiple"
+              style={{ width: "300px" }}
+              maxTagCount="responsive"
+              showSearch
+              size="large"
+              suffixIcon={<SearchOutlined />}
+              value={queryParams.member}
+              placeholder={`${t("content:member.member name")}`}
+              optionFilterProp="children"
+              filterOption={(input, option) =>
+                typeof option?.label === "string" &&
+                option.label.toLowerCase().includes(input.toLowerCase())
+              }
+              onChange={handleFilterMember}
+              onClear={cancelSelect}
+              dropdownRender={(menu) =>
+                isLoading ? (
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "center",
+                      padding: "10px 0",
+                    }}
+                  >
+                    <LoadingOutlined />
+                  </div>
+                ) : (
+                  menu
+                )
+              }
+              options={responseData?.members?.map((item: IUser) => ({
+                label: `${item.data.fullName}`,
+                value: item.data.username,
+              }))}
+            />
+            <Search
+              size="large"
+              placeholder={`${t("content:task.task name")}`}
+              value={queryParams.search}
+              allowClear
+              onChange={handleInputChange}
+            />
+          </Col>
+        </Row>
         <Divider />
         <div className="tasks_board">
           <DragDropContext

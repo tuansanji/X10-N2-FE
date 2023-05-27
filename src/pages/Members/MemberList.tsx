@@ -21,7 +21,6 @@ import {
   Typography,
   Select,
   Popconfirm,
-  message,
   Skeleton,
 } from "antd";
 import { NoticeType } from "antd/es/message/interface";
@@ -297,7 +296,6 @@ const MemberList: React.FC = () => {
         pageIndex: response.data.currentPage,
       });
       setSearchParams({ ...queryParams, currentPage: page });
-
       setIsLoading(false);
     } catch (err) {
       console.error(err);

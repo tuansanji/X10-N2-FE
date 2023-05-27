@@ -1,10 +1,9 @@
-import React, { useState } from "react";
-import { Descriptions, Typography, Button, Modal, Tooltip } from "antd";
+import React from "react";
+import { Descriptions, Typography, Button } from "antd";
 import dayjs from "dayjs";
 import { ProjectType } from "./ProjectDetail";
-import { EditOutlined } from "@ant-design/icons";
-import ProjectForm from "../../components/projectForm/ProjectForm";
 import { useTranslation } from "react-i18next";
+import { setStatusLabel } from "../../utils/setStatusLabel";
 
 const { Title, Text } = Typography;
 
@@ -13,26 +12,10 @@ interface PropTypes {
 }
 
 const ProjectInfo: React.FC<PropTypes> = ({ projectDetail }) => {
-  const [openEditProject, setOpenEditProject] = useState<boolean>(false);
   const { t, i18n } = useTranslation(["content", "base"]);
-  let bgColor: string = "";
-  switch (projectDetail?.status) {
-    case "ongoing":
-      bgColor = "#F0E155";
-      break;
-    case "completed":
-      bgColor = "#44CB39";
-      break;
-    case "suspended":
-      bgColor = "#EC2B2B";
-      break;
-    case "preparing":
-      bgColor = "#2E55DE";
-      break;
-    default:
-      bgColor = "transparent";
-      break;
-  }
+  const { bgColor, statusLabel, fontColor } = setStatusLabel(
+    projectDetail?.status as string
+  );
 
   return (
     <div className="project-info">
@@ -55,7 +38,9 @@ const ProjectInfo: React.FC<PropTypes> = ({ projectDetail }) => {
             shape="round"
             style={{ backgroundColor: bgColor }}
           >
-            <Text strong> {projectDetail?.status.toUpperCase()}</Text>
+            <Text strong style={{ color: fontColor }}>
+              {statusLabel}
+            </Text>
           </Button>
         </Descriptions.Item>
         <Descriptions.Item label={`${t("content:form.description")}`} span={2}>

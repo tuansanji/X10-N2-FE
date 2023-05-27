@@ -1,27 +1,27 @@
-import { ColumnData } from './TasksPage';
-import TinyMce from '../../components/tinyMce/TinyMce';
-import { useAxios } from '../../hooks';
-import useIsBoss from '../../hooks/useIsBoss';
-import { useAppDispatch, useAppSelector } from '../../redux/hook';
-import { reloadSidebar } from '../../redux/slice/menuSlice';
-import { RootState } from '../../redux/store';
-import taskApi from '../../services/api/taskApi';
-import { changeMsgLanguage } from '../../utils/changeMsgLanguage';
-import { disableStatus } from '../../utils/disableStatus';
-import { TasksType } from '../dashboardPage/Dashboard';
-import { LoadingOutlined } from '@ant-design/icons';
-import EN from 'antd/es/date-picker/locale/en_US';
-import VN from 'antd/es/date-picker/locale/vi_VN';
-import { NoticeType } from 'antd/es/message/interface';
-import axios from 'axios';
-import dayjs from 'dayjs';
-import parse from 'html-react-parser';
-import _ from 'lodash';
-import moment from 'moment';
-import 'moment/locale/vi';
-import { useTranslation } from 'react-i18next';
-import { useDispatch } from 'react-redux';
-import { useParams } from 'react-router';
+import { ColumnData } from "./TasksPage";
+import TinyMce from "../../components/tinyMce/TinyMce";
+import { useAxios } from "../../hooks";
+import useIsBoss from "../../hooks/useIsBoss";
+import { useAppDispatch, useAppSelector } from "../../redux/hook";
+import { reloadSidebar } from "../../redux/slice/menuSlice";
+import { RootState } from "../../redux/store";
+import taskApi from "../../services/api/taskApi";
+import { changeMsgLanguage } from "../../utils/changeMsgLanguage";
+import { disableStatus } from "../../utils/disableStatus";
+import { TasksType } from "../dashboardPage/Dashboard";
+import { LoadingOutlined } from "@ant-design/icons";
+import EN from "antd/es/date-picker/locale/en_US";
+import VN from "antd/es/date-picker/locale/vi_VN";
+import { NoticeType } from "antd/es/message/interface";
+import axios from "axios";
+import dayjs from "dayjs";
+import parse from "html-react-parser";
+import _ from "lodash";
+import moment from "moment";
+import "moment/locale/vi";
+import { useTranslation } from "react-i18next";
+import { useDispatch } from "react-redux";
+import { useParams } from "react-router";
 
 import React, {
   Dispatch,
@@ -41,6 +41,7 @@ import {
   Select,
   Skeleton,
 } from "antd";
+import { setQuery } from "../../redux/slice/paramsSlice";
 
 export interface ITask {
   _id: string;
@@ -135,6 +136,7 @@ const TaskForm = (props: ITaskForm) => {
   const user = useAppSelector((state: RootState) => state.auth?.userInfo);
   const dispatch = useDispatch();
   const { isBoss } = useIsBoss([], 2, taskCurrent?.project?.id);
+  const queryParams = useAppSelector((state: any) => state.queryParams);
   const { t, i18n } = useTranslation(["content", "base", "message"]);
   moment.locale(i18n.language);
 
@@ -183,8 +185,29 @@ const TaskForm = (props: ITaskForm) => {
             return task._id !== taskInfo.data?._id;
           });
           setTasksList?.(newList);
+          dispatch(
+            setQuery({
+              ...queryParams,
+              taskTableParams: {
+                ...queryParams.taskTableParams,
+                total: queryParams.taskTableParams.total - 1,
+              },
+            })
+          );
         }
-
+        if (tasksColumns && allTasks) {
+          let newTasks = allTasks.filter((task: any) => {
+            return task._id !== taskInfo.data?._id;
+          });
+          setAllTasks?.(newTasks);
+          let newState = tasksColumns.map((column: any) => {
+            column.items = newTasks.filter((task: any) => {
+              return task.status === column.id;
+            });
+            return column;
+          });
+          setTasksColumns?.(newState);
+        }
         showMessage(
           "success",
           changeMsgLanguage(res?.message, "Xóa thành công"),

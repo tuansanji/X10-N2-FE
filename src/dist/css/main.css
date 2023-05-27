@@ -133,13 +133,20 @@ html {
   opacity: 0.5;
 }
 .register-verify .content {
-  text-align: center;
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   margin-left: auto;
   margin-right: auto;
+  width: 500px;
+  height: 100%;
+  background-color: white;
+  text-align: center;
+  padding-top: 32px;
+}
+.register-verify .content .content_text {
+  font-size: 16px;
 }
 
 .login, .forgot-password {
@@ -728,18 +735,20 @@ img.img-tiny {
   border-radius: 10px;
   background-color: #2e3239;
 }
-.tasks_page .ant-divider {
-  margin: 16px 0;
-}
-.tasks_page .tool_bar {
+.tasks_page .ant-space .tool_bar .tool_bar_left,
+.tasks_page .ant-space .tool_bar .tool_bar_right {
   display: flex;
   flex-direction: row;
   gap: 16px;
 }
+.tasks_page .ant-divider {
+  margin: 16px 0;
+}
 .tasks_page .ant-input-search {
   width: 300px;
 }
-.tasks_page button:first-child {
+.tasks_page button:first-child,
+.tasks_page button:nth-child(2) {
   margin-right: auto;
 }
 .tasks_page .tasks_board {
@@ -1350,7 +1359,6 @@ img.img-tiny {
 
 .member-list {
   margin-top: 1rem;
-  height: 100vh;
 }
 .member-list .header {
   display: flex;
@@ -1695,14 +1703,13 @@ img.img-tiny {
 .dashboard .btn_status {
   padding: 0;
 }
-.dashboard .ant-divider {
-  height: 100%;
-  margin: 0;
-}
-.dashboard .projects_list {
-  height: 100%;
+@media only screen and (min-width: 1200px) {
+  .dashboard .horizontal_divider {
+    display: none;
+  }
 }
 .dashboard .projects_list .projects_list_header {
+  margin-top: 16px;
   padding: 16px 0;
   display: flex;
   flex-direction: row;
@@ -1712,20 +1719,44 @@ img.img-tiny {
 .dashboard .projects_list .projects_list_header .ant-typography {
   margin: 0;
 }
-.dashboard .projects_list .projects_list_item {
-  height: calc(100% - 60px);
-}
 .dashboard .projects_list .projects_list_item .project_name_column {
   display: flex;
   flex-direction: row;
   justify-content: space-between;
+  align-items: center;
+  gap: 8px;
 }
-.dashboard .projects_list .projects_list_item .project_name_action {
+.dashboard .projects_list .projects_list_item .project_name_column a {
+  font-weight: 600;
+}
+.dashboard .projects_list .projects_list_item .project_name_action .action_button {
   display: flex;
   flex-direction: row;
   gap: 8px;
+  display: none;
+}
+@media screen and (min-width: 700px) and (max-width: 1200px) {
+  .dashboard .projects_list .projects_list_item .project_name_action .dropdown_action {
+    display: none;
+  }
+  .dashboard .projects_list .projects_list_item .project_name_action .action_button {
+    display: flex;
+  }
+}
+@media screen and (min-width: 1400px) {
+  .dashboard .projects_list .projects_list_item .project_name_action .action_button {
+    display: flex;
+  }
+  .dashboard .projects_list .projects_list_item .project_name_action .dropdown_action {
+    display: none;
+  }
+}
+.dashboard .projects_list .tasks_table,
+.dashboard .projects_list .projects_table {
+  width: auto;
 }
 .dashboard .tasks_list .tasks_list_header {
+  margin-top: 16px;
   padding: 16px 0;
 }
 .dashboard .tasks_list .tasks_list_header .ant-typography {
@@ -1743,6 +1774,40 @@ img.img-tiny {
 .dashboard .tasks_list .tasks_container .task_name {
   cursor: pointer;
   color: #1677ff;
+}
+.dashboard .tasks_list .tasks_container .table_header_container {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+}
+.dashboard .tasks_list .tasks_container .table_header_container .icon_container {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  height: 24px;
+  width: 24px;
+}
+.dashboard .tasks_list .tasks_container .table_header_filter {
+  display: flex;
+  flex-direction: column;
+}
+
+.table_filter_dropdown {
+  display: flex;
+  flex-direction: column;
+  padding: 8px 4px;
+}
+.table_filter_dropdown .ant-checkbox-wrapper {
+  margin-inline-start: 8px;
+}
+
+.dropdown_button {
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
 }
 
 .notfound__page {

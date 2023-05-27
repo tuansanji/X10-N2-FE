@@ -1,23 +1,44 @@
+import {
+  Button,
+  Checkbox,
+  Input,
+  Modal,
+  Skeleton,
+  Table,
+  Tabs,
+  TabsProps,
+  Typography,
+} from "antd";
 import { TasksType, UserInfo } from "./Dashboard";
 import { setPriority } from "../../utils/setPriority";
 import TaskForm from "../tasksPage/TaskForm";
 import TaskHistory from "../tasksPage/TaskHistory";
 import TaskInfo from "../tasksPage/TaskInfo";
-import { Button, Modal, Table, Tabs, TabsProps, Typography } from "antd";
 import { NoticeType } from "antd/es/message/interface";
 import { ColumnsType } from "antd/es/table";
 import _ from "lodash";
+import React, {
+  Dispatch,
+  SetStateAction,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import { SearchOutlined, SortAscendingOutlined } from "@ant-design/icons";
+import { CheckboxValueType } from "antd/es/checkbox/Group";
+import { CheckboxChangeEvent } from "antd/es/checkbox";
+import { useAppDispatch, useAppSelector } from "../../redux/hook";
+import { setQuery } from "../../redux/slice/paramsSlice";
+import taskApi from "../../services/api/taskApi";
+import { changeMsgLanguage } from "../../utils/changeMsgLanguage";
 import moment from "moment";
-import React, { Dispatch, SetStateAction, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import {
-  DoubleRightOutlined,
-  DownOutlined,
-  PauseOutlined,
-  UpOutlined,
-} from "@ant-design/icons";
+import { useSortPrio } from "../../hooks/useSortPrio";
+import { setStatusLabel } from "../../utils/setStatusLabel";
 
 const { Title, Text } = Typography;
+const { Search } = Input;
 
 interface TasksListPropsType {
   tasksList: TasksType[];
@@ -39,19 +60,15 @@ interface TasksTableData {
   title: string;
 }
 
-const prioList: any = {
-  highest: 5,
-  high: 4,
-  medium: 3,
-  low: 2,
-  lowest: 1,
-};
-
 const TasksList: React.FC<TasksListPropsType> = ({
   tasksList,
   showMessage,
   setTasksList,
 }) => {
+  const dispatch = useAppDispatch();
+  const titleTimer = useRef<any>(null);
+  const assigneeTimer = useRef<any>(null);
+  const sortPrio = useSortPrio();
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [statusForm, setStatusForm] = useState<boolean>(false);
   const [edit, setEdit] = useState<boolean>(false);
@@ -59,7 +76,159 @@ const TasksList: React.FC<TasksListPropsType> = ({
   const [taskCurrent, setTaskCurrent] = useState<any>(null);
   const [historyOrForm, setHistoryOrForm] = useState<boolean>(false);
   const [countReloadTasks, setCountReloadTasks] = useState<number>(1);
-  const { t } = useTranslation(["content", "base"]);
+  const { t, i18n } = useTranslation(["content", "base"]);
+  const [checkAll, setCheckAll] = useState<boolean>(false);
+  const [indeterminate, setIndeterminate] = useState<boolean>(true);
+  const [filterStatus, setFilterStatus] = useState<any[]>([]);
+  const queryParams = useAppSelector((state: any) => state.queryParams);
+  const [tableLoading, setTableLoading] = useState<boolean>(false);
+
+  const plainOptions = [
+    { label: "Open", value: "open" },
+    { label: "In Progress", value: "inprogress" },
+    { label: "Review", value: "review" },
+    { label: "Re-Open", value: "reopen" },
+    { label: "Done", value: "done" },
+    { label: "Cancel", value: "cancel" },
+  ];
+
+  //Xử lý event khi click filter status
+  const onCheckAllChange = (e: CheckboxChangeEvent) => {
+    let filter = e.target.checked
+      ? plainOptions.map((option: any) => option.value)
+      : [];
+    setFilterStatus(filter);
+    setIndeterminate(false);
+    setCheckAll(e.target.checked);
+    dispatch(
+      setQuery({
+        ...queryParams,
+        taskTableParams: { ...queryParams.taskTableParams, status: filter },
+      })
+    );
+  };
+
+  const handleStatusFilter = (list: CheckboxValueType[]) => {
+    setFilterStatus(list);
+    setIndeterminate(!!list.length && list.length < plainOptions.length);
+    setCheckAll(list.length === plainOptions.length);
+    dispatch(
+      setQuery({
+        ...queryParams,
+        taskTableParams: { ...queryParams.taskTableParams, status: list },
+      })
+    );
+  };
+  //Kết thúc xử lý
+
+  //Xử lý event khi search tên tasks và assignee
+  const handleSearchTasks = (event: any) => {
+    let value = event.target.value;
+    clearTimeout(titleTimer.current);
+    titleTimer.current = setTimeout(() => {
+      dispatch(
+        setQuery({
+          ...queryParams,
+          taskTableParams: { ...queryParams.taskTableParams, title: value },
+        })
+      );
+    }, 500);
+  };
+
+  const handleSearchAssignee = (event: any) => {
+    let value = event.target.value;
+    clearTimeout(assigneeTimer.current);
+    assigneeTimer.current = setTimeout(() => {
+      dispatch(
+        setQuery({
+          ...queryParams,
+          taskTableParams: { ...queryParams.taskTableParams, assignee: value },
+        })
+      );
+    }, 500);
+  };
+  //kết thúc xử lý
+
+  //Xử lý event khi sort dữ liệu
+  const handleSortPrio = () => {
+    sortPrio("prioAsc", "prioDesc");
+  };
+
+  const handleSortDeadline = () => {
+    sortPrio("deadlineAsc", "deadlineDesc");
+  };
+  //kết thúc xử lý
+
+  //Xử lý event khi chuyển trang
+  const handlePageChange = async (page: number, pageSize: number) => {
+    setTableLoading(true);
+    taskApi
+      .getTasksByUser({ ...queryParams.taskTableParams, page })
+      .then((res: any) => {
+        setTasksList(res.tasks);
+        dispatch(
+          setQuery({
+            ...queryParams,
+            taskTableParams: {
+              ...queryParams.taskTableParams,
+              page,
+              total: res.total,
+            },
+          })
+        );
+        setTableLoading(false);
+      })
+      .catch((err: any) => {
+        setTasksList([]);
+        showMessage(
+          "error",
+          changeMsgLanguage(
+            err.response.data?.message,
+            "Gặp sự cố khi chuyển trang"
+          ),
+          2
+        );
+        setTableLoading(false);
+      });
+  };
+
+  // Gọi API khi filter, sort
+  useEffect(() => {
+    setTableLoading(true);
+    taskApi
+      .getTasksByUser(queryParams.taskTableParams)
+      .then((res: any) => {
+        setTasksList(res.tasks);
+        setTableLoading(false);
+        dispatch(
+          setQuery({
+            ...queryParams,
+            taskTableParams: {
+              ...queryParams.taskTableParams,
+              total: res.total,
+              page: Number(res.currentPage),
+            },
+          })
+        );
+      })
+      .catch((err: any) => {
+        setTasksList([]);
+        showMessage(
+          "error",
+          changeMsgLanguage(
+            err.response.data?.message,
+            "Không tìm thấy kết quả"
+          ),
+          2
+        );
+        setTableLoading(false);
+      });
+  }, [
+    queryParams.taskTableParams?.status,
+    queryParams.taskTableParams?.sort,
+    queryParams.taskTableParams?.title,
+    queryParams.taskTableParams?.assignee,
+  ]);
 
   const showTaskDetail = (record: TasksTableData) => {
     let filteredTask = tasksList.filter((task: TasksType) => {
@@ -116,9 +285,9 @@ const TasksList: React.FC<TasksListPropsType> = ({
       dataIndex: "code",
       key: "code",
       render: (_, record: TasksTableData) => {
-        return <Title level={5}>{record.code}</Title>;
+        return <Text strong>{record.code}</Text>;
       },
-      width: "16%",
+      responsive: ["xxl"],
     },
     {
       title: `${t("content:name")}`,
@@ -127,6 +296,7 @@ const TasksList: React.FC<TasksListPropsType> = ({
       render: (_, record: TasksTableData) => {
         return (
           <Text
+            strong
             className="task_name"
             onClick={() => {
               showTaskDetail(record);
@@ -136,47 +306,35 @@ const TasksList: React.FC<TasksListPropsType> = ({
           </Text>
         );
       },
-      width: "16%",
+      filterDropdown: () => (
+        <div style={{ padding: 8 }} onKeyDown={(e) => e.stopPropagation()}>
+          <Search
+            allowClear
+            placeholder="Search Tasks"
+            onChange={handleSearchTasks}
+          />
+        </div>
+      ),
+      filterIcon: <SearchOutlined />,
+      width: "20%",
     },
     {
       title: `${t("content:form.status")}`,
       dataIndex: "status",
       key: "status",
       render: (_, record: TasksTableData) => {
-        let bgColor: string = "";
-        let statusLabel: string = "";
-        switch (record.status) {
-          case "open":
-            bgColor = "#2E55DE";
-            statusLabel = "Open";
-            break;
-          case "inprogress":
-            bgColor = "#F0E155";
-            statusLabel = "In Progress";
-            break;
-          case "review":
-            bgColor = "#E6883f";
-            statusLabel = "Review";
-            break;
-          case "reopen":
-            bgColor = "#8544d4";
-            statusLabel = "Re-Open";
-            break;
-          case "done":
-            bgColor = "#44CB39";
-            statusLabel = "Done";
-            break;
-          case "cancel":
-            bgColor = "#EC2B2B";
-            statusLabel = "Cancel";
-        }
+        const { bgColor, statusLabel, fontColor } = setStatusLabel(
+          record.status
+        );
         return (
           <Button
             type="primary"
             shape="round"
             style={{ backgroundColor: bgColor }}
           >
-            <Text strong>{statusLabel}</Text>
+            <Text style={{ color: fontColor }} strong>
+              {statusLabel}
+            </Text>
           </Button>
         );
       },
@@ -188,11 +346,36 @@ const TasksList: React.FC<TasksListPropsType> = ({
         { text: "Done", value: "done" },
         { text: "Cancel", value: "cancel" },
       ],
-      onFilter: (value: any, record) => record.status.indexOf(value) === 0,
-      width: "16%",
+      filterDropdown: () => (
+        <div
+          className="table_filter_dropdown"
+          onKeyDown={(e) => e.stopPropagation()}
+        >
+          <Checkbox
+            checked={checkAll}
+            onChange={onCheckAllChange}
+            indeterminate={indeterminate}
+          >
+            All
+          </Checkbox>
+          <Checkbox.Group
+            style={{ display: "flex", flexDirection: "column" }}
+            options={plainOptions}
+            onChange={handleStatusFilter}
+            value={filterStatus}
+          />
+        </div>
+      ),
     },
     {
-      title: `${t("content:form.priority")}`,
+      title: (
+        <div className="table_header_container">
+          {`${t("content:form.priority")}`}
+          <div className="icon_container" onClick={handleSortPrio}>
+            <SortAscendingOutlined />
+          </div>
+        </div>
+      ),
       dataIndex: "priority",
       key: "priority",
       render: (text, record: TasksTableData) => {
@@ -200,33 +383,27 @@ const TasksList: React.FC<TasksListPropsType> = ({
         return (
           <div className="task_priority">
             <span>{priority}</span>
-            <Title level={5}>{_.capitalize(record.priority)}</Title>
+            <Text strong>{_.capitalize(record.priority)}</Text>
           </div>
         );
       },
-      sorter: (a, b) => {
-        return prioList[a.priority] - prioList[b.priority];
-      },
-      width: "16%",
     },
     {
-      title: `${t("content:form.deadline")}`,
+      title: (
+        <div className="table_header_container">
+          {`${t("content:form.deadline")}`}
+          <div className="icon_container" onClick={handleSortDeadline}>
+            <SortAscendingOutlined />
+          </div>
+        </div>
+      ),
       dataIndex: "deadline",
       key: "deadline",
       render: (_, record: TasksTableData) => {
         return (
-          <Title level={5}>
-            {moment(record.deadline).format("DD/MM/YYYY")}
-          </Title>
+          <Text strong>{moment(record.deadline).format("DD/MM/YYYY")}</Text>
         );
       },
-      defaultSortOrder: "descend",
-      sorter: (a, b) => {
-        let d1 = Number(new Date(a.deadline));
-        let d2 = Number(new Date(b.deadline));
-        return d2 - d1;
-      },
-      width: "16%",
     },
     {
       title: `${t("content:form.assignee")}`,
@@ -235,7 +412,18 @@ const TasksList: React.FC<TasksListPropsType> = ({
       render: (_, record: TasksTableData) => {
         return <Title level={5}>{record.assignee?.fullName}</Title>;
       },
-      width: "16%",
+
+      filterDropdown: () => (
+        <div style={{ padding: 8 }} onKeyDown={(e) => e.stopPropagation()}>
+          <Search
+            value={queryParams.taskTableParams?.assignee || ""}
+            allowClear
+            placeholder="Search Assignee"
+            onChange={handleSearchAssignee}
+          />
+        </div>
+      ),
+      filterIcon: <SearchOutlined />,
     },
   ];
   const data: TasksTableData[] = useMemo(() => {
@@ -355,14 +543,24 @@ const TasksList: React.FC<TasksListPropsType> = ({
             </div>
           )}
         </Modal>
-        <Table
-          bordered
-          dataSource={data}
-          columns={columns}
-          pagination={{
-            position: tasksList.length >= 10 ? ["bottomCenter"] : [],
-          }}
-        />
+        {tableLoading ? (
+          <Skeleton />
+        ) : (
+          <Table
+            className="tasks_table"
+            loading={tableLoading}
+            bordered
+            dataSource={data}
+            columns={columns}
+            pagination={{
+              position: ["bottomCenter"],
+              pageSize: 10,
+              total: queryParams.taskTableParams?.total,
+              current: queryParams.taskTableParams?.page,
+              onChange: handlePageChange,
+            }}
+          />
+        )}
       </div>
     </>
   );
