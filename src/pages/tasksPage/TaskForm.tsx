@@ -57,7 +57,8 @@ export interface ITask {
   createdDate?: Date;
   startDate: Date;
   deadline: Date;
-  endDateActual: Date;
+  endDateActual?: Date;
+  endDate: Date;
   description?: string;
 }
 interface ITaskForm {
@@ -117,6 +118,7 @@ const TaskForm = (props: ITaskForm) => {
     tasksList,
     setTasksList,
   } = props;
+  const [width, setWidth] = useState(window.innerWidth);
   const [description, setDescription] = useState<string>("");
   const [reloadData, setReloadData] = useState<number>(1);
   const [loading, setLoading] = useState<boolean>(true);
@@ -128,13 +130,14 @@ const TaskForm = (props: ITaskForm) => {
     stages: "",
     task: "",
   });
+
   const params = useParams();
   const [form] = Form.useForm();
   const user = useAppSelector((state: RootState) => state.auth?.userInfo);
   const dispatch = useDispatch();
   const { isBoss } = useIsBoss([], 2, taskCurrent?.project?.id);
-  const { t, i18n } = useTranslation(["content", "base"]);
   const queryParams = useAppSelector((state: any) => state.queryParams);
+  const { t, i18n } = useTranslation(["content", "base", "message"]);
   moment.locale(i18n.language);
 
   // lấy all user trong project
@@ -282,8 +285,8 @@ const TaskForm = (props: ITaskForm) => {
         priority: data.priority,
         description: description,
         assignee: data.assignee?.value || data.assignee,
-        ...(data.endDateActual && {
-          endDateActual: data.endDateActual,
+        ...(data.endDate && {
+          endDate: data.endDate,
         }),
       };
       taskApi
@@ -299,6 +302,16 @@ const TaskForm = (props: ITaskForm) => {
             setStatusForm(false);
             return;
           }
+          setReloadData((prev) => prev + 1);
+          setCountReloadTasks((prev) => prev + 1);
+          showMessage(
+            "success",
+            changeMsgLanguage(res?.message, "Chỉnh sửa thành công"),
+            2
+          );
+          dispatch(reloadSidebar());
+          setEdit?.(false);
+          setStatusForm(false);
           if (tasksList) {
             let newList = tasksList.map((task: TasksType) => {
               if (task?._id === res?.task?._id) {
@@ -309,17 +322,6 @@ const TaskForm = (props: ITaskForm) => {
             });
             setTasksList?.(newList);
           }
-
-          showMessage(
-            "success",
-            changeMsgLanguage(res?.message, "Chỉnh sửa thành công"),
-            2
-          );
-          dispatch(reloadSidebar());
-          setReloadData((prev) => prev + 1);
-          setEdit?.(false);
-          setStatusForm(false);
-          setCountReloadTasks((prev) => prev + 1);
         })
         .catch((err) => {
           console.log(err);
@@ -389,8 +391,8 @@ const TaskForm = (props: ITaskForm) => {
           assignee: taskData.assignee?._id,
           startDate: dayjs(taskData?.startDate),
           deadline: dayjs(taskData?.deadline),
-          ...(taskData?.endDateActual && {
-            endDateActual: dayjs(taskData?.endDateActual),
+          ...(taskData?.endDate && {
+            endDate: dayjs(taskData?.endDate),
           }),
           description: taskData?.description,
         }
@@ -406,6 +408,16 @@ const TaskForm = (props: ITaskForm) => {
       form.setFieldsValue(initialValues);
     }
   }, [initialValues, currentUser]);
+  // phần xác định chiều rộng màn hình hiện tại để làm đóng mở sidebar
+  useEffect(() => {
+    const handleResize = () => {
+      setWidth(window.innerWidth);
+    };
+    window.addEventListener("resize", handleResize);
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
 
   return loadingAll ? (
     <Skeleton active />
@@ -462,14 +474,14 @@ const TaskForm = (props: ITaskForm) => {
         initialValues={initialValues}
         size="large"
         layout="vertical"
-        name={params.stagesId || taskCurrent?.stage.id}
+        name={params.stagesId || taskCurrent?.stage?.id || "form"}
         form={form}
         onFinish={onFinish}
       >
         <Descriptions
           title={title}
           bordered
-          column={2}
+          column={width < 600 ? 1 : 2}
           labelStyle={{
             width: "15%",
             textAlign: "start",
@@ -481,18 +493,29 @@ const TaskForm = (props: ITaskForm) => {
             width: "35%",
           }}
         >
-          <Descriptions.Item label={t("content:form.title")} span={2}>
+          <Descriptions.Item
+            label={t("content:form.title")}
+            span={width < 600 ? 1 : 2}
+          >
             {!taskInfo.status ? (
               <Form.Item
                 name="title"
                 rules={[
                   {
                     required: true,
-                    message: "Please input your task name!",
+                    message: t("message:task.Please input your task name"),
                   },
                 ]}
               >
-                <Input placeholder="Title..." />
+                <Input
+                  disabled={
+                    !isBoss &&
+                    currentUser?._id === taskCurrent?.assignee?._id &&
+                    currentUser?._id !== taskCurrent?.createdBy?._id
+                  }
+                  placeholder={t("content:form.title") + "..."}
+                  maxLength={80}
+                />
               </Form.Item>
             ) : (
               taskData?.title
@@ -551,6 +574,11 @@ const TaskForm = (props: ITaskForm) => {
             {!taskInfo.status ? (
               <Form.Item name="type">
                 <Select
+                  disabled={
+                    !isBoss &&
+                    currentUser?._id === taskCurrent?.assignee?._id &&
+                    currentUser?._id !== taskCurrent?.createdBy?._id
+                  }
                   style={{ width: "100%" }}
                   options={[
                     {
@@ -601,6 +629,11 @@ const TaskForm = (props: ITaskForm) => {
             {!taskInfo.status ? (
               <Form.Item name="priority">
                 <Select
+                  disabled={
+                    !isBoss &&
+                    currentUser?._id === taskCurrent?.assignee?._id &&
+                    currentUser?._id !== taskCurrent?.createdBy?._id
+                  }
                   style={{ width: "100%" }}
                   options={[
                     { value: "highest", label: t("content:form.highest") },
@@ -633,13 +666,18 @@ const TaskForm = (props: ITaskForm) => {
                 rules={[
                   {
                     required: true,
-                    message: "please select assignee!",
+                    message: t("message:task.please select assignee"),
                   },
                 ]}
               >
                 <Select
+                  disabled={
+                    !isBoss &&
+                    currentUser?._id === taskCurrent?.assignee?._id &&
+                    currentUser?._id !== taskCurrent?.createdBy?._id
+                  }
                   showSearch
-                  placeholder="Select a person"
+                  placeholder={t("message:task.Select a person")}
                   optionFilterProp="children"
                   filterOption={(input, option) =>
                     typeof option?.label === "string" &&
@@ -689,11 +727,16 @@ const TaskForm = (props: ITaskForm) => {
                 rules={[
                   {
                     required: true,
-                    message: " Please fill it out completely",
+                    message: t("message:stage.Please fill it out completely"),
                   },
                 ]}
               >
                 <DatePicker
+                  disabled={
+                    !isBoss &&
+                    currentUser?._id === taskCurrent?.assignee?._id &&
+                    currentUser?._id !== taskCurrent?.createdBy?._id
+                  }
                   disabledDate={(current) => {
                     const endDateExpected = form.getFieldValue("deadline");
                     return endDateExpected && current
@@ -719,11 +762,16 @@ const TaskForm = (props: ITaskForm) => {
                 rules={[
                   {
                     required: true,
-                    message: " Please fill it out completely",
+                    message: t("message:stage.Please fill it out completely"),
                   },
                 ]}
               >
                 <DatePicker
+                  disabled={
+                    !isBoss &&
+                    currentUser?._id === taskCurrent?.assignee?._id &&
+                    currentUser?._id !== taskCurrent?.createdBy?._id
+                  }
                   disabledDate={(current) => {
                     const startDate = form.getFieldValue("startDate");
                     return (
@@ -744,7 +792,7 @@ const TaskForm = (props: ITaskForm) => {
           </Descriptions.Item>
           <Descriptions.Item label={t("content:endDateActual")} span={1}>
             {!taskInfo.status ? (
-              <Form.Item name="endDateActual">
+              <Form.Item name="endDate">
                 <DatePicker
                   disabledDate={(current) => {
                     const startDate = form.getFieldValue("startDate");
@@ -752,29 +800,49 @@ const TaskForm = (props: ITaskForm) => {
                   }}
                   locale={i18n.language === "en" ? EN : VN}
                   style={{ width: "100%" }}
-                  disabled={!statusForm}
+                  disabled={
+                    !statusForm ||
+                    (!isBoss &&
+                      currentUser?._id === taskCurrent?.assignee?._id &&
+                      currentUser?._id !== taskCurrent?.createdBy?._id)
+                  }
                   showTime
                   showSecond={false}
                 />
               </Form.Item>
-            ) : taskData?.endDateActual ? (
-              moment(taskData?.endDateActual).format("DD MMMM, YYYY - hh:mm A")
+            ) : taskData?.endDate ? (
+              moment(taskData?.endDate).format("DD MMMM, YYYY - hh:mm A")
             ) : (
               ""
             )}
           </Descriptions.Item>
 
           <Descriptions.Item
-            span={2}
+            span={width < 600 ? 1 : 2}
             style={{ textAlign: "start", verticalAlign: "top" }}
             label={t("content:form.description")}
           >
             {!taskInfo.status ? (
-              <TinyMce
-                description={description}
-                setContentMce={setDescription}
-                defaultValue={taskData?.description || ""}
-              />
+              <>
+                {!taskData && (
+                  <TinyMce
+                    description={description}
+                    setContentMce={setDescription}
+                    defaultValue={taskData?.description || ""}
+                  />
+                )}
+                {taskData && isBoss ? (
+                  <TinyMce
+                    description={description}
+                    setContentMce={setDescription}
+                    defaultValue={taskData?.description || ""}
+                  />
+                ) : (
+                  <div className="task__form--description">
+                    {parse(taskData?.description || "")}
+                  </div>
+                )}
+              </>
             ) : (
               <div className="task__form--description">
                 {parse(taskData?.description || "")}

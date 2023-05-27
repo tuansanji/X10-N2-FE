@@ -179,13 +179,14 @@ const TasksPage = () => {
     useMessageApi();
   const [taskCurrent, setTaskCurrent] = useState<any>(null);
   const [allTasks, setAllTasks] = useState<ITask[]>([]);
-  const { t, i18n } = useTranslation(["content", "base"]);
+  const { t } = useTranslation(["content", "base"]);
   const [tasksColumns, setTasksColumns] = useState<ColumnData[]>([]);
   const [historyOrForm, setHistoryOrForm] = useState<boolean>(false);
   const [breadcrumb, setBreadcrumb] = useState({
     project: "",
     stages: "",
   });
+  const [activeTab, setActiveTab] = useState("info");
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [statusForm, setStatusForm] = useState<boolean>(false);
   const [openInfo, setOpenInfo] = useState<boolean>(false);
@@ -289,9 +290,13 @@ const TasksPage = () => {
         setTasksColumns(newState);
       })
       .catch((err: any) => {
-        showMessage("error", err.response.data?.message, 2);
+        showMessage(
+          "error",
+          changeMsgLanguage(err.response?.data?.message, "Có lỗi xảy ra"),
+          2
+        );
       });
-  }, []);
+  }, [countReloadTasks]);
 
   const taskTypeOptions = [
     {
@@ -655,6 +660,7 @@ const TasksPage = () => {
     setEdit(false);
     setOpenInfo(false);
     setTaskCurrent(null);
+    setHistoryOrForm(false);
   };
 
   // mở tab thông tin task
@@ -666,6 +672,7 @@ const TasksPage = () => {
 
   // cuộn xuống phần tử khi nháy vào( sẽ cố gắng để thay đổi khi cuộn trang luôn)
   const handleTabLick = (tabLabel: string) => {
+    setActiveTab(tabLabel);
     if (tabLabel === "info") {
       setHistoryOrForm(false);
       const element = document.getElementById("form_task");
@@ -690,6 +697,7 @@ const TasksPage = () => {
       setHistoryOrForm(true);
     }
   };
+
   // phần tùy chọn modal task
   const items: TabsProps["items"] = [
     {
@@ -726,14 +734,28 @@ const TasksPage = () => {
         });
         setAllTasks(info.file.response.tasks);
         setTasksColumns(newState);
-        showMessage("success", info.file.response.message, 2);
+        showMessage(
+          "success",
+          changeMsgLanguage(info.file.response.message, "Upload thành công"),
+          2
+        );
         setIsUpload(false);
       } else if (info.file.status === "error") {
-        showMessage("error", info.file.response.message);
+        showMessage(
+          "error",
+          changeMsgLanguage(info.file.response.message, "Xảy ra lỗi khi upload")
+        );
         setIsUpload(false);
       }
     }
   };
+  useEffect(() => {
+    if (activeTab) {
+      if (activeTab === "activity") {
+        setHistoryOrForm(true);
+      }
+    }
+  }, [activeTab, taskCurrent]);
 
   return (
     <div className="tasks_page">
@@ -777,6 +799,7 @@ const TasksPage = () => {
           <div className="task__info--container">
             <Tabs
               defaultActiveKey="1"
+              activeKey={activeTab}
               items={items}
               onTabClick={handleTabLick}
             />
