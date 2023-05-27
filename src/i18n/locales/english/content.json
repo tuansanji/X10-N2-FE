@@ -3,6 +3,7 @@
   "startDate": "Date time",
   "startingDate": "Start Date",
   "endDateExpected": "End Date Expected",
+  "endDate": "End Date Expected",
   "endDateActual": "Actual end date",
   "action": "Action",
   "createStage": "Create stage",
