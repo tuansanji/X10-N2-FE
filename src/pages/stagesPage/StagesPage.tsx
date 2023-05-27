@@ -1,16 +1,21 @@
-import FormStages from "./FormStages";
-import StageReview from "./StageReview";
-import Loading from "../../components/support/Loading";
-import useIsBoss from "../../hooks/useIsBoss";
-import { useAppSelector } from "../../redux/hook";
-import stageApi from "../../services/api/stageApi";
-import { changeMsgLanguage } from "../../utils/changeMsgLanguage";
-import { ProjectType } from "../projectPage/ProjectDetail";
-import { DeleteFilled, EditFilled, EyeFilled } from "@ant-design/icons";
-import Search from "antd/es/input/Search";
-import moment from "moment";
-import React, { useEffect, useMemo, useRef, useState } from "react";
-import { useTranslation } from "react-i18next";
+import FormStages from './FormStages';
+import StageReview from './StageReview';
+import Loading from '../../components/support/Loading';
+import useIsBoss from '../../hooks/useIsBoss';
+import { useAppSelector } from '../../redux/hook';
+import stageApi from '../../services/api/stageApi';
+import { changeMsgLanguage } from '../../utils/changeMsgLanguage';
+import { ProjectType } from '../projectPage/ProjectDetail';
+import { DeleteFilled, EditFilled, EyeFilled } from '@ant-design/icons';
+import Search from 'antd/es/input/Search';
+import moment from 'moment';
+import React, {
+  useEffect,
+  useMemo,
+  useRef,
+  useState
+  } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   createSearchParams,
   useNavigate,
@@ -448,6 +453,7 @@ const StagesPage: React.FC<PropTypes> = (props: PropTypes) => {
         maskClosable={false}
         style={{ top: "50px" }}
         footer={[]}
+        className="responsive-modal"
       >
         <StageReview stageId={stageCurrentReview} />
       </Modal>

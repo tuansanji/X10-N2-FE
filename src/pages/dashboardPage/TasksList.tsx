@@ -6,11 +6,15 @@ import {
   Table,
   Tabs,
   TabsProps,
-  Tooltip,
   Typography,
 } from "antd";
+import { TasksType, UserInfo } from "./Dashboard";
+import { setPriority } from "../../utils/setPriority";
+import TaskForm from "../tasksPage/TaskForm";
+import TaskHistory from "../tasksPage/TaskHistory";
+import TaskInfo from "../tasksPage/TaskInfo";
+import { NoticeType } from "antd/es/message/interface";
 import { ColumnsType } from "antd/es/table";
-import moment from "moment";
 import _ from "lodash";
 import React, {
   Dispatch,
@@ -20,20 +24,15 @@ import React, {
   useRef,
   useState,
 } from "react";
-import { TasksType, UserInfo } from "./Dashboard";
-import TaskInfo from "../tasksPage/TaskInfo";
-import TaskForm from "../tasksPage/TaskForm";
-import TaskHistory from "../tasksPage/TaskHistory";
-import { useTranslation } from "react-i18next";
-import { NoticeType } from "antd/es/message/interface";
 import { SearchOutlined, SortAscendingOutlined } from "@ant-design/icons";
-import { setPriority } from "../../utils/setPriority";
 import { CheckboxValueType } from "antd/es/checkbox/Group";
 import { CheckboxChangeEvent } from "antd/es/checkbox";
 import { useAppDispatch, useAppSelector } from "../../redux/hook";
-import { deleteSubQuery, setQuery } from "../../redux/slice/paramsSlice";
+import { setQuery } from "../../redux/slice/paramsSlice";
 import taskApi from "../../services/api/taskApi";
 import { changeMsgLanguage } from "../../utils/changeMsgLanguage";
+import moment from "moment";
+import { useTranslation } from "react-i18next";
 
 const { Title, Text } = Typography;
 const { Search } = Input;
@@ -593,6 +592,7 @@ const TasksList: React.FC<TasksListPropsType> = ({
           maskClosable={false}
           style={{ top: "50px" }}
           footer={[]}
+          className="task__modal__responsive"
         >
           {/* phần modal thông tin task */}
           {openInfo && (
