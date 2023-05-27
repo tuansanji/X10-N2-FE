@@ -133,13 +133,20 @@ html {
   opacity: 0.5;
 }
 .register-verify .content {
-  text-align: center;
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   margin-left: auto;
   margin-right: auto;
+  width: 500px;
+  height: 100%;
+  background-color: white;
+  text-align: center;
+  padding-top: 32px;
+}
+.register-verify .content .content_text {
+  font-size: 16px;
 }
 
 .login, .forgot-password {
@@ -1659,6 +1666,7 @@ img.img-tiny {
   }
 }
 .dashboard .projects_list .projects_list_header {
+  margin-top: 16px;
   padding: 16px 0;
   display: flex;
   flex-direction: row;
@@ -1705,6 +1713,7 @@ img.img-tiny {
   width: auto;
 }
 .dashboard .tasks_list .tasks_list_header {
+  margin-top: 16px;
   padding: 16px 0;
 }
 .dashboard .tasks_list .tasks_list_header .ant-typography {

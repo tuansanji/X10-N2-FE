@@ -58,7 +58,6 @@ const ProjectDetail: React.FC = () => {
         setProjectDetail(response.data.project);
         setIsLoading(false);
       } catch (err: any) {
-        console.log(err);
         setError(err);
         setIsLoading(false);
         navigate("/notFoundPage");

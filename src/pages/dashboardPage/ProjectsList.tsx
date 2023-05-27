@@ -45,7 +45,6 @@ import { useDispatch } from "react-redux";
 import { CheckboxValueType } from "antd/es/checkbox/Group";
 import { setQuery } from "../../redux/slice/paramsSlice";
 import { setStatusLabel } from "../../utils/setStatusLabel";
-import { useAxios } from "../../hooks";
 
 const { Text } = Typography;
 const { Search } = Input;

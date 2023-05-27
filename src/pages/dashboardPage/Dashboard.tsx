@@ -1,15 +1,5 @@
 import { useState } from "react";
-import { useAppSelector } from "../../redux/hook";
-import {
-  Col,
-  Divider,
-  Row,
-  Typography,
-  Button,
-  Tooltip,
-  Modal,
-  Skeleton,
-} from "antd";
+import { Col, Divider, Row, Typography, Button, Tooltip, Modal } from "antd";
 import { PlusOutlined } from "@ant-design/icons";
 import ProjectForm from "../../components/projectForm/ProjectForm";
 import useMessageApi, {
