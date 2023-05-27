@@ -2,6 +2,7 @@ import { ITask, IUser } from "./TaskForm";
 import TaskHistory from "./TaskHistory";
 import TaskInfo from "./TaskInfo";
 import Loading from "../../components/support/Loading";
+import NotResult from "../../components/support/NotResult";
 import TinyMce from "../../components/tinyMce/TinyMce";
 import { useAxios } from "../../hooks";
 import useIsBoss from "../../hooks/useIsBoss";
@@ -40,6 +41,7 @@ import {
   Popconfirm,
   Descriptions,
   Skeleton,
+  Result,
 } from "antd";
 import type { TabsProps } from "antd";
 
@@ -78,10 +80,15 @@ const TaskDetail: React.FC = () => {
   // lấy thông tin task hiệnt tại
   useEffect(() => {
     setLoading(true);
-    taskApi.getTask(params?.taskId as string).then((res: any) => {
-      setTaskCurrent(res?.task);
-      setLoading(false);
-    });
+    taskApi
+      .getTask(params?.taskId as string)
+      .then((res: any) => {
+        setTaskCurrent(res?.task);
+        setLoading(false);
+      })
+      .catch((err) => {
+        setLoading(false);
+      });
   }, [reloadCurrentTask, params]);
 
   // xác định id task hiện tại dựa theo params
@@ -284,7 +291,13 @@ const TaskDetail: React.FC = () => {
     <>
       {contextHolder}
       {loading || !taskCurrent ? (
-        <Skeleton active />
+        <div style={{ padding: "20px" }}>
+          {!loading ? (
+            <NotResult title={t("base:task")} />
+          ) : (
+            <Skeleton active />
+          )}
+        </div>
       ) : (
         <div className="task__Detail--page">
           <Tabs defaultActiveKey="1" items={items} onTabClick={handleTabLick} />
