@@ -27,6 +27,7 @@ const logoutUser = async () => {
 
 axiosClient.interceptors.request.use(async (config) => {
   const token = getAccessToken();
+
   let date = new Date();
   const decodedToken: any = jwt_decode(token);
 

@@ -11,6 +11,8 @@
   "done": "Đã hoàn thành",
   "generalInformation": "Thông tin chung",
   "stages": "Giai đoạn",
+  "task": "Công việc",
+  "project": "Dự án",
   "members": "Thành viên",
   "home": "Trang chủ",
   "loadMore": "Xem thêm",
@@ -20,5 +22,7 @@
   "success": "Thành công",
   "error": "Thất bại",
   "logout": "Đăng xuất",
+  "backHome": "Trở về trang chủ",
+  "notFound": "không tồn tại",
   "userInfo": "Thông tin tài khoản"
 }

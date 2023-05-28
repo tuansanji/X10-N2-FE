@@ -11,6 +11,8 @@
   "send": "Send",
   "generalInformation": "General Information",
   "stages": "Stages",
+  "task": "Task",
+  "project": "Project",
   "members": "Members",
   "home": "Home",
   "loadMore": "Load More",
@@ -20,5 +22,7 @@
   "success": "Success",
   "error": "Error",
   "logout": "Logout",
+  "backHome": "Back Home",
+  "notFound": "Not Found",
   "userInfo": "Account information"
 }

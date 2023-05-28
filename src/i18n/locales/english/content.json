@@ -81,7 +81,8 @@
     "project name": "Project Name",
     "all": "All",
     "asc": "Asc",
-    "desc": "Desc"
+    "desc": "Desc",
+    "endDate": "End Date Expected"
   },
   "task": {
     "jobCode": "Auto generated",
@@ -109,7 +110,6 @@
     "member": "Member",
     "delete popup title": "Delete Member",
     "deltete popup desc": "Are you sure to delete this member?"
-   
   },
   "message": {
     "requiredUsername": "Please input your project name!",
