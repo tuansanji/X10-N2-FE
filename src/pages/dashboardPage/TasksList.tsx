@@ -7,6 +7,7 @@ import {
   Table,
   Tabs,
   TabsProps,
+  Tooltip,
   Typography,
 } from "antd";
 import { TasksType, UserInfo } from "./Dashboard";
@@ -110,8 +111,8 @@ const TasksList: React.FC<TasksListPropsType> = ({
 
   const handleStatusFilter = (list: CheckboxValueType[]) => {
     setFilterStatus(list);
-    setIndeterminate(!!list.length && list.length < plainOptions.length);
-    setCheckAll(list.length === plainOptions.length);
+    setIndeterminate(!!list?.length && list?.length < plainOptions?.length);
+    setCheckAll(list?.length === plainOptions?.length);
     dispatch(
       setQuery({
         ...queryParams,
@@ -287,7 +288,6 @@ const TasksList: React.FC<TasksListPropsType> = ({
       render: (_, record: TasksTableData) => {
         return <Text strong>{record.code}</Text>;
       },
-      responsive: ["xxl"],
     },
     {
       title: `${t("content:name")}`,
@@ -382,8 +382,12 @@ const TasksList: React.FC<TasksListPropsType> = ({
         let priority = setPriority(record.priority);
         return (
           <div className="task_priority">
-            <span>{priority}</span>
-            <Text strong>{_.capitalize(record.priority)}</Text>
+            <Tooltip title={_.capitalize(record.priority)}>
+              <span className="icon">{priority}</span>
+            </Tooltip>
+            <Text strong className="content">
+              {_.capitalize(record.priority)}
+            </Text>
           </div>
         );
       },
@@ -401,7 +405,9 @@ const TasksList: React.FC<TasksListPropsType> = ({
       key: "deadline",
       render: (_, record: TasksTableData) => {
         return (
-          <Text strong>{moment(record.deadline).format("DD/MM/YYYY")}</Text>
+          <Text strong>
+            {moment(record.deadline).format("DD/MM/YYYY - HH:MM")}
+          </Text>
         );
       },
     },
@@ -428,7 +434,7 @@ const TasksList: React.FC<TasksListPropsType> = ({
   ];
   const data: TasksTableData[] = useMemo(() => {
     let tasks =
-      tasksList && TasksList.length > 0
+      tasksList && TasksList?.length > 0
         ? [
             ...tasksList.map((task: TasksType, index: number) => {
               return {
@@ -547,6 +553,7 @@ const TasksList: React.FC<TasksListPropsType> = ({
           <Skeleton />
         ) : (
           <Table
+            scroll={{ x: 850 }}
             className="tasks_table"
             loading={tableLoading}
             bordered

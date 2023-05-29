@@ -42,8 +42,10 @@ import {
   Row,
   Col,
   Upload,
+  Skeleton,
 } from "antd";
 import type { TabsProps } from "antd";
+import { setupTasks } from "../../utils/setupTasksList";
 
 const { Title, Text } = Typography;
 const { Search } = Input;
@@ -98,14 +100,6 @@ const initialData: ColumnData[] = [
     dropAllow: true,
   },
 ];
-
-const prioList: any = {
-  highest: 5,
-  high: 4,
-  medium: 3,
-  low: 2,
-  lowest: 1,
-};
 
 const TaskItem: React.FC<TaskItemProp> = ({ task, handleOpenInfoTask }) => {
   const [bgColor, setBgColor] = useState<string>("");
@@ -190,31 +184,17 @@ const TasksPage = () => {
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [statusForm, setStatusForm] = useState<boolean>(false);
   const [openInfo, setOpenInfo] = useState<boolean>(false);
+  const [fetchingTasks, setFetchingTasks] = useState<boolean>(false);
   const [countReloadTasks, setCountReloadTasks] = useState<number>(1);
   const [edit, setEdit] = useState<boolean>(false);
-  const [tasksURL, setTasksURL] = useState<any>();
   const { responseData, isLoading } = useAxios(
     "get",
     `/project/members/all/${params.projectId}`,
     []
   );
   const [isUpload, setIsUpload] = useState<boolean>(false);
+  const [isDownload, setIsDownload] = useState<boolean>(false);
   const [fileList, setFileList] = useState<any[]>([]);
-
-  //Handle tải file danh sách công việc
-  useEffect(() => {
-    const getExportUrl = async () => {
-      const response = await axios({
-        method: "get",
-        url: `${process.env.REACT_APP_BACKEND_URL}/stage/tasks/${params.stagesId}/export`,
-        headers: { Authorization: `Bearer ${user.token}` },
-        responseType: "blob",
-      });
-      const url = window.URL.createObjectURL(new Blob([response.data]));
-      setTasksURL(url);
-    };
-    getExportUrl();
-  }, []);
 
   //Gọi API Lấy danh sách tasks => set vào các column
   //Lấy thông tin từ url để hiển thị tasks theo bộ lọc
@@ -222,72 +202,20 @@ const TasksPage = () => {
     let query = Object.fromEntries([...searchParams]);
     const queryMembers = searchParams.getAll("member");
     dispatch(setQuery({ ...query, member: queryMembers }));
-
+    setFetchingTasks(true);
     taskApi
       .getAllTask(params.stagesId as string)
       .then((res: any) => {
         setAllTasks(res.tasks);
-        if (query.type) {
-          if (query.type === "all") {
-            res.tasks = res.tasks.filter((task: ITask) => {
-              return task;
-            });
-          } else {
-            res.tasks = res.tasks.filter(
-              (task: ITask) => task.type === query.type
-            );
-          }
-        }
-        if (query.sort) {
-          if (query.sort.includes("prio")) {
-            res.tasks.sort((a: ITask, b: ITask) => {
-              return query.sort.includes("Asc")
-                ? prioList[a.priority] - prioList[b.priority]
-                : prioList[b.priority] - prioList[a.priority];
-            });
-          }
-          if (query.sort.includes("deadline")) {
-            res.tasks.sort((a: ITask, b: ITask) => {
-              let d1 = Number(new Date(a.deadline));
-              let d2 = Number(new Date(b.deadline));
-              return query.sort.includes("Asc") ? d1 - d2 : d2 - d1;
-            });
-          }
-        } else {
-          res.tasks.sort((a: ITask, b: ITask) => {
-            let d1 = Number(new Date(a.deadline));
-            let d2 = Number(new Date(b.deadline));
-            return d1 - d2;
-          });
-        }
-
-        if (queryMembers && queryMembers.length === 0) {
-          res.tasks = res.tasks.filter((task: any) => {
-            return task;
-          });
-        }
-
-        if (queryMembers && queryMembers.length > 0) {
-          res.tasks = res.tasks.filter((task: any) => {
-            return queryMembers.some(
-              (memberName: any) => memberName === task.assignee.username
-            );
-          });
-        }
-
-        if (query.search) {
-          res.tasks = res.tasks.filter((task: any) => {
-            return task.title.toLowerCase().includes(query.search);
-          });
-        }
-
+        let newTasks = setupTasks(res.tasks, query, queryMembers);
         let newState = initialData.map((data: any) => {
-          data.items = res.tasks.filter((task: any) => {
+          data.items = newTasks.filter((task: any) => {
             return task.status === data.id;
           });
           return data;
         });
         setTasksColumns(newState);
+        setFetchingTasks(false);
       })
       .catch((err: any) => {
         showMessage(
@@ -295,6 +223,7 @@ const TasksPage = () => {
           changeMsgLanguage(err.response?.data?.message, "Có lỗi xảy ra"),
           2
         );
+        setFetchingTasks(false);
       });
   }, [countReloadTasks]);
 
@@ -364,56 +293,8 @@ const TasksPage = () => {
 
   //Filter và sort các tasks theo thao tác người dùng
   useEffect(() => {
-    const { type, sort, member, search } = queryParams;
-    let filteredTasks = allTasks;
-
-    if (search) {
-      filteredTasks = filteredTasks.filter((task: any) => {
-        return task.title.toLowerCase().includes(search);
-      });
-    }
-
-    if (sort) {
-      if (sort.includes("prio")) {
-        filteredTasks.sort((a: ITask, b: ITask) => {
-          return sort.includes("Asc")
-            ? prioList[a.priority] - prioList[b.priority]
-            : prioList[b.priority] - prioList[a.priority];
-        });
-      }
-      if (sort.includes("deadline")) {
-        filteredTasks.sort((a: ITask, b: ITask) => {
-          let d1 = Number(new Date(a.deadline));
-          let d2 = Number(new Date(b.deadline));
-          return sort.includes("Asc") ? d1 - d2 : d2 - d1;
-        });
-      }
-    }
-
-    if (member && member.length === 0) {
-      filteredTasks = filteredTasks.filter((task: any) => {
-        return task;
-      });
-    }
-
-    if (member && member.length > 0) {
-      filteredTasks = filteredTasks.filter((task: any) => {
-        return member.some(
-          (memberName: any) => memberName === task.assignee.username
-        );
-      });
-    }
-
-    if (type === "all") {
-      filteredTasks = filteredTasks.filter((task: any) => {
-        return task;
-      });
-    }
-    if (type !== "all") {
-      filteredTasks = filteredTasks.filter((task: any) => {
-        return task.type === type;
-      });
-    }
+    const { member } = queryParams;
+    let filteredTasks = setupTasks(allTasks, queryParams, member);
     let newState = initialData.map((data: any) => {
       data.items = filteredTasks.filter((task: any) => {
         return task.status === data.id;
@@ -717,6 +598,36 @@ const TasksPage = () => {
     },
   ];
 
+  //Xử lý download file danh sách tasks
+  const handleDownload = async () => {
+    setIsDownload(true);
+    try {
+      const response = await axios({
+        method: "get",
+        url: `${process.env.REACT_APP_BACKEND_URL}/stage/tasks/${params.stagesId}/export`,
+        headers: { Authorization: `Bearer ${user.token}` },
+        responseType: "blob",
+      });
+      const url = URL.createObjectURL(response.data);
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", "tasks.xlsx");
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      setIsDownload(false);
+    } catch (err: any) {
+      showMessage(
+        "error",
+        changeMsgLanguage(err.response.data?.message, "Có lỗi xảy ra"),
+        2
+      );
+      setIsDownload(false);
+    }
+  };
+
+  //Xử lý upload file danh sách tasks
   const handleUpload = (info: any) => {
     let newFileList = [...info.fileList];
     newFileList = newFileList.slice(-1);
@@ -749,6 +660,7 @@ const TasksPage = () => {
       }
     }
   };
+
   useEffect(() => {
     if (activeTab) {
       if (activeTab === "activity") {
@@ -871,9 +783,12 @@ const TasksPage = () => {
               {t("content:form.create task")}
             </Button>
             <Tooltip title={t("content:task.export")}>
-              <a href={tasksURL} download="tasks.xlsx">
-                <Button size="large" icon={<DownloadOutlined />} />
-              </a>
+              <Button
+                loading={isDownload}
+                size="large"
+                icon={<DownloadOutlined />}
+                onClick={handleDownload}
+              />
             </Tooltip>
             <Tooltip title={t("content:task.import")}>
               <Upload
@@ -977,65 +892,71 @@ const TasksPage = () => {
         </Row>
         <Divider />
         <div className="tasks_board">
-          <DragDropContext
-            onDragEnd={handleDragEnd}
-            onDragStart={handleDragStart}
-          >
-            {tasksColumns?.map((column: any, index: number) => {
-              return (
-                <Droppable
-                  droppableId={column.id}
-                  key={column.id}
-                  isDropDisabled={!column.dropAllow}
-                >
-                  {(provided, snapshot) => {
-                    return (
-                      <div
-                        ref={provided.innerRef}
-                        {...provided.droppableProps}
-                        className="column_container"
-                        style={{
-                          cursor: column.dropAllow ? "" : "not-allowed",
-                        }}
-                      >
-                        <Title level={4} className="column_containter_title">
-                          {column.title}
-                        </Title>
-                        <div className="task_container">
-                          {column.items?.map((task: any, index: number) => {
-                            return (
-                              <Draggable
-                                key={task._id}
-                                draggableId={task._id}
-                                index={index}
-                              >
-                                {(provided, snapshot) => {
-                                  return (
-                                    <div
-                                      className="task_item"
-                                      ref={provided.innerRef}
-                                      {...provided.dragHandleProps}
-                                      {...provided.draggableProps}
-                                    >
-                                      <TaskItem
-                                        task={task}
-                                        handleOpenInfoTask={handleOpenInfoTask}
-                                      />
-                                    </div>
-                                  );
-                                }}
-                              </Draggable>
-                            );
-                          })}
-                          {provided.placeholder}
+          {fetchingTasks ? (
+            <Skeleton />
+          ) : (
+            <DragDropContext
+              onDragEnd={handleDragEnd}
+              onDragStart={handleDragStart}
+            >
+              {tasksColumns?.map((column: any, index: number) => {
+                return (
+                  <Droppable
+                    droppableId={column.id}
+                    key={column.id}
+                    isDropDisabled={!column.dropAllow}
+                  >
+                    {(provided, snapshot) => {
+                      return (
+                        <div
+                          ref={provided.innerRef}
+                          {...provided.droppableProps}
+                          className="column_container"
+                          style={{
+                            cursor: column.dropAllow ? "" : "not-allowed",
+                          }}
+                        >
+                          <Title level={4} className="column_containter_title">
+                            {column.title}
+                          </Title>
+                          <div className="task_container">
+                            {column.items?.map((task: any, index: number) => {
+                              return (
+                                <Draggable
+                                  key={task._id}
+                                  draggableId={task._id}
+                                  index={index}
+                                >
+                                  {(provided, snapshot) => {
+                                    return (
+                                      <div
+                                        className="task_item"
+                                        ref={provided.innerRef}
+                                        {...provided.dragHandleProps}
+                                        {...provided.draggableProps}
+                                      >
+                                        <TaskItem
+                                          task={task}
+                                          handleOpenInfoTask={
+                                            handleOpenInfoTask
+                                          }
+                                        />
+                                      </div>
+                                    );
+                                  }}
+                                </Draggable>
+                              );
+                            })}
+                            {provided.placeholder}
+                          </div>
                         </div>
-                      </div>
-                    );
-                  }}
-                </Droppable>
-              );
-            })}
-          </DragDropContext>
+                      );
+                    }}
+                  </Droppable>
+                );
+              })}
+            </DragDropContext>
+          )}
         </div>
       </Space>
     </div>

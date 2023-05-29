@@ -30,28 +30,7 @@
       }
 
       .project_name_action {
-        .action_button {
-          @include flex(row, null, null, null, 8px);
-          display: none;
-        }
-
-        @media screen and (min-width: 700px) and (max-width: 1200px) {
-          .dropdown_action {
-            display: none;
-          }
-          .action_button {
-            display: flex;
-          }
-        }
-
-        @media screen and (min-width: 1400px) {
-          .action_button {
-            display: flex;
-          }
-          .dropdown_action {
-            display: none;
-          }
-        }
+        @include flex(row, null, null, null, 8px);
       }
     }
     .tasks_table,
@@ -72,6 +51,7 @@
       .task_priority {
         @include flex(row, null, center, null, 8px);
       }
+
       .ant-typography {
         margin: 0;
       }

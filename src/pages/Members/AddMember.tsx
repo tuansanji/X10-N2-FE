@@ -237,7 +237,7 @@ const AddMember: React.FC<PropTypes> = ({
           size="large"
           maxTagCount="responsive"
           placeholder="Full Name"
-          style={{ width: "300px" }}
+          style={{ width: "250px" }}
           defaultActiveFirstOption={false}
           suffixIcon={<SearchOutlined />}
           optionFilterProp="children"
@@ -283,7 +283,7 @@ const AddMember: React.FC<PropTypes> = ({
             <div key={result?._id} className="add-member-item">
               <div className="item-content">
                 <img src={result?.avatar} alt="user-avatar" />
-                {result?.fullName}
+                <div>{result?.fullName}</div>
               </div>
               <div className="item-action">
                 <Select

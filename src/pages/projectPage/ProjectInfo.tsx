@@ -22,7 +22,7 @@ const ProjectInfo: React.FC<PropTypes> = ({ projectDetail }) => {
       <Descriptions
         bordered
         layout="vertical"
-        column={2}
+        column={{ xs: 1, sm: 2 }}
         title={
           <div className="description_title">
             <Title level={3}>{projectDetail?.name}</Title>
