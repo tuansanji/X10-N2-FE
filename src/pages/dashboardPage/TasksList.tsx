@@ -553,6 +553,7 @@ const TasksList: React.FC<TasksListPropsType> = ({
           <Skeleton />
         ) : (
           <Table
+            sticky
             scroll={{ x: 850 }}
             className="tasks_table"
             loading={tableLoading}

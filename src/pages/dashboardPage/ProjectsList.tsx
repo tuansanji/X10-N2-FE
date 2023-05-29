@@ -476,6 +476,7 @@ const ProjectsList: React.FC<ProjectsListType> = ({
         ) : (
           <Table
             scroll={{ x: 700 }}
+            sticky
             className="projects_table"
             columns={columns}
             dataSource={data}

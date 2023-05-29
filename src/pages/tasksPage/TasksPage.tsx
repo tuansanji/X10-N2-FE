@@ -23,6 +23,7 @@ import {
   SearchOutlined,
   DownloadOutlined,
   UploadOutlined,
+  FilterOutlined,
 } from "@ant-design/icons";
 
 import useMessageApi, {
@@ -46,6 +47,7 @@ import {
 } from "antd";
 import type { TabsProps } from "antd";
 import { setupTasks } from "../../utils/setupTasksList";
+import CustomDropdown from "../../components/support/CustomDropdown";
 
 const { Title, Text } = Typography;
 const { Search } = Input;
@@ -195,6 +197,7 @@ const TasksPage = () => {
   const [isUpload, setIsUpload] = useState<boolean>(false);
   const [isDownload, setIsDownload] = useState<boolean>(false);
   const [fileList, setFileList] = useState<any[]>([]);
+  const [openFilterDropdown, setFilterDropdown] = useState<boolean>(false);
 
   //Gọi API Lấy danh sách tasks => set vào các column
   //Lấy thông tin từ url để hiển thị tasks theo bộ lọc
@@ -669,6 +672,74 @@ const TasksPage = () => {
     }
   }, [activeTab, taskCurrent]);
 
+  const filterItems = [
+    {
+      key: "1",
+      label: (
+        <div className="filter_dropdown">
+          <Select
+            size="large"
+            value={`${t("content:task.type")}: ${
+              t<any>(`content:form.${queryParams.type}`) ||
+              taskTypeOptions[0].options[0].label
+            }`}
+            options={taskTypeOptions}
+            dropdownMatchSelectWidth={false}
+            onChange={selectTaskTypes}
+          />
+          <Select
+            allowClear
+            mode="multiple"
+            style={{ width: "300px" }}
+            maxTagCount="responsive"
+            showSearch
+            size="large"
+            suffixIcon={<SearchOutlined />}
+            value={queryParams.member}
+            placeholder={`${t("content:member.member name")}`}
+            optionFilterProp="children"
+            filterOption={(input, option) =>
+              typeof option?.label === "string" &&
+              option.label.toLowerCase().includes(input.toLowerCase())
+            }
+            onChange={handleFilterMember}
+            onClear={cancelSelect}
+            dropdownRender={(menu) =>
+              isLoading ? (
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "center",
+                    padding: "10px 0",
+                  }}
+                >
+                  <LoadingOutlined />
+                </div>
+              ) : (
+                menu
+              )
+            }
+            options={responseData?.members?.map((item: IUser) => ({
+              label: `${item.data.fullName}`,
+              value: item.data.username,
+            }))}
+          />
+          <Search
+            size="large"
+            placeholder={`${t("content:task.task name")}`}
+            value={queryParams.search}
+            allowClear
+            onChange={handleInputChange}
+          />
+        </div>
+      ),
+    },
+  ];
+
+  const handleFilterDropdown = (flag: boolean) => {
+    setFilterDropdown(flag);
+  };
+
   return (
     <div className="tasks_page">
       {contextHolder}
@@ -777,48 +848,45 @@ const TasksPage = () => {
       {/* Nội dung chính của page */}
       <Space direction="vertical" size="large">
         <Breadcrumb items={breadcrumItems} />
-        <Row className="tool_bar" justify="space-between">
-          <Col className="tool_bar_left">
+        <Row
+          className="tool_bar"
+          justify="space-between"
+          align="middle"
+          gutter={[16, 16]}
+        >
+          <Col span={24} sm={12} className="tool_bar_left">
             <Button size="large" type="primary" onClick={handleCreateTask}>
               {t("content:form.create task")}
             </Button>
-            <Tooltip title={t("content:task.export")}>
-              <Button
-                loading={isDownload}
-                size="large"
-                icon={<DownloadOutlined />}
-                onClick={handleDownload}
-              />
-            </Tooltip>
-            <Tooltip title={t("content:task.import")}>
-              <Upload
-                name="tasks"
-                accept=".xlsx, .xls, .csv"
-                showUploadList={false}
-                onChange={handleUpload}
-                action={`${process.env.REACT_APP_BACKEND_URL}/stage/tasks/${params.stagesId}/import`}
-                headers={{ Authorization: `Bearer ${user.token}` }}
-                fileList={fileList}
-              >
+            <div className="file_button">
+              <Tooltip title={t("content:task.export")}>
                 <Button
-                  loading={isUpload}
+                  loading={isDownload}
                   size="large"
-                  icon={<UploadOutlined />}
+                  icon={<DownloadOutlined />}
+                  onClick={handleDownload}
                 />
-              </Upload>
-            </Tooltip>
+              </Tooltip>
+              <Tooltip title={t("content:task.import")}>
+                <Upload
+                  name="tasks"
+                  accept=".xlsx, .xls, .csv"
+                  showUploadList={false}
+                  onChange={handleUpload}
+                  action={`${process.env.REACT_APP_BACKEND_URL}/stage/tasks/${params.stagesId}/import`}
+                  headers={{ Authorization: `Bearer ${user.token}` }}
+                  fileList={fileList}
+                >
+                  <Button
+                    loading={isUpload}
+                    size="large"
+                    icon={<UploadOutlined />}
+                  />
+                </Upload>
+              </Tooltip>
+            </div>
           </Col>
-          <Col className="tool_bar_right">
-            <Select
-              size="large"
-              value={`${t("content:task.type")}: ${
-                t<any>(`content:form.${queryParams.type}`) ||
-                taskTypeOptions[0].options[0].label
-              }`}
-              options={taskTypeOptions}
-              dropdownMatchSelectWidth={false}
-              onChange={selectTaskTypes}
-            />
+          <Col span={24} sm={12} className="tool_bar_right">
             <Select
               size="large"
               value={
@@ -844,50 +912,69 @@ const TasksPage = () => {
               options={priorityOptions}
               onChange={sortPriority}
             />
-            <Select
-              allowClear
-              mode="multiple"
-              style={{ width: "300px" }}
-              maxTagCount="responsive"
-              showSearch
-              size="large"
-              suffixIcon={<SearchOutlined />}
-              value={queryParams.member}
-              placeholder={`${t("content:member.member name")}`}
-              optionFilterProp="children"
-              filterOption={(input, option) =>
-                typeof option?.label === "string" &&
-                option.label.toLowerCase().includes(input.toLowerCase())
-              }
-              onChange={handleFilterMember}
-              onClear={cancelSelect}
-              dropdownRender={(menu) =>
-                isLoading ? (
-                  <div
-                    style={{
-                      display: "flex",
-                      justifyContent: "center",
-                      padding: "10px 0",
-                    }}
-                  >
-                    <LoadingOutlined />
-                  </div>
-                ) : (
-                  menu
-                )
-              }
-              options={responseData?.members?.map((item: IUser) => ({
-                label: `${item.data.fullName}`,
-                value: item.data.username,
-              }))}
-            />
-            <Search
-              size="large"
-              placeholder={`${t("content:task.task name")}`}
-              value={queryParams.search}
-              allowClear
-              onChange={handleInputChange}
-            />
+            <CustomDropdown
+              items={filterItems}
+              open={openFilterDropdown}
+              onOpenChange={handleFilterDropdown}
+            >
+              <Button icon={<FilterOutlined />} size="large" />
+            </CustomDropdown>
+            <div className="toolbar_filter">
+              <Select
+                size="large"
+                value={`${t("content:task.type")}: ${
+                  t<any>(`content:form.${queryParams.type}`) ||
+                  taskTypeOptions[0].options[0].label
+                }`}
+                options={taskTypeOptions}
+                dropdownMatchSelectWidth={false}
+                onChange={selectTaskTypes}
+              />
+              <Select
+                allowClear
+                mode="multiple"
+                style={{ width: "300px" }}
+                maxTagCount="responsive"
+                showSearch
+                size="large"
+                suffixIcon={<SearchOutlined />}
+                value={queryParams.member}
+                placeholder={`${t("content:member.member name")}`}
+                optionFilterProp="children"
+                filterOption={(input, option) =>
+                  typeof option?.label === "string" &&
+                  option.label.toLowerCase().includes(input.toLowerCase())
+                }
+                onChange={handleFilterMember}
+                onClear={cancelSelect}
+                dropdownRender={(menu) =>
+                  isLoading ? (
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "center",
+                        padding: "10px 0",
+                      }}
+                    >
+                      <LoadingOutlined />
+                    </div>
+                  ) : (
+                    menu
+                  )
+                }
+                options={responseData?.members?.map((item: IUser) => ({
+                  label: `${item.data.fullName}`,
+                  value: item.data.username,
+                }))}
+              />
+              <Search
+                size="large"
+                placeholder={`${t("content:task.task name")}`}
+                value={queryParams.search}
+                allowClear
+                onChange={handleInputChange}
+              />
+            </div>
           </Col>
         </Row>
         <Divider />

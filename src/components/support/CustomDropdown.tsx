@@ -1,9 +1,8 @@
 import { Dropdown, DropdownProps } from "antd";
-import React from "react";
+import React, { useRef } from "react";
 
 interface PropsType {
   children: any;
-  className: string;
   items: any;
   open: boolean;
   onOpenChange: (flag: boolean) => void;
@@ -11,7 +10,6 @@ interface PropsType {
 
 const CustomDropdown: React.FC<PropsType> = ({
   children,
-  className,
   items,
   open,
   onOpenChange,
@@ -19,8 +17,8 @@ const CustomDropdown: React.FC<PropsType> = ({
   return (
     <>
       <Dropdown
+        className="dropdown_btn"
         trigger={["click"]}
-        className={className}
         menu={{ items }}
         open={open}
         onOpenChange={onOpenChange}

@@ -11,10 +11,40 @@
     height: 100%;
 
     .tool_bar {
-      .tool_bar_left,
-      .tool_bar_right {
-        @include flex(row, null, null, null, 16px);
+      .tool_bar_left {
+        @include flex(row, space-between, center);
+        .file_button {
+          @include flex(row, null, null, null, 16px)
+        }
       }
+      .tool_bar_right {
+        @include flex(row, space-between, center, null, 16px);
+       
+        .toolbar_filter {
+          display: none
+        }
+      }
+      @media only screen and (min-width: 576px) {
+        .tool_bar_left {
+          justify-content: flex-start;
+          gap: 8px;
+          .file_button {
+            gap: 8px
+          }
+        }
+        .tool_bar_right {
+          justify-content: flex-end;
+          @media only screen and (min-width: 1400px) {
+            .dropdown_btn {
+              display: none;
+            }
+            .toolbar_filter {
+            @include flex(row, null, null, null, 16px)
+          }
+          }
+        }
+      }
+     
     }
 
     .ant-space-item:last-child {
@@ -500,5 +530,16 @@
 .modal__activity--detail {
   @include maxWidth($desktop-width) {
     width: 95% !important;
+  }
+}
+
+// FILTER DROPDOWN STYLE
+.filter_dropdown {
+  @include flex (column, null, null, null, 8px)
+}
+
+@media only screen and (min-width: 1400px) {
+  .ant-dropdown {
+    display:none
   }
 }
