@@ -750,13 +750,16 @@ img.img-tiny {
   }
 }
 @media only screen and (min-width: 576px) and (min-width: 1400px) {
-  .tasks_page .ant-space .tool_bar .tool_bar_right .dropdown_btn {
+  .tasks_page .ant-space .tool_bar .tool_bar_right .dropdown_filter_btn {
     display: none;
   }
   .tasks_page .ant-space .tool_bar .tool_bar_right .toolbar_filter {
     display: flex;
     flex-direction: row;
     gap: 16px;
+  }
+  .tasks_page .ant-space .tool_bar .tool_bar_right .toolbar_filter .toolbar_filter_input:not(:first-child) {
+    width: 300px;
   }
 }
 .tasks_page .ant-space .ant-space-item:last-child {
@@ -1264,10 +1267,20 @@ img.img-tiny {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  max-width: 300px;
+  background-color: white;
+  padding: 8px;
+  background-clip: padding-box;
+  border-radius: 8px;
+  outline: none;
+  box-shadow: 0 6px 16px 0 rgba(0, 0, 0, 0.0784313725), 0 3px 6px -4px rgba(0, 0, 0, 0.1215686275), 0 9px 28px 8px rgba(0, 0, 0, 0.0509803922);
+}
+.filter_dropdown .toolbar_filter_input:not(:first-child) {
+  width: 100%;
 }
 
 @media only screen and (min-width: 1400px) {
-  .ant-dropdown {
+  .filter_dropdown {
     display: none;
   }
 }
@@ -1751,6 +1764,9 @@ img.img-tiny {
 .dashboard {
   width: 100%;
   padding: 0 30px;
+}
+.dashboard .ant-table-sticky-scroll {
+  display: none;
 }
 .dashboard .btn_status {
   padding: 0;

@@ -375,6 +375,7 @@ const ProjectsList: React.FC<ProjectsListType> = ({
           />
         </div>
       ),
+      width: "50%",
     },
     {
       title: `${t("content:form.status")}`,
@@ -475,8 +476,11 @@ const ProjectsList: React.FC<ProjectsListType> = ({
           <Skeleton />
         ) : (
           <Table
-            scroll={{ x: 700 }}
-            sticky
+            id="projects"
+            getPopupContainer={(trigger) => {
+              return trigger.parentElement as HTMLElement;
+            }}
+            scroll={{ x: 600 }}
             className="projects_table"
             columns={columns}
             dataSource={data}

@@ -553,7 +553,9 @@ const TasksList: React.FC<TasksListPropsType> = ({
           <Skeleton />
         ) : (
           <Table
-            sticky
+            getPopupContainer={(trigger) => {
+              return trigger.parentElement as HTMLElement;
+            }}
             scroll={{ x: 850 }}
             className="tasks_table"
             loading={tableLoading}

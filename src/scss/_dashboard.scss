@@ -1,6 +1,9 @@
 .dashboard {
   width: 100%;
   padding: 0 30px;
+  .ant-table-sticky-scroll {
+    display: none;
+  }
 
   .btn_status {
     padding: 0;

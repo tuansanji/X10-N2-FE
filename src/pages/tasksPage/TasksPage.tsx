@@ -11,7 +11,7 @@ import { setPriority } from "../../utils/setPriority";
 import axios from "axios";
 import _ from "lodash";
 import moment from "moment";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { ReactNode, useEffect, useMemo, useState } from "react";
 import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
@@ -44,10 +44,10 @@ import {
   Col,
   Upload,
   Skeleton,
+  Dropdown,
 } from "antd";
 import type { TabsProps } from "antd";
 import { setupTasks } from "../../utils/setupTasksList";
-import CustomDropdown from "../../components/support/CustomDropdown";
 
 const { Title, Text } = Typography;
 const { Search } = Input;
@@ -62,6 +62,12 @@ export interface ColumnData {
 interface TaskItemProp {
   task: any;
   handleOpenInfoTask?: (task: ITask) => void;
+}
+
+interface FilterItemsProps {
+  allTasks: ITask[];
+  setTasksColumns: React.Dispatch<React.SetStateAction<ColumnData[]>>;
+  className: string;
 }
 
 const initialData: ColumnData[] = [
@@ -164,6 +170,136 @@ const TaskItem: React.FC<TaskItemProp> = ({ task, handleOpenInfoTask }) => {
   );
 };
 
+const FilterItems: React.FC<FilterItemsProps> = ({
+  allTasks,
+  setTasksColumns,
+  className,
+}) => {
+  const queryParams = useAppSelector((state: any) => state.queryParams);
+  const { t } = useTranslation(["content", "base"]);
+  const dispatch = useDispatch();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const params = useParams();
+  const { responseData, isLoading } = useAxios(
+    "get",
+    `/project/members/all/${params.projectId}`,
+    []
+  );
+  const taskTypeOptions = [
+    {
+      label: `${t("content:task.type")}`,
+      options: [
+        { label: `${t("content:form.all")}`, value: `all` },
+        { label: `${t("content:form.issue")}`, value: `issue` },
+        { label: `${t("content:form.assignment")}`, value: `assignment` },
+      ],
+    },
+  ];
+  //Xử lý Filter theo loại công việc
+  const selectTaskTypes = (value: string) => {
+    dispatch(setQuery({ ...queryParams, type: value }));
+    setSearchParams({ ...queryParams, type: value });
+  };
+
+  //Filter công việc theo username của Member
+  const handleFilterMember = (values: any) => {
+    dispatch(setQuery({ ...queryParams, member: values }));
+    setSearchParams({ ...queryParams, member: values });
+  };
+
+  //Click cancel toàn bộ member đã chọn thì hiển thị lại toàn bộ danh sách tasks
+  const cancelSelect = () => {
+    initialData.map((data: any) => {
+      data.items = allTasks.filter((task: ITask) => {
+        return task.status === data.id;
+      });
+      return data;
+    });
+    setTasksColumns(initialData);
+  };
+
+  //Xử lý filter theo tên công việc
+  const handleInputChange = (event: any) => {
+    let value = event.target.value;
+    if (value === "" && searchParams.has("search")) {
+      let query = searchParams.get("search");
+      if (query) {
+        searchParams.delete("search");
+        const newParams: { [key: string]: string } = {};
+        searchParams.forEach((value: string, key: string) => {
+          newParams[key] = value;
+        });
+        setSearchParams(newParams);
+        dispatch(deleteQuery("search"));
+      }
+    } else {
+      dispatch(setQuery({ ...queryParams, search: value }));
+      setSearchParams({ ...queryParams, search: value });
+    }
+  };
+
+  return (
+    <div className={className}>
+      <Select
+        className="toolbar_filter_input"
+        size="large"
+        value={`${t("content:task.type")}: ${
+          t<any>(`content:form.${queryParams.type}`) ||
+          taskTypeOptions[0].options[0].label
+        }`}
+        options={taskTypeOptions}
+        dropdownMatchSelectWidth={false}
+        onChange={selectTaskTypes}
+      />
+      <Select
+        className="toolbar_filter_input"
+        allowClear
+        mode="multiple"
+        maxTagCount="responsive"
+        showSearch
+        size="large"
+        suffixIcon={<SearchOutlined />}
+        value={queryParams.member}
+        placeholder={`${t("content:member.member name")}`}
+        optionFilterProp="children"
+        filterOption={(input, option) =>
+          typeof option?.label === "string" &&
+          option.label.toLowerCase().includes(input.toLowerCase())
+        }
+        onChange={handleFilterMember}
+        onClear={cancelSelect}
+        dropdownRender={(menu) =>
+          isLoading ? (
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                padding: "10px 0",
+              }}
+            >
+              <LoadingOutlined />
+            </div>
+          ) : (
+            menu
+          )
+        }
+        options={responseData?.members?.map((item: IUser) => ({
+          label: `${item.data.fullName}`,
+          value: item.data.username,
+        }))}
+      />
+      <Search
+        className="toolbar_filter_input"
+        size="large"
+        placeholder={`${t("content:task.task name")}`}
+        value={queryParams.search}
+        allowClear
+        onChange={handleInputChange}
+      />
+    </div>
+  );
+};
+
 const TasksPage = () => {
   const params = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -189,11 +325,6 @@ const TasksPage = () => {
   const [fetchingTasks, setFetchingTasks] = useState<boolean>(false);
   const [countReloadTasks, setCountReloadTasks] = useState<number>(1);
   const [edit, setEdit] = useState<boolean>(false);
-  const { responseData, isLoading } = useAxios(
-    "get",
-    `/project/members/all/${params.projectId}`,
-    []
-  );
   const [isUpload, setIsUpload] = useState<boolean>(false);
   const [isDownload, setIsDownload] = useState<boolean>(false);
   const [fileList, setFileList] = useState<any[]>([]);
@@ -229,17 +360,6 @@ const TasksPage = () => {
         setFetchingTasks(false);
       });
   }, [countReloadTasks]);
-
-  const taskTypeOptions = [
-    {
-      label: `${t("content:task.type")}`,
-      options: [
-        { label: `${t("content:form.all")}`, value: `all` },
-        { label: `${t("content:form.issue")}`, value: `issue` },
-        { label: `${t("content:form.assignment")}`, value: `assignment` },
-      ],
-    },
-  ];
 
   const priorityOptions = [
     {
@@ -307,54 +427,11 @@ const TasksPage = () => {
     setTasksColumns(newState);
   }, [queryParams]);
 
-  //Xử lý Filter theo loại công việc
-  const selectTaskTypes = (value: string) => {
-    dispatch(setQuery({ ...queryParams, type: value }));
-    setSearchParams({ ...queryParams, type: value });
-  };
-
   //Xử lý sort theo thứ tự công việc và deadline
   const sortPriority = (value: string) => {
     setSortSelectValue(value);
     dispatch(setQuery({ ...queryParams, sort: value }));
     setSearchParams({ ...queryParams, sort: value });
-  };
-
-  //Filter công việc theo username của Member
-  const handleFilterMember = (values: any) => {
-    dispatch(setQuery({ ...queryParams, member: values }));
-    setSearchParams({ ...queryParams, member: values });
-  };
-
-  //Click cancel toàn bộ member đã chọn thì hiển thị lại toàn bộ danh sách tasks
-  const cancelSelect = () => {
-    initialData.map((data: any) => {
-      data.items = allTasks.filter((task: ITask) => {
-        return task.status === data.id;
-      });
-      return data;
-    });
-    setTasksColumns(initialData);
-  };
-
-  //Xử lý filter theo tên công việc
-  const handleInputChange = (event: any) => {
-    let value = event.target.value;
-    if (value === "" && searchParams.has("search")) {
-      let query = searchParams.get("search");
-      if (query) {
-        searchParams.delete("search");
-        const newParams: { [key: string]: string } = {};
-        searchParams.forEach((value: string, key: string) => {
-          newParams[key] = value;
-        });
-        setSearchParams(newParams);
-        dispatch(deleteQuery("search"));
-      }
-    } else {
-      dispatch(setQuery({ ...queryParams, search: value }));
-      setSearchParams({ ...queryParams, search: value });
-    }
   };
 
   //Thay đổi trạng thái các column khi bắt đầu drag
@@ -672,70 +749,6 @@ const TasksPage = () => {
     }
   }, [activeTab, taskCurrent]);
 
-  const filterItems = [
-    {
-      key: "1",
-      label: (
-        <div className="filter_dropdown">
-          <Select
-            size="large"
-            value={`${t("content:task.type")}: ${
-              t<any>(`content:form.${queryParams.type}`) ||
-              taskTypeOptions[0].options[0].label
-            }`}
-            options={taskTypeOptions}
-            dropdownMatchSelectWidth={false}
-            onChange={selectTaskTypes}
-          />
-          <Select
-            allowClear
-            mode="multiple"
-            style={{ width: "300px" }}
-            maxTagCount="responsive"
-            showSearch
-            size="large"
-            suffixIcon={<SearchOutlined />}
-            value={queryParams.member}
-            placeholder={`${t("content:member.member name")}`}
-            optionFilterProp="children"
-            filterOption={(input, option) =>
-              typeof option?.label === "string" &&
-              option.label.toLowerCase().includes(input.toLowerCase())
-            }
-            onChange={handleFilterMember}
-            onClear={cancelSelect}
-            dropdownRender={(menu) =>
-              isLoading ? (
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "center",
-                    padding: "10px 0",
-                  }}
-                >
-                  <LoadingOutlined />
-                </div>
-              ) : (
-                menu
-              )
-            }
-            options={responseData?.members?.map((item: IUser) => ({
-              label: `${item.data.fullName}`,
-              value: item.data.username,
-            }))}
-          />
-          <Search
-            size="large"
-            placeholder={`${t("content:task.task name")}`}
-            value={queryParams.search}
-            allowClear
-            onChange={handleInputChange}
-          />
-        </div>
-      ),
-    },
-  ];
-
   const handleFilterDropdown = (flag: boolean) => {
     setFilterDropdown(flag);
   };
@@ -912,69 +925,30 @@ const TasksPage = () => {
               options={priorityOptions}
               onChange={sortPriority}
             />
-            <CustomDropdown
-              items={filterItems}
+            <Dropdown
+              className="dropdown_filter_btn"
+              trigger={["click"]}
               open={openFilterDropdown}
               onOpenChange={handleFilterDropdown}
+              dropdownRender={(menu: ReactNode) => {
+                return (
+                  <>
+                    <FilterItems
+                      allTasks={allTasks}
+                      setTasksColumns={setTasksColumns}
+                      className="filter_dropdown"
+                    />
+                  </>
+                );
+              }}
             >
               <Button icon={<FilterOutlined />} size="large" />
-            </CustomDropdown>
-            <div className="toolbar_filter">
-              <Select
-                size="large"
-                value={`${t("content:task.type")}: ${
-                  t<any>(`content:form.${queryParams.type}`) ||
-                  taskTypeOptions[0].options[0].label
-                }`}
-                options={taskTypeOptions}
-                dropdownMatchSelectWidth={false}
-                onChange={selectTaskTypes}
-              />
-              <Select
-                allowClear
-                mode="multiple"
-                style={{ width: "300px" }}
-                maxTagCount="responsive"
-                showSearch
-                size="large"
-                suffixIcon={<SearchOutlined />}
-                value={queryParams.member}
-                placeholder={`${t("content:member.member name")}`}
-                optionFilterProp="children"
-                filterOption={(input, option) =>
-                  typeof option?.label === "string" &&
-                  option.label.toLowerCase().includes(input.toLowerCase())
-                }
-                onChange={handleFilterMember}
-                onClear={cancelSelect}
-                dropdownRender={(menu) =>
-                  isLoading ? (
-                    <div
-                      style={{
-                        display: "flex",
-                        justifyContent: "center",
-                        padding: "10px 0",
-                      }}
-                    >
-                      <LoadingOutlined />
-                    </div>
-                  ) : (
-                    menu
-                  )
-                }
-                options={responseData?.members?.map((item: IUser) => ({
-                  label: `${item.data.fullName}`,
-                  value: item.data.username,
-                }))}
-              />
-              <Search
-                size="large"
-                placeholder={`${t("content:task.task name")}`}
-                value={queryParams.search}
-                allowClear
-                onChange={handleInputChange}
-              />
-            </div>
+            </Dropdown>
+            <FilterItems
+              allTasks={allTasks}
+              setTasksColumns={setTasksColumns}
+              className="toolbar_filter"
+            />
           </Col>
         </Row>
         <Divider />
