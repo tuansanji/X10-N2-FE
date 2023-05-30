@@ -10,18 +10,50 @@
     width: 100%;
     height: 100%;
 
+    .tool_bar {
+      .tool_bar_left {
+        @include flex(row, space-between, center);
+        .file_button {
+          @include flex(row, null, null, null, 16px);
+        }
+      }
+      .tool_bar_right {
+        @include flex(row, space-between, center, null, 16px);
+
+        .toolbar_filter {
+          display: none;
+        }
+      }
+      @media only screen and (min-width: 576px) {
+        .tool_bar_left {
+          justify-content: flex-start;
+          gap: 8px;
+          .file_button {
+            gap: 8px;
+          }
+        }
+        .tool_bar_right {
+          justify-content: flex-end;
+          @media only screen and (min-width: 1400px) {
+            .dropdown_filter_btn {
+              display: none;
+            }
+            .toolbar_filter {
+              @include flex(row, null, null, null, 16px);
+              .toolbar_filter_input:not(:first-child) {
+                width: 300px;
+              }
+            }
+          }
+        }
+      }
+    }
+
     .ant-space-item:last-child {
       overflow: auto;
       margin-bottom: 8px;
       height: 100%;
       @include webkit-scrollbar($borderRadius: 10px, $width: 8px, $height: 8px);
-    }
-
-    .tool_bar {
-      .tool_bar_left,
-      .tool_bar_right {
-        @include flex(row, null, null, null, 16px);
-      }
     }
   }
 
@@ -31,11 +63,6 @@
 
   .ant-input-search {
     width: 300px;
-  }
-
-  button:first-child,
-  button:nth-child(2) {
-    margin-right: auto;
   }
 
   .tasks_board {
@@ -505,5 +532,26 @@
 .modal__activity--detail {
   @include maxWidth($desktop-width) {
     width: 95% !important;
+  }
+}
+
+// FILTER DROPDOWN STYLE
+.filter_dropdown {
+  @include flex(column, null, null, null, 8px);
+  max-width: 300px;
+  background-color: white;
+  padding: 8px;
+  background-clip: padding-box;
+  border-radius: 8px;
+  outline: none;
+  box-shadow: 0 6px 16px 0 #00000014, 0 3px 6px -4px #0000001f,
+    0 9px 28px 8px #0000000d;
+  .toolbar_filter_input:not(:first-child) {
+    width: 100%;
+  }
+}
+@media only screen and (min-width: 1400px) {
+  .filter_dropdown {
+    display: none;
   }
 }

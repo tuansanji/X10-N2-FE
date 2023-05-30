@@ -432,6 +432,7 @@ const MemberList: React.FC = () => {
       {/* Main Content */}
       <div className="header">
         <Button
+          style={{ width: "150px" }}
           disabled={!isBoss}
           type="primary"
           size="large"
@@ -458,6 +459,9 @@ const MemberList: React.FC = () => {
       ) : (
         <div className="content">
           <Table
+            scroll={{
+              x: 500,
+            }}
             columns={columns}
             dataSource={data}
             pagination={{

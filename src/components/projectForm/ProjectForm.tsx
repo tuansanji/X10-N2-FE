@@ -189,7 +189,7 @@ const ProjectForm: React.FC<PropsType> = ({
         {/* Code Name and Status Field: Chỉ hiển thị khi show Info và Edit */}
         <Form.Item hidden={useCase === "create" && true}>
           <Row>
-            <Col span={11}>
+            <Col span={24} sm={{ span: 11 }}>
               <Form.Item
                 label={`${t("content:form.project code")}`}
                 name="code"
@@ -197,7 +197,7 @@ const ProjectForm: React.FC<PropsType> = ({
                 <Input disabled />
               </Form.Item>
             </Col>
-            <Col span={11} offset={2}>
+            <Col span={24} sm={{ span: 11, offset: 2 }}>
               <Form.Item label="Status" name="status">
                 <Select options={statusOptions} />
               </Form.Item>
@@ -221,7 +221,7 @@ const ProjectForm: React.FC<PropsType> = ({
 
         {/* Start Date - End Date Field */}
         <Row>
-          <Col span={11}>
+          <Col span={24} sm={{ span: 11 }}>
             <Form.Item label={`${t("content:startingDate")}`} name="startDate">
               <DatePicker
                 style={{ width: "100%" }}
@@ -236,7 +236,7 @@ const ProjectForm: React.FC<PropsType> = ({
               />
             </Form.Item>
           </Col>
-          <Col span={11} offset={2}>
+          <Col span={24} sm={{ span: 11, offset: 2 }}>
             <Form.Item
               label={`${t("content:endDateExpected")}`}
               name="estimatedEndDate"

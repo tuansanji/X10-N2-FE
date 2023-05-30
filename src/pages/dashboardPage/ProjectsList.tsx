@@ -90,31 +90,6 @@ const Action: React.FC<DeleteConfirmPropsType> = ({
   const dispatch = useAppDispatch();
   const [openDropdown, setOpenDropdown] = useState<boolean>(false);
 
-  const items = [
-    {
-      key: "1",
-      label: (
-        <div className="dropdown_button">
-          <Button
-            disabled={!isEdit}
-            onClick={() => handleEditProject(record)}
-            icon={<EditOutlined />}
-          />
-          <Popconfirm
-            placement="topRight"
-            title={`${t("content:titleDeleteProject")}`}
-            description={`${t("content:desDeleteProject")}`}
-            onConfirm={() => handleDeleteProject(record)}
-            okText={t("base:ok")}
-            cancelText={t("base:cancel")}
-          >
-            <Button icon={<DeleteOutlined />} disabled={!isDelete} />
-          </Popconfirm>
-        </div>
-      ),
-    },
-  ];
-
   //Chỉ Leader và manager mới thực hiện được edit/delete
   useEffect(() => {
     record?.members?.forEach((member: any) => {
@@ -140,7 +115,7 @@ const Action: React.FC<DeleteConfirmPropsType> = ({
           changeMsgLanguage(res?.message, "Xóa thành công"),
           2
         );
-        if (searchResult && searchResult.length > 0) {
+        if (searchResult && searchResult?.length > 0) {
           const newResult = searchResult.filter((item: any) => {
             return item._id !== project.key;
           });
@@ -162,41 +137,26 @@ const Action: React.FC<DeleteConfirmPropsType> = ({
       });
   };
 
-  const handleOpenChange = (flag: boolean) => {
-    setOpenDropdown(flag);
-  };
-
   return (
     <>
       <div className="project_name_column">
         <Link to={`project/${record.key}`}>{record.name}</Link>
         <div className="project_name_action">
-          <Dropdown
-            className="dropdown_action"
-            menu={{ items }}
-            trigger={["click"]}
-            open={openDropdown}
-            onOpenChange={handleOpenChange}
+          <Button
+            disabled={!isEdit}
+            onClick={() => handleEditProject(record)}
+            icon={<EditOutlined />}
+          />
+          <Popconfirm
+            placement="topRight"
+            title={`${t("content:titleDeleteProject")}`}
+            description={`${t("content:desDeleteProject")}`}
+            onConfirm={() => handleDeleteProject(record)}
+            okText={t("base:ok")}
+            cancelText={t("base:cancel")}
           >
-            <Button icon={<EllipsisOutlined />} />
-          </Dropdown>
-          <div className="action_button">
-            <Button
-              disabled={!isEdit}
-              onClick={() => handleEditProject(record)}
-              icon={<EditOutlined />}
-            />
-            <Popconfirm
-              placement="topRight"
-              title={`${t("content:titleDeleteProject")}`}
-              description={`${t("content:desDeleteProject")}`}
-              onConfirm={() => handleDeleteProject(record)}
-              okText={t("base:ok")}
-              cancelText={t("base:cancel")}
-            >
-              <Button icon={<DeleteOutlined />} disabled={!isDelete} />
-            </Popconfirm>
-          </div>
+            <Button icon={<DeleteOutlined />} disabled={!isDelete} />
+          </Popconfirm>
         </div>
       </div>
     </>
@@ -246,9 +206,9 @@ const ProjectsList: React.FC<ProjectsListType> = ({
 
   //Xử lý event khi click filter status
   const selectFilter = async (status: CheckboxValueType[]) => {
-    setIndeterminate(!!status.length && status.length < plainOptions.length);
+    setIndeterminate(!!status?.length && status?.length < plainOptions?.length);
     setFilterValue(status);
-    setCheckAll(status.length === plainOptions.length);
+    setCheckAll(status?.length === plainOptions?.length);
     dispatch(
       setQuery({
         ...queryParams,
@@ -309,7 +269,7 @@ const ProjectsList: React.FC<ProjectsListType> = ({
           params: queryParams.projectTableParams,
           headers: { Authorization: `Bearer ${token}` },
         });
-        if (response.data.projects.length === 0) {
+        if (response.data.projects?.length === 0) {
           showMessage(
             "error",
             changeMsgLanguage(
@@ -415,6 +375,7 @@ const ProjectsList: React.FC<ProjectsListType> = ({
           />
         </div>
       ),
+      width: "50%",
     },
     {
       title: `${t("content:form.status")}`,
@@ -490,7 +451,7 @@ const ProjectsList: React.FC<ProjectsListType> = ({
 
   const data: ProjectsDataType[] = useMemo(() => {
     let newProject: ProjectsDataType[] = [];
-    if (listProject.projects && listProject.projects.length > 0) {
+    if (listProject.projects && listProject.projects?.length > 0) {
       newProject = [
         ...listProject.projects.map((project: any) => {
           return {
@@ -515,6 +476,11 @@ const ProjectsList: React.FC<ProjectsListType> = ({
           <Skeleton />
         ) : (
           <Table
+            id="projects"
+            getPopupContainer={(trigger) => {
+              return trigger.parentElement as HTMLElement;
+            }}
+            scroll={{ x: 600 }}
             className="projects_table"
             columns={columns}
             dataSource={data}
