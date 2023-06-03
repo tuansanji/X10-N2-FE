@@ -954,7 +954,7 @@ const TasksPage = () => {
         <Divider />
         <div className="tasks_board">
           {fetchingTasks ? (
-            <Skeleton />
+            <Skeleton active/>
           ) : (
             <DragDropContext
               onDragEnd={handleDragEnd}

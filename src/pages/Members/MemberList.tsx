@@ -455,7 +455,7 @@ const MemberList: React.FC = () => {
       </div>
       <Divider />
       {isLoading ? (
-        <Skeleton />
+        <Skeleton active/>
       ) : (
         <div className="content">
           <Table
