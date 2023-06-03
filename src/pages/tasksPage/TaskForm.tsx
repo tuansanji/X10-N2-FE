@@ -364,12 +364,23 @@ const TaskForm = (props: ITaskForm) => {
   const breadcrumbItem = useMemo(() => {
     if (statusForm || taskInfo.status) {
       return [
-        { title: breadcrumb.project },
         {
-          title: breadcrumb.stages,
+          title:
+            breadcrumb?.project.length < 13
+              ? breadcrumb?.project
+              : `${breadcrumb?.project.substring(0, 13)}...`,
         },
         {
-          title: taskData?.title || "",
+          title:
+            breadcrumb?.stages.length < 13
+              ? breadcrumb?.stages
+              : `${breadcrumb?.stages.substring(0, 13)}...`,
+        },
+        {
+          title:
+            taskData?.title.length < 13
+              ? taskData?.title
+              : `${taskData?.title.substring(0, 13)}...` || "",
         },
       ];
     } else {

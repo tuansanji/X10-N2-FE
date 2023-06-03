@@ -87,7 +87,11 @@ const TaskHistory: React.FC<IProps> = ({ taskCurrentId }) => {
           description: (
             <div className="history__des">
               <div className="history__user">
-                <p>{step?.userId?.fullName}</p>
+                <p>
+                  {step?.userId?.fullName.length < 20
+                    ? step?.userId?.fullName
+                    : `${step?.userId?.fullName.substring(0, 15)}...`}
+                </p>
                 <time>
                   {moment(step?.timestamp).format("DD MMMM, YYYY - hh:mm A")}
                 </time>
@@ -196,11 +200,11 @@ const TaskHistory: React.FC<IProps> = ({ taskCurrentId }) => {
                 />
                 <div className="comment-container">
                   <p className="title">
-                    {activityDetail?.userId?.fullName.length < 13
+                    {activityDetail?.userId?.fullName.length < 30
                       ? activityDetail?.userId?.fullName
                       : `${activityDetail?.userId?.fullName.substring(
                           0,
-                          13
+                          25
                         )}...`}
                     <span>
                       {moment(

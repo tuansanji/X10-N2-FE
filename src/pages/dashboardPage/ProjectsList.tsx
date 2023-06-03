@@ -473,7 +473,7 @@ const ProjectsList: React.FC<ProjectsListType> = ({
       {contextHolder}
       <div className="projects_list_item">
         {loadingSearch ? (
-          <Skeleton />
+          <Skeleton active/>
         ) : (
           <Table
             id="projects"

@@ -50,6 +50,7 @@ const TaskDetail: React.FC = () => {
   const params = useParams();
   const dispatch = useAppDispatch();
 
+  const [width, setWidth] = useState(window.innerWidth);
   const [loading, setLoading] = useState<boolean>(false);
   const [taskCurrent, setTaskCurrent] = useState<ITask | null>(null);
   const [isEdit, setIsEdit] = useState<boolean>(false);
@@ -243,21 +244,42 @@ const TaskDetail: React.FC = () => {
       { title: <Link to="/">{t("base:home")}</Link> },
       {
         title: (
-          <Link to={`/project/${params.projectId}`}>{breadcrumb?.project}</Link>
+          <Link to={`/project/${params.projectId}`}>
+            {breadcrumb?.project.length < 13
+              ? breadcrumb?.project
+              : `${breadcrumb?.project.substring(0, 13)}...`}
+          </Link>
         ),
       },
       {
         title: (
           <Link to={`/project/${params.projectId}/${params.stagesId}`}>
-            {breadcrumb?.stages}
+            {breadcrumb?.stages.length < 13
+              ? breadcrumb?.stages
+              : `${breadcrumb?.stages.substring(0, 13)}...`}
           </Link>
         ),
       },
       {
-        title: taskCurrent?.title || "",
+        title:
+          taskCurrent?.title && taskCurrent?.title.length < 13
+            ? taskCurrent?.title
+            : `${taskCurrent?.title.substring(0, 13)}...` || "",
       },
     ];
   }, [breadcrumb, taskCurrent, i18n.language]);
+
+  // phần xác định chiều rộng màn hình hiện tại để làm đóng mở sidebar
+  useEffect(() => {
+    const handleResize = () => {
+      setWidth(window.innerWidth);
+    };
+    window.addEventListener("resize", handleResize);
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
+
   useEffect(() => {
     if (taskCurrent) {
       form.setFieldsValue(initialValues);
@@ -315,7 +337,7 @@ const TaskDetail: React.FC = () => {
                         ) : (
                           <Breadcrumb
                             items={breadcrumbItem}
-                            style={{ fontSize: "12px" }}
+                            style={{ fontSize: "12px", zIndex: 11 }}
                           />
                         )}
 
@@ -368,7 +390,7 @@ const TaskDetail: React.FC = () => {
                   >
                     <Descriptions
                       bordered
-                      column={2}
+                      column={width < 600 ? 1 : 2}
                       labelStyle={{
                         width: "15%",
                         textAlign: "start",
@@ -382,7 +404,7 @@ const TaskDetail: React.FC = () => {
                     >
                       <Descriptions.Item
                         label={t("content:form.title")}
-                        span={2}
+                        span={width < 600 ? 1 : 2}
                       >
                         {isEdit ? (
                           <Form.Item
@@ -690,7 +712,7 @@ const TaskDetail: React.FC = () => {
                       </Descriptions.Item>
 
                       <Descriptions.Item
-                        span={2}
+                        span={width < 600 ? 1 : 2}
                         style={{ textAlign: "start", verticalAlign: "top" }}
                         label={t("content:form.description")}
                       >
