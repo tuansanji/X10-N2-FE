@@ -244,8 +244,9 @@ const FilterItems: React.FC<FilterItemsProps> = ({
         className="toolbar_filter_input"
         size="large"
         value={`${t("content:task.type")}: ${
-          t<any>(`content:form.${queryParams.type}`) ||
-          taskTypeOptions[0].options[0].label
+          queryParams.type
+            ? t<any>(`content:form.${queryParams.type}`)
+            : taskTypeOptions[0].options[0].label
         }`}
         options={taskTypeOptions}
         dropdownMatchSelectWidth={false}
@@ -954,7 +955,7 @@ const TasksPage = () => {
         <Divider />
         <div className="tasks_board">
           {fetchingTasks ? (
-            <Skeleton active/>
+            <Skeleton active />
           ) : (
             <DragDropContext
               onDragEnd={handleDragEnd}

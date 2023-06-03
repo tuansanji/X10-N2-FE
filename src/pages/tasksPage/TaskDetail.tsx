@@ -49,7 +49,6 @@ const TaskDetail: React.FC = () => {
   const [form] = Form.useForm();
   const params = useParams();
   const dispatch = useAppDispatch();
-
   const [width, setWidth] = useState(window.innerWidth);
   const [loading, setLoading] = useState<boolean>(false);
   const [taskCurrent, setTaskCurrent] = useState<ITask | null>(null);
