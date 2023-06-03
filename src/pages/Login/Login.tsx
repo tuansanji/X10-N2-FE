@@ -109,15 +109,6 @@ const Login: React.FC = () => {
           Don't have account?&nbsp;
           <Link to="/register">Sign up</Link>
         </Paragraph>
-        <Divider className="login-divider" orientation="center" plain>
-          Or
-        </Divider>
-        <div className="google-register-button">
-          <Button type="primary" size="large">
-            <GoogleOutlined />
-            Login with Google
-          </Button>
-        </div>
       </div>
     </div>
   );

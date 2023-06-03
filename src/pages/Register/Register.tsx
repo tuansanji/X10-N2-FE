@@ -159,16 +159,6 @@ const Register: React.FC = () => {
             </Button>
           </Form.Item>
         </Form>
-        <Divider className="register-divider" orientation="center" plain>
-          Or
-        </Divider>
-        <div className="google-register-button">
-          <Button type="primary" size="large">
-            {" "}
-            <GoogleOutlined />
-            Register with Google
-          </Button>
-        </div>
       </div>
     </div>
   );
