@@ -1881,10 +1881,12 @@ img.img-tiny {
 }
 
 .notfound__page {
-  width: 100%;
+  width: 90%;
+  margin: 0 auto;
 }
 .notfound__page .container {
   width: 100%;
+  height: auto !important;
 }
 .notfound__page .container .main {
   width: 100%;
