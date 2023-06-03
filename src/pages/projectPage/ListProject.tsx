@@ -418,7 +418,7 @@ const ListProject: React.FC = () => {
       </div>
       <div className="project_page-table">
         {loadingSearch ? (
-          <Skeleton />
+          <Skeleton active />
         ) : (
           <Table columns={columns} dataSource={data} pagination={pagination} />
         )}

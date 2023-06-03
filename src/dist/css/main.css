@@ -380,14 +380,23 @@ html {
   font-weight: 500;
   font-size: 16px;
   letter-spacing: -0.006em;
-  line-height: 1.42857143;
   padding-left: 4px;
+}
+@media only screen and (max-width: 500px) {
+  .comment-container .title {
+    font-size: 14px;
+  }
 }
 .comment-container .title span {
   padding-left: 10px;
   font-size: 13px;
   font-weight: medium;
   opacity: 0.7;
+}
+@media only screen and (max-width: 500px) {
+  .comment-container .title span {
+    font-size: 11px;
+  }
 }
 .comment-container .content {
   color: black;
@@ -1136,6 +1145,16 @@ img.img-tiny {
   top: 0;
   background-color: #fff;
   z-index: 10;
+}
+@media only screen and (max-width: 900px) {
+  .task__Detail--page {
+    overflow-y: auto;
+  }
+  .task__Detail--page .ant-descriptions-item-label,
+  .task__Detail--page .ant-descriptions-item-content {
+    font-size: 12px;
+    padding: 10px !important;
+  }
 }
 
 .action__btn {

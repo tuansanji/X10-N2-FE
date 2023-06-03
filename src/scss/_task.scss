@@ -394,11 +394,20 @@
 }
 .task__Detail--page {
   padding: 30px;
+
   .ant-tabs.ant-tabs-top.css-dev-only-do-not-override-htwhyh {
     position: sticky;
     top: 0;
     background-color: #fff;
     z-index: 10;
+  }
+  @include maxWidth(900px) {
+    overflow-y: auto;
+    .ant-descriptions-item-label,
+    .ant-descriptions-item-content {
+      font-size: 12px;
+      padding: 10px !important;
+    }
   }
 }
 .action__btn {

@@ -550,7 +550,7 @@ const TasksList: React.FC<TasksListPropsType> = ({
           )}
         </Modal>
         {tableLoading ? (
-          <Skeleton />
+          <Skeleton active />
         ) : (
           <Table
             getPopupContainer={(trigger) => {
