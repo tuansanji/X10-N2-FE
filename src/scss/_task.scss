@@ -41,7 +41,8 @@
             .toolbar_filter {
               @include flex(row, null, null, null, 16px);
               .toolbar_filter_input:not(:first-child) {
-                width: 300px;
+                // width: 300px;
+                width: 200px;
               }
             }
           }

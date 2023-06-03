@@ -768,7 +768,7 @@ img.img-tiny {
     gap: 16px;
   }
   .tasks_page .ant-space .tool_bar .tool_bar_right .toolbar_filter .toolbar_filter_input:not(:first-child) {
-    width: 300px;
+    width: 200px;
   }
 }
 .tasks_page .ant-space .ant-space-item:last-child {
